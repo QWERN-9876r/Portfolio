@@ -44,6 +44,7 @@ export const createFluidPreset = (app: Application): FluidScene => {
   let isOver = false;
   let intensity = 1; // усиливается при hover на технологию
   let time = 0;
+  let lastTime = Date.now();
 
   // Волновые точки (горизонтальные срезы)
   const COLS = 60;
@@ -66,7 +67,10 @@ export const createFluidPreset = (app: Application): FluidScene => {
   container.addChild(cursorGfx);
 
   const tick = () => {
-    time += 0.016;
+    if (!app.stage) return;
+
+    time += Date.now() - lastTime;
+    lastTime = Date.now();
 
     // Плавное затухание интенсивности
     if (!isOver) intensity = Math.max(1, intensity * 0.97);

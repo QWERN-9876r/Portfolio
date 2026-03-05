@@ -10,62 +10,52 @@ export const usePixiApp = ({ width, height }: UsePixiAppOptions) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const appRef = useRef<Application | null>(null);
   const [ready, setReady] = useState(false);
+  const destroyedRef = useRef(false); // ← флаг размонтирования
 
   useEffect(() => {
     if (!canvasRef.current) return;
 
-    let destroyed = false;
+    destroyedRef.current = false; // ← сброс при монтировании
 
     const init = async () => {
-      try {
-        // Динамический импорт — Pixi в отдельном чанке
-        const { Application } = await import("pixi.js");
+      const { Application } = await import("pixi.js");
 
-        if (destroyed || !canvasRef.current) return;
+      // Проверка после await
+      if (destroyedRef.current || !canvasRef.current) return;
 
-        const app = new Application();
+      const app = new Application();
+      await app.init({
+        canvas: canvasRef.current,
+        width,
+        height,
+        backgroundAlpha: 0,
+        antialias: true,
+        resolution: Math.min(window.devicePixelRatio || 1, 1.5),
+        autoDensity: true,
+        powerPreference: "high-performance",
+        hello: false,
+      });
 
-        await app.init({
-          canvas: canvasRef.current,
-          width,
-          height,
-          backgroundAlpha: 0,
-          antialias: true,
-          resolution: Math.min(window.devicePixelRatio || 1, 1.5),
-          autoDensity: true,
-          powerPreference: "high-performance",
-          hello: false,
-        });
-
-        if (destroyed) {
-          app.destroy(false);
-          return;
-        }
-
-        appRef.current = app;
-        setReady(true);
-      } catch (err) {
-        console.warn("Pixi init error:", err);
-        // Не критично — просто не показываем сцену
+      // Повторная проверка после await
+      if (destroyedRef.current) {
+        app.destroy(false);
+        return;
       }
+
+      appRef.current = app;
+      setReady(true);
     };
 
     init();
 
     return () => {
-      destroyed = true;
+      destroyedRef.current = true; // ← установка флага
       if (appRef.current) {
-        try {
-          appRef.current.destroy(false);
-        } catch (err) {
-          console.warn("Pixi destroy error:", err);
-        }
+        appRef.current.destroy(false);
         appRef.current = null;
         setReady(false);
       }
     };
-    // Перезапускаем только если размер изменился
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [width, height]);
 
   return { canvasRef, appRef, ready };

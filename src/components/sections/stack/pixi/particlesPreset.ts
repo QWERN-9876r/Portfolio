@@ -79,12 +79,12 @@ export const createParticlesPreset = (app: Application): ParticlesScene => {
     };
   });
 
-  // Линии между близкими частицами
   const linesGfx = new Graphics();
   container.addChildAt(linesGfx, 0);
 
-  // Тик: обновление каждого кадра
   const tick = () => {
+    if (!app.stage) return;
+
     linesGfx.clear();
 
     particles.forEach((p, i) => {
