@@ -69,7 +69,7 @@ export const createFluidPreset = (app: Application): FluidScene => {
   const tick = () => {
     if (!app.stage) return;
 
-    time += Date.now() - lastTime;
+    time += (Date.now() - lastTime) / 1000;
     lastTime = Date.now();
 
     // Плавное затухание интенсивности
