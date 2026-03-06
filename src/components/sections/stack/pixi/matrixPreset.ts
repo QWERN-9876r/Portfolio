@@ -166,7 +166,7 @@ export const createMatrixPreset = (app: Application): MatrixScene => {
 
   return {
     destroy: () => {
-      app.ticker.remove(tick);
+      app?.ticker.remove(tick);
       container.destroy({ children: true });
     },
     setActiveTech: (name) => {

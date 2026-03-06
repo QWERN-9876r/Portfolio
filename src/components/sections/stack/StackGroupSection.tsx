@@ -1,11 +1,12 @@
 import { Box, Typography } from "@mui/material";
 import { motion, useInView } from "framer-motion";
-import { useRef, useState, useEffect } from "react";
+import { useRef, useState, useEffect, FC } from "react";
 import { alpha } from "@mui/material/styles";
 import { COLORS } from "../../../theme/theme";
 import { TechItem } from "./TechItem";
 import { PixiScene } from "./pixi/PixiScene";
 import type { TechGroup } from "../../../data/techGroups";
+import { useQueryRole } from "../../../hooks/useQueryRole";
 
 interface StackGroupSectionProps {
   group: TechGroup;
@@ -36,6 +37,17 @@ const rightVariants = {
     filter: "blur(0px)",
     transition: { duration: 0.75, delay: 0.2, ease: [0.25, 0.46, 0.45, 0.94] },
   },
+};
+
+export const TechGroups: FC<{ groups: TechGroup[] }> = ({ groups }) => {
+  const { role } = useQueryRole();
+
+  return groups.map(
+    (group) =>
+      (!group.roles || group.roles.includes(role)) && (
+        <StackGroupSection key={group.id} group={group} />
+      ),
+  );
 };
 
 export const StackGroupSection = ({ group }: StackGroupSectionProps) => {

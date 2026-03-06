@@ -135,11 +135,9 @@ export const createFluidPreset = (app: Application): FluidScene => {
   return {
     destroy: () => {
       try {
-        app.ticker.remove(tick);
+        app?.ticker.remove(tick);
         container.destroy({ children: true });
-      } catch (err) {
-        console.warn("Fluid destroy error:", err);
-      }
+      } catch {}
     },
     setActiveTech: (name) => {
       intensity = name ? 2.5 : 1;

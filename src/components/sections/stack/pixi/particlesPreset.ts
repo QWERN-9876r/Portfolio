@@ -189,11 +189,9 @@ export const createParticlesPreset = (app: Application): ParticlesScene => {
   return {
     destroy: () => {
       try {
-        app.ticker.remove(tick);
+        app?.ticker.remove(tick);
         container.destroy({ children: true });
-      } catch (err) {
-        console.warn("Particles destroy error:", err);
-      }
+      } catch {}
     },
     setActiveTech,
     onMouseMove: (x, y) => {

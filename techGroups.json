@@ -55,7 +55,7 @@
     "title": "Графика",
     "subtitle": "Pixi · Rive · Lottie",
     "roles": ["frontend", "fullstack"],
-    "pixiPreset": "particles",
+    "pixiPreset": "neural",
     "items": [
       {
         "name": "Pixi",
@@ -80,7 +80,7 @@
     "title": "Web Components",
     "subtitle": "Lit · Custom Elements",
     "roles": ["frontend", "fullstack"],
-    "pixiPreset": "fluid",
+    "pixiPreset": "constellation",
     "items": [
       {
         "name": "Lit",
@@ -96,7 +96,7 @@
     "title": "Качество и тестирование",
     "subtitle": "Storybook · Jest · Playwright",
     "roles": ["frontend", "fullstack"],
-    "pixiPreset": "particles",
+    "pixiPreset": "matrix",
     "items": [
       {
         "name": "Storybook",

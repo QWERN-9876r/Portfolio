@@ -37,6 +37,16 @@ export const PixiScene = ({
   const sceneRef = useRef<Scene | null>(null);
   const [mounted, setMounted] = useState(false);
 
+  useEffect(() => {
+    if (!appRef.current) return;
+
+    if (isVisible) {
+      appRef.current.ticker.start();
+    } else {
+      appRef.current.ticker.stop();
+    }
+  }, [isVisible, appRef]);
+
   // Инициализация пресета после готовности Pixi App
   useEffect(() => {
     if (!ready || !appRef.current) return;

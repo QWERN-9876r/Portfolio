@@ -2,6 +2,15 @@ import { useState, useEffect, useCallback } from "react";
 
 export type Role = "frontend" | "fullstack" | "backend";
 
+interface CustomMessageEvent extends CustomEvent {
+  detail: {
+    data: {
+      event: string;
+      newRole: Role;
+    };
+  };
+}
+
 const ROLES: Role[] = ["frontend", "fullstack", "backend"];
 
 const ROLE_LABELS: Record<Role, string> = {
@@ -28,54 +37,44 @@ const setRoleToQuery = (role: Role): void => {
   window.history.replaceState(null, "", newUrl);
 };
 
-// Новый хук для подписки на изменения
 export const useQueryRole = () => {
   const [role, setRoleState] = useState<Role>(getRoleFromQuery);
 
   useEffect(() => {
-    // Функция для обработки изменений URL
-    const handlePopState = () => {
-      setRoleState(getRoleFromQuery());
+    const params = new URLSearchParams(window.location.search);
+    if (!params.get("role")) {
+      setRoleToQuery(DEFAULT_ROLE);
+    }
+
+    const listener = (event: Event) => {
+      const customEvent = event as CustomMessageEvent;
+      const { data } = customEvent.detail;
+
+      if (data.event !== "changeRole") return;
+
+      setRoleState(data.newRole);
     };
 
-    // Подписываемся на события изменения истории
-    window.addEventListener("popstate", handlePopState);
+    window.addEventListener("message_v2", listener as EventListener);
 
-    // Подписываемся на изменения через push/replaceState
-    const originalPushState = window.history.pushState;
-    const originalReplaceState = window.history.replaceState;
-
-    window.history.pushState = function (...args) {
-      const result = originalPushState.apply(this, args);
-      handlePopState();
-      return result;
-    };
-
-    window.history.replaceState = function (...args) {
-      const result = originalReplaceState.apply(this, args);
-      handlePopState();
-      return result;
-    };
-
-    // Наблюдатель за изменением URL (для случаев, когда кто-то меняет location напрямую)
-    let lastUrl = window.location.href;
-    const urlObserver = setInterval(() => {
-      const currentUrl = window.location.href;
-      if (currentUrl !== lastUrl) {
-        lastUrl = currentUrl;
-        setRoleState(getRoleFromQuery());
-      }
-    }, 100);
-
-    return () => {
-      window.removeEventListener("popstate", handlePopState);
-      window.history.pushState = originalPushState;
-      window.history.replaceState = originalReplaceState;
-      clearInterval(urlObserver);
-    };
+    return () =>
+      window.removeEventListener("message_v2", listener as EventListener);
   }, []);
 
   const setRole = useCallback((newRole: Role) => {
+    setTimeout(() => {
+      window.dispatchEvent(
+        new CustomEvent("message_v2", {
+          detail: {
+            data: {
+              event: "changeRole",
+              newRole,
+            },
+          },
+        }),
+      );
+    }, 500);
+
     setRoleState(newRole);
     setRoleToQuery(newRole);
   }, []);
