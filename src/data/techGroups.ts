@@ -1,3 +1,5 @@
+import { createDataHook } from "./createDataHook";
+
 // Тип одной технологии внутри группы
 export interface TechGroupItem {
   name: string;
@@ -15,7 +17,7 @@ export interface TechGroup {
   items: TechGroupItem[];
 }
 
-export const TECH_GROUPS: TechGroup[] = [
+const DEFAULT_TECH_GROUPS: TechGroup[] = [
   {
     id: "stack-1",
     index: 3,
@@ -150,3 +152,7 @@ export const TECH_GROUPS: TechGroup[] = [
     ],
   },
 ];
+
+const S3_URL = "/api/storage/techGroups.json";
+
+export const useTechGroups = createDataHook(S3_URL, DEFAULT_TECH_GROUPS);

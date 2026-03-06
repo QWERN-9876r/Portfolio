@@ -14,4 +14,17 @@ export default defineConfig({
       },
     },
   },
+  server: {
+    cors: {
+      origin: ["https://storage.yandexcloud.net"],
+      credentials: true,
+    },
+    proxy: {
+      "/api/storage": {
+        target: "https://storage.yandexcloud.net",
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api\/storage/, "/qwern-9876r"),
+      },
+    },
+  },
 });

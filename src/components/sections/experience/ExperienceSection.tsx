@@ -3,7 +3,7 @@ import { motion, useInView } from "framer-motion";
 import { useRef } from "react";
 import { alpha } from "@mui/material/styles";
 import { COLORS } from "../../../theme/theme";
-import { EXPERIENCE } from "../../../data/experienceData";
+import { useExperience } from "../../../data/experienceData";
 import type { ExperienceItem } from "../../../data/experienceData";
 
 const SECTION_INDEX = 11;
@@ -47,6 +47,7 @@ const lineVariants = {
 export const ExperienceSection = () => {
   const ref = useRef<HTMLDivElement>(null);
   const inView = useInView(ref, { once: true, margin: "-15%" });
+  const experience = useExperience();
 
   return (
     <Box
@@ -107,7 +108,7 @@ export const ExperienceSection = () => {
                   textShadow: `0 0 30px ${alpha(COLORS.neonBlue, 0.4)}`,
                 }}
               >
-                {EXPERIENCE.company}
+                {experience.company}
               </Typography>
 
               {/* Локация */}
@@ -119,7 +120,7 @@ export const ExperienceSection = () => {
                   alignSelf: "center",
                 }}
               >
-                {EXPERIENCE.location}
+                {experience.location}
               </Typography>
             </Box>
           </Box>
@@ -195,7 +196,7 @@ export const ExperienceSection = () => {
                 gap: { xs: 2.5, md: 3 },
               }}
             >
-              {EXPERIENCE.items.map((item) => (
+              {experience.items.map((item) => (
                 <TimelineItem key={item.period} item={item} />
               ))}
             </Box>

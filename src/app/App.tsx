@@ -13,11 +13,13 @@ import { AllTechSection } from "../components/sections/alltech/AllTechSection";
 import { ExperienceSection } from "../components/sections/experience/ExperienceSection";
 import { CaseSection } from "../components/sections/cases/CaseSection";
 import { FooterSection } from "../components/sections/footer/FooterSection";
-import { TECH_GROUPS } from "../data/techGroups";
-import { CASES } from "../data/cases";
+import { useTechGroups } from "../data/techGroups";
+import { useCases } from "../data/cases";
 
 export const App = () => {
   const [preloaderDone, setPreloaderDone] = useState(false);
+  const cases = useCases();
+  const techGroups = useTechGroups();
 
   return (
     <ThemeProvider theme={theme}>
@@ -40,14 +42,14 @@ export const App = () => {
           <AboutSection />
           <SellingPointsSection />
 
-          {TECH_GROUPS.map((group) => (
+          {techGroups.map((group) => (
             <StackGroupSection key={group.id} group={group} />
           ))}
 
           <AllTechSection />
           <ExperienceSection />
 
-          {CASES.map((caseItem) => (
+          {cases.map((caseItem) => (
             <CaseSection key={caseItem.id} caseData={caseItem} />
           ))}
 

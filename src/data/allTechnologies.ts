@@ -1,3 +1,6 @@
+import { useEffect, useState } from "react";
+import { createDataHook } from "./createDataHook";
+
 export interface Tech {
   name: string;
   url: string;
@@ -7,7 +10,7 @@ export interface Tech {
 
 // Заполни сам — добавляй/убирай технологии
 // Клик по иконке откроет url в новой вкладке
-export const ALL_TECHNOLOGIES: Tech[] = [
+const ALL_TECHNOLOGIES_BY_DEFAULT: Tech[] = [
   {
     name: "TypeScript",
     url: "https://www.typescriptlang.org",
@@ -144,3 +147,10 @@ export const ALL_TECHNOLOGIES: Tech[] = [
     priority: 3,
   },
 ];
+
+const S3_URL = "api/storage/allTechnologies.json";
+
+export const useAllTechnologies = createDataHook(
+  S3_URL,
+  ALL_TECHNOLOGIES_BY_DEFAULT,
+);

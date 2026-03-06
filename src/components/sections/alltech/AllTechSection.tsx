@@ -3,7 +3,7 @@ import { motion, useInView } from "framer-motion";
 import { useRef, useState } from "react";
 import { alpha } from "@mui/material/styles";
 import { COLORS } from "../../../theme/theme";
-import { ALL_TECHNOLOGIES } from "../../../data/allTechnologies";
+import { useAllTechnologies } from "../../../data/allTechnologies";
 import type { Tech } from "../../../data/allTechnologies";
 
 // Индекс секции в общем списке
@@ -51,6 +51,7 @@ const iconVariants = {
 export const AllTechSection = () => {
   const ref = useRef<HTMLDivElement>(null);
   const inView = useInView(ref, { once: true, margin: "-10%" });
+  const technologies = useAllTechnologies();
 
   return (
     <Box
@@ -127,7 +128,7 @@ export const AllTechSection = () => {
               gap: { xs: 2, md: 2.5 },
             }}
           >
-            {ALL_TECHNOLOGIES.map((tech, index) => (
+            {technologies.map((tech, index) => (
               <TechIcon key={tech.name} tech={tech} index={index} />
             ))}
           </Box>

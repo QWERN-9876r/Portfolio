@@ -1,3 +1,5 @@
+import { createDataHook } from "./createDataHook";
+
 export interface ExperienceItem {
   period: string; // "MM.YYYY – MM.YYYY" или "MM.YYYY – н.в."
   title: string; // должность / направление
@@ -11,8 +13,7 @@ export interface ExperienceData {
   items: ExperienceItem[];
 }
 
-// Заполни реальными данными
-export const EXPERIENCE: ExperienceData = {
+const DEFAULT_EXPERIENCE: ExperienceData = {
   company: "Яндекс",
   location: "Москва",
   items: [
@@ -56,3 +57,7 @@ export const EXPERIENCE: ExperienceData = {
     },
   ],
 };
+
+const S3_URL = "/api/storage/experience.json";
+
+export const useExperience = createDataHook(S3_URL, DEFAULT_EXPERIENCE);

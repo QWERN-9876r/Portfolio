@@ -1,3 +1,6 @@
+import { useEffect, useState } from "react";
+import { createDataHook } from "./createDataHook";
+
 export interface CaseResult {
   label: string;
   value: string;
@@ -16,7 +19,7 @@ export interface CaseItem {
   hideRightSlot?: boolean;
 }
 
-export const CASES: CaseItem[] = [
+const DEFAULT_CASES: CaseItem[] = [
   {
     id: "case-1",
     index: 12,
@@ -62,3 +65,7 @@ export const CASES: CaseItem[] = [
     hideRightSlot: true,
   },
 ];
+
+const S3_URL = "/api/storage/cases.json";
+
+export const useCases = createDataHook(S3_URL, DEFAULT_CASES);
