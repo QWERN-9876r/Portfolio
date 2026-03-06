@@ -135,7 +135,7 @@ export const createFluidPreset = (app: Application): FluidScene => {
   return {
     destroy: () => {
       try {
-        app?.ticker.remove(tick);
+        app?.ticker?.remove(tick);
         container.destroy({ children: true });
       } catch {}
     },

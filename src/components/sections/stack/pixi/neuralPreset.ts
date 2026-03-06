@@ -165,7 +165,7 @@ export const createNeuralPreset = (app: Application): NeuralScene => {
 
   return {
     destroy: () => {
-      app?.ticker.remove(tick);
+      app?.ticker?.remove(tick);
       container.destroy({ children: true });
     },
     setActiveTech: (name) => {

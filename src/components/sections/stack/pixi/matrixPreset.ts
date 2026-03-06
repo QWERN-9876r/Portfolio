@@ -1,6 +1,5 @@
-import { Graphics, Container, Text, TextStyle } from "pixi.js";
+import { Container, Text, TextStyle } from "pixi.js";
 import type { Application } from "pixi.js";
-import { COLORS } from "../../../../theme/theme";
 
 interface MatrixDrop {
   x: number;
@@ -166,7 +165,7 @@ export const createMatrixPreset = (app: Application): MatrixScene => {
 
   return {
     destroy: () => {
-      app?.ticker.remove(tick);
+      app?.ticker?.remove(tick);
       container.destroy({ children: true });
     },
     setActiveTech: (name) => {
