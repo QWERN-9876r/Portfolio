@@ -28,15 +28,51 @@ const setRoleToQuery = (role: Role): void => {
   window.history.replaceState(null, "", newUrl);
 };
 
+// Новый хук для подписки на изменения
 export const useQueryRole = () => {
   const [role, setRoleState] = useState<Role>(getRoleFromQuery);
 
-  // При первом рендере синхронизируем query если его нет
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    if (!params.get("role")) {
-      setRoleToQuery(DEFAULT_ROLE);
-    }
+    // Функция для обработки изменений URL
+    const handlePopState = () => {
+      setRoleState(getRoleFromQuery());
+    };
+
+    // Подписываемся на события изменения истории
+    window.addEventListener("popstate", handlePopState);
+
+    // Подписываемся на изменения через push/replaceState
+    const originalPushState = window.history.pushState;
+    const originalReplaceState = window.history.replaceState;
+
+    window.history.pushState = function (...args) {
+      const result = originalPushState.apply(this, args);
+      handlePopState();
+      return result;
+    };
+
+    window.history.replaceState = function (...args) {
+      const result = originalReplaceState.apply(this, args);
+      handlePopState();
+      return result;
+    };
+
+    // Наблюдатель за изменением URL (для случаев, когда кто-то меняет location напрямую)
+    let lastUrl = window.location.href;
+    const urlObserver = setInterval(() => {
+      const currentUrl = window.location.href;
+      if (currentUrl !== lastUrl) {
+        lastUrl = currentUrl;
+        setRoleState(getRoleFromQuery());
+      }
+    }, 100);
+
+    return () => {
+      window.removeEventListener("popstate", handlePopState);
+      window.history.pushState = originalPushState;
+      window.history.replaceState = originalReplaceState;
+      clearInterval(urlObserver);
+    };
   }, []);
 
   const setRole = useCallback((newRole: Role) => {

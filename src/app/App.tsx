@@ -15,11 +15,15 @@ import { CaseSection } from "../components/sections/cases/CaseSection";
 import { FooterSection } from "../components/sections/footer/FooterSection";
 import { useTechGroups } from "../data/techGroups";
 import { useCases } from "../data/cases";
+import { useQueryRole } from "../hooks/useQueryRole";
 
 export const App = () => {
   const [preloaderDone, setPreloaderDone] = useState(false);
   const cases = useCases();
   const techGroups = useTechGroups();
+  const { role, setRole, roles, roleLabels } = useQueryRole();
+
+  console.log(techGroups, role);
 
   return (
     <ThemeProvider theme={theme}>
@@ -42,9 +46,12 @@ export const App = () => {
           <AboutSection />
           <SellingPointsSection />
 
-          {techGroups.map((group) => (
-            <StackGroupSection key={group.id} group={group} />
-          ))}
+          {techGroups.map(
+            (group) =>
+              (!group.roles || group.roles.includes(role)) && (
+                <StackGroupSection key={group.id} group={group} />
+              ),
+          )}
 
           <AllTechSection />
           <ExperienceSection />

@@ -5,13 +5,14 @@ import { COLORS } from "../../../../theme/theme";
 import { usePixiApp } from "./usePixiApp";
 import type { createParticlesPreset } from "./particlesPreset";
 import type { createFluidPreset } from "./fluidPreset";
+import { Preset } from "../../../../data/techGroups";
 
 type Scene =
   | ReturnType<typeof createParticlesPreset>
   | ReturnType<typeof createFluidPreset>;
 
 interface PixiSceneProps {
-  preset: "particles" | "fluid";
+  preset: Preset;
   activeTech: string | null;
   isVisible: boolean; // от IntersectionObserver родителя
 }
@@ -46,17 +47,47 @@ export const PixiScene = ({
       if (!appRef.current || destroyed) return;
 
       try {
-        if (preset === "particles") {
-          const { createParticlesPreset } = await import("./particlesPreset");
-          if (!destroyed && appRef.current) {
-            sceneRef.current = createParticlesPreset(appRef.current);
-            setMounted(true);
+        switch (preset) {
+          case "particles": {
+            const { createParticlesPreset } = await import("./particlesPreset");
+            if (!destroyed && appRef.current) {
+              sceneRef.current = createParticlesPreset(appRef.current);
+              setMounted(true);
+            }
+            break;
           }
-        } else {
-          const { createFluidPreset } = await import("./fluidPreset");
-          if (!destroyed && appRef.current) {
-            sceneRef.current = createFluidPreset(appRef.current);
-            setMounted(true);
+          case "fluid": {
+            const { createFluidPreset } = await import("./fluidPreset");
+            if (!destroyed && appRef.current) {
+              sceneRef.current = createFluidPreset(appRef.current);
+              setMounted(true);
+            }
+            break;
+          }
+          case "neural": {
+            const { createNeuralPreset } = await import("./neuralPreset");
+            if (!destroyed && appRef.current) {
+              sceneRef.current = createNeuralPreset(appRef.current);
+              setMounted(true);
+            }
+            break;
+          }
+          case "constellation": {
+            const { createConstellationPreset } =
+              await import("./constellationPreset");
+            if (!destroyed && appRef.current) {
+              sceneRef.current = createConstellationPreset(appRef.current);
+              setMounted(true);
+            }
+            break;
+          }
+          case "matrix": {
+            const { createMatrixPreset } = await import("./matrixPreset");
+            if (!destroyed && appRef.current) {
+              sceneRef.current = createMatrixPreset(appRef.current);
+              setMounted(true);
+            }
+            break;
           }
         }
       } catch (err) {

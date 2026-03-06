@@ -62,7 +62,7 @@
   {
     "name": "Pixi.js",
     "url": "https://pixijs.com/",
-    "icon": "/api/storage/icons/pixi.png",
+    "icon": "/api/storage/pixi.png",
     "priority": 2
   },
   {

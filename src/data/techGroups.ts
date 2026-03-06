@@ -1,3 +1,4 @@
+import { Role } from "../hooks/useQueryRole";
 import { createDataHook } from "./createDataHook";
 
 // Тип одной технологии внутри группы
@@ -7,14 +8,22 @@ export interface TechGroupItem {
   note?: string; // строгая подпись "что делаю"
 }
 
+export type Preset =
+  | "particles"
+  | "fluid"
+  | "neural"
+  | "constellation"
+  | "matrix";
+
 // Тип группы технологий (один экран)
 export interface TechGroup {
   id: string;
   index: number; // порядковый номер секции (для заголовка "03", "04" ...)
   title: string;
   subtitle?: string;
-  pixiPreset: "particles" | "fluid"; // будет использован в Этапе 6
+  pixiPreset: Preset;
   items: TechGroupItem[];
+  roles?: Role[];
 }
 
 const DEFAULT_TECH_GROUPS: TechGroup[] = [
@@ -24,6 +33,7 @@ const DEFAULT_TECH_GROUPS: TechGroup[] = [
     title: "Основа фронтенда",
     subtitle: "TypeScript · HTML5 · CSS3 · SCSS",
     pixiPreset: "particles",
+    roles: ["frontend", "fullstack"],
     items: [
       {
         name: "TypeScript",
@@ -53,6 +63,7 @@ const DEFAULT_TECH_GROUPS: TechGroup[] = [
     title: "React экосистема",
     subtitle: "React 19 · Next.js 16",
     pixiPreset: "fluid",
+    roles: ["frontend", "fullstack"],
     items: [
       {
         name: "React 19",
@@ -69,9 +80,35 @@ const DEFAULT_TECH_GROUPS: TechGroup[] = [
   {
     id: "stack-3",
     index: 5,
+    title: "Графика",
+    subtitle: "Pixi · Rive · Lottie",
+    roles: ["frontend", "fullstack"],
+    pixiPreset: "neural",
+    items: [
+      {
+        name: "Pixi",
+        icon: "/api/storage/pixi.png",
+        note: "WebGL, WebGPU, сложные графические интерфейсы",
+      },
+      {
+        name: "Rive",
+        icon: "/icons/rive.svg",
+        note: "Интерактивные анимации, wasm",
+      },
+      {
+        name: "Lottie",
+        icon: "/api/storage/lottie.ico",
+        note: "Графика, сложные анимации",
+      },
+    ],
+  },
+  {
+    id: "stack-4",
+    index: 6,
     title: "Web Components",
     subtitle: "Lit · Custom Elements",
-    pixiPreset: "particles",
+    roles: ["frontend", "fullstack"],
+    pixiPreset: "constellation",
     items: [
       {
         name: "Lit",
@@ -80,12 +117,14 @@ const DEFAULT_TECH_GROUPS: TechGroup[] = [
       },
     ],
   },
+
   {
-    id: "stack-4",
-    index: 6,
+    id: "stack-5",
+    index: 7,
     title: "Качество и тестирование",
     subtitle: "Storybook · Jest · Playwright",
-    pixiPreset: "fluid",
+    roles: ["frontend", "fullstack"],
+    pixiPreset: "matrix",
     items: [
       {
         name: "Storybook",
@@ -105,26 +144,18 @@ const DEFAULT_TECH_GROUPS: TechGroup[] = [
     ],
   },
   {
-    id: "stack-5",
-    index: 7,
+    id: "stack-6",
+    index: 8,
     title: "Backend",
     subtitle: "Go 1.25",
-    pixiPreset: "particles",
+    roles: ["backend", "fullstack"],
+    pixiPreset: "fluid",
     items: [
       {
         name: "Go 1.25",
         icon: "/icons/go.svg",
         note: "Конкурентность, производительность, REST API",
       },
-    ],
-  },
-  {
-    id: "stack-6",
-    index: 8,
-    title: "Go фреймворк",
-    subtitle: "Echo 4",
-    pixiPreset: "fluid",
-    items: [
       {
         name: "Echo 4",
         icon: "/icons/echo.svg",
@@ -137,6 +168,7 @@ const DEFAULT_TECH_GROUPS: TechGroup[] = [
     index: 9,
     title: "Базы данных",
     subtitle: "MongoDB · PostgreSQL",
+    roles: ["backend", "fullstack"],
     pixiPreset: "particles",
     items: [
       {
