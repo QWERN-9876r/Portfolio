@@ -1,0 +1,1 @@
+export { AllTechSection } from "./AllTechSection";

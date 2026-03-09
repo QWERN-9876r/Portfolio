@@ -147,7 +147,6 @@ export const createParticlesPreset = (app: Application): ParticlesScene => {
 
   app.ticker.add(tick);
 
-  // Burst: импульс при клике на технологию
   const burst = (cx: number, cy: number) => {
     particles.forEach((p) => {
       const dx = p.x - cx;
@@ -159,7 +158,6 @@ export const createParticlesPreset = (app: Application): ParticlesScene => {
     });
   };
 
-  // Показать метку активной технологии
   const setActiveTech = (name: string | null) => {
     if (labelText) {
       container.removeChild(labelText);
@@ -180,8 +178,6 @@ export const createParticlesPreset = (app: Application): ParticlesScene => {
       labelText.y = height / 2;
       labelText.alpha = 0.35;
       container.addChild(labelText);
-
-      // Burst из центра при появлении метки
       burst(width / 2, height / 2);
     }
   };

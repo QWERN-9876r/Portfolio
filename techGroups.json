@@ -154,5 +154,35 @@
         "note": "Реляционные данные, индексы, сложные запросы"
       }
     ]
+  },
+  {
+    "id": "stack-8",
+    "index": 10,
+    "title": "Backend инфраструктура",
+    "subtitle": "Docker · Kubernetes · Nginx · Kafka",
+    "roles": ["backend", "fullstack"],
+    "pixiPreset": "neural",
+    "items": [
+      {
+        "name": "Docker",
+        "icon": "/api/storage/docker.svg",
+        "note": "Контейнеризация приложений, изоляция зависимостей"
+      },
+      {
+        "name": "Kubernetes",
+        "icon": "/api/storage/kubernetes.svg",
+        "note": "Оркестрация контейнеров, автоматическое масштабирование"
+      },
+      {
+        "name": "Nginx",
+        "icon": "/icons/nginx.svg",
+        "note": "Реверс-прокси, балансировка нагрузки, кэширование"
+      },
+      {
+        "name": "Kafka",
+        "icon": "/api/storage/kafka.svg",
+        "note": "Потоковая обработка данных, очереди сообщений"
+      }
+    ]
   }
 ]

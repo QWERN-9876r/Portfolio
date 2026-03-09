@@ -14,16 +14,20 @@
     "@mui/icons-material": "^6.3.1",
     "@mui/material": "^6.3.1",
     "framer-motion": "^11.15.0",
-    "locomotive-scroll": "^5.0.1",
     "pixi.js": "^8.16.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
   },
   "devDependencies": {
+    "@babel/preset-typescript": "^7.28.5",
     "@types/react": "^19.0.2",
     "@types/react-dom": "^19.0.2",
     "@vitejs/plugin-react": "^4.3.4",
+    "babel-plugin-react-compiler": "^19.1.0-rc.3",
+    "eslint-plugin-react-hooks": "^6.1.1",
+    "terser": "^5.46.0",
     "typescript": "^5.7.2",
-    "vite": "^6.0.6"
+    "vite": "^6.0.6",
+    "vite-plugin-babel": "^1.5.1"
   }
 }

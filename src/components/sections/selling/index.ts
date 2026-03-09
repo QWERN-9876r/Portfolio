@@ -1,0 +1,1 @@
+export { SellingPointsSection } from "./SellingPointsSection";

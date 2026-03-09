@@ -14,10 +14,9 @@ type Scene =
 interface PixiSceneProps {
   preset: Preset;
   activeTech: string | null;
-  isVisible: boolean; // от IntersectionObserver родителя
+  isVisible: boolean;
 }
 
-// Размеры сцены (фиксированные, canvas не тянется)
 const SCENE_W = 400;
 const SCENE_H = 400;
 
@@ -47,7 +46,6 @@ export const PixiScene = ({
     }
   }, [isVisible, appRef]);
 
-  // Инициализация пресета после готовности Pixi App
   useEffect(() => {
     if (!ready || !appRef.current) return;
 
@@ -201,7 +199,6 @@ export const PixiScene = ({
         overflow: "hidden",
         position: "relative",
         flexShrink: 0,
-        // Плавное появление canvas после инициализации
         "& canvas": {
           opacity: mounted ? 1 : 0,
           transition: "opacity 0.5s ease",

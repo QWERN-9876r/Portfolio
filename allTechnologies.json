@@ -148,5 +148,23 @@
     "url": "https://nginx.org",
     "icon": "/icons/nginx.svg",
     "priority": 3
+  },
+  {
+    "name": "Docker",
+    "icon": "/api/storage/docker.svg",
+    "url": "https://www.docker.com",
+    "priority": 3
+  },
+  {
+    "name": "Kubernetes",
+    "icon": "/api/storage/kubernetes.svg",
+    "url": "https://kubernetes.io",
+    "priority": 3
+  },
+  {
+    "name": "Kafka",
+    "icon": "/api/storage/kafka.svg",
+    "url": "https://kafka.apache.org/",
+    "priority": 3
   }
 ]

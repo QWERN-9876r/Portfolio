@@ -1,6 +1,5 @@
 import { Graphics, Container } from "pixi.js";
 import type { Application } from "pixi.js";
-import { COLORS } from "../../../../theme/theme";
 
 interface Star {
   x: number;

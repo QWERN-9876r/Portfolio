@@ -54,7 +54,6 @@ export const StackGroupSection = ({ group }: StackGroupSectionProps) => {
   const ref = useRef<HTMLDivElement>(null);
   const inView = useInView(ref, { once: true, margin: "-15%" });
 
-  // Для паузы Pixi — отдельный observer (не once)
   const [isVisible, setIsVisible] = useState(false);
   const [activeTech, setActiveTech] = useState<string | null>(null);
 

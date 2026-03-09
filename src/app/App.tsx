@@ -5,17 +5,14 @@ import { theme } from "../theme/theme";
 import { GlobalStyles } from "../theme/GlobalStyles";
 import { ScrollContainer } from "../components/layout/ScrollContainer";
 import { Preloader } from "../components/preloader/Preloader";
-import { HeroSection } from "../components/sections/hero/HeroSection";
-import { AboutSection } from "../components/sections/about/AboutSection";
-import { SellingPointsSection } from "../components/sections/selling/SellingPointsSection";
-import {
-  StackGroupSection,
-  TechGroups,
-} from "../components/sections/stack/StackGroupSection";
-import { AllTechSection } from "../components/sections/alltech/AllTechSection";
-import { ExperienceSection } from "../components/sections/experience/ExperienceSection";
-import { CaseSection } from "../components/sections/cases/CaseSection";
-import { FooterSection } from "../components/sections/footer/FooterSection";
+import { HeroSection } from "../components/sections/hero";
+import { AboutSection } from "../components/sections/about";
+import { SellingPointsSection } from "../components/sections/selling";
+import { TechGroups } from "../components/sections/stack";
+import { AllTechSection } from "../components/sections/alltech";
+import { ExperienceSection } from "../components/sections/experience";
+import { CaseSection } from "../components/sections/cases";
+import { FooterSection } from "../components/sections/footer";
 import { useTechGroups } from "../data/techGroups";
 import { useCases } from "../data/cases";
 
