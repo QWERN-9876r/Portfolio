@@ -1,1 +1,1 @@
-export { CaseSection } from "./CaseSection";
+export { Cases } from './Cases'

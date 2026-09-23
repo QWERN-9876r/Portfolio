@@ -4,28 +4,31 @@ import type { Application } from "pixi.js";
 interface UsePixiAppOptions {
   width: number;
   height: number;
+  enabled: boolean;
 }
 
-export const usePixiApp = ({ width, height }: UsePixiAppOptions) => {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
+// Не destroy(true): true ещё и чистит глобальные пулы Pixi (TexturePool),
+// общие для всех сцен на странице, и соседняя сцена с Text падает при своём destroy
+const DESTROY_OPTIONS = { removeView: true } as const;
+
+export const usePixiApp = ({ width, height, enabled }: UsePixiAppOptions) => {
+  const containerRef = useRef<HTMLDivElement>(null);
   const appRef = useRef<Application | null>(null);
   const [ready, setReady] = useState(false);
-  const destroyedRef = useRef(false); // ← флаг размонтирования
 
   useEffect(() => {
-    if (!canvasRef.current) return;
+    const container = containerRef.current;
+    if (!enabled || !container) return;
 
-    destroyedRef.current = false; // ← сброс при монтировании
+    let cancelled = false;
+    let app: Application | null = null;
 
     const init = async () => {
       const { Application } = await import("pixi.js");
+      if (cancelled) return;
 
-      // Проверка после await
-      if (destroyedRef.current || !canvasRef.current) return;
-
-      const app = new Application();
-      await app.init({
-        canvas: canvasRef.current,
+      const instance = new Application();
+      await instance.init({
         width,
         height,
         backgroundAlpha: 0,
@@ -36,27 +39,28 @@ export const usePixiApp = ({ width, height }: UsePixiAppOptions) => {
         hello: false,
       });
 
-      // Повторная проверка после await
-      if (destroyedRef.current) {
-        app.destroy(false);
+      if (cancelled) {
+        instance.destroy(DESTROY_OPTIONS);
         return;
       }
 
-      appRef.current = app;
+      // Canvas создаёт сам Pixi: destroy теряет WebGL-контекст,
+      // и повторно использовать тот же <canvas> после этого нельзя
+      app = instance;
+      container.appendChild(instance.canvas);
+      appRef.current = instance;
       setReady(true);
     };
 
-    init();
+    init().catch((err) => console.warn("Pixi init error:", err));
 
     return () => {
-      destroyedRef.current = true; // ← установка флага
-      if (appRef.current) {
-        appRef.current.destroy(false);
-        appRef.current = null;
-        setReady(false);
-      }
+      cancelled = true;
+      appRef.current = null;
+      setReady(false);
+      app?.destroy(DESTROY_OPTIONS);
     };
-  }, [width, height]);
+  }, [enabled, width, height]);
 
-  return { canvasRef, appRef, ready };
+  return { containerRef, appRef, ready };
 };

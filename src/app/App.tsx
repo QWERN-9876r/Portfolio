@@ -1,59 +1,48 @@
-import { useState } from "react";
-import { ThemeProvider } from "@mui/material/styles";
-import { CssBaseline, Box } from "@mui/material";
-import { theme } from "../theme/theme";
-import { GlobalStyles } from "../theme/GlobalStyles";
-import { ScrollContainer } from "../components/layout/ScrollContainer";
-import { Preloader } from "../components/preloader/Preloader";
-import { HeroSection } from "../components/sections/hero";
-import { AboutSection } from "../components/sections/about";
-import { SellingPointsSection } from "../components/sections/selling";
-import { TechGroups } from "../components/sections/stack";
-import { AllTechSection } from "../components/sections/alltech";
-import { ExperienceSection } from "../components/sections/experience";
-import { CaseSection } from "../components/sections/cases";
-import { FooterSection } from "../components/sections/footer";
-import { useTechGroups } from "../data/techGroups";
-import { useCases } from "../data/cases";
+import { useEffect } from 'react'
+import { ThemeProvider } from '@mui/material/styles'
+import { CssBaseline, Box } from '@mui/material'
+import { theme } from '../theme/theme'
+import { GlobalStyles } from '../theme/GlobalStyles'
+import { ScrollContainer } from '../components/layout/ScrollContainer'
+import { hidePreloader } from '../components/preloader/hidePreloader'
+import { HeroSection } from '../components/sections/hero'
+import { AboutSection } from '../components/sections/about'
+import { SellingPointsSection } from '../components/sections/selling'
+import { TechGroups } from '../components/sections/stack'
+import { AllTechSection } from '../components/sections/alltech'
+import { ExperienceSection } from '../components/sections/experience'
+import { Cases } from '../components/sections/cases'
+import { FooterSection } from '../components/sections/footer'
+import { LocaleProvider } from '../i18n/locale'
+import { LanguageToggle } from '../components/layout/LanguageToggle'
 
 export const App = () => {
-  const [preloaderDone, setPreloaderDone] = useState(false);
-  const cases = useCases();
-  const techGroups = useTechGroups();
+    useEffect(hidePreloader, [])
 
-  return (
-    <ThemeProvider theme={theme}>
-      <CssBaseline />
-      <GlobalStyles />
+    return (
+        <LocaleProvider>
+            <ThemeProvider theme={theme}>
+                <CssBaseline />
+                <GlobalStyles />
 
-      <Box id="bg-layer" aria-hidden="true" />
+                <Box id="bg-layer" aria-hidden="true" />
+                <LanguageToggle />
 
-      <Preloader onFinish={() => setPreloaderDone(true)} />
+                <ScrollContainer>
+                    <HeroSection />
+                    <AboutSection />
+                    <SellingPointsSection />
 
-      <Box
-        sx={{
-          opacity: preloaderDone ? 1 : 0,
-          transition: "opacity 0.4s ease",
-          height: "100%",
-        }}
-      >
-        <ScrollContainer>
-          <HeroSection />
-          <AboutSection />
-          <SellingPointsSection />
+                    <TechGroups />
 
-          <TechGroups groups={techGroups} />
+                    <AllTechSection />
+                    <ExperienceSection />
 
-          <AllTechSection />
-          <ExperienceSection />
+                    <Cases />
 
-          {cases.map((caseItem) => (
-            <CaseSection key={caseItem.id} caseData={caseItem} />
-          ))}
-
-          <FooterSection />
-        </ScrollContainer>
-      </Box>
-    </ThemeProvider>
-  );
-};
+                    <FooterSection />
+                </ScrollContainer>
+            </ThemeProvider>
+        </LocaleProvider>
+    )
+}

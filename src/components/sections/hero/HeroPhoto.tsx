@@ -4,13 +4,16 @@ import { alpha } from "@mui/material/styles";
 import { useRef } from "react";
 import { COLORS } from "../../../theme/theme";
 
-const PHOTO_SRC = "/photo.jpg";
-
 // Размер фото + отступ под кольца чтобы ничего не обрезалось
 // Кольца выходят за границы фото на ~15%
 // Поэтому внешний контейнер = размер фото * 1.32
 const PHOTO_SIZE = { xs: 200, sm: 250, md: 300 } as const;
 const OUTER_SCALE = 1.32;
+
+// Должно совпадать с imagesizes у preload в index.html, иначе фото скачается дважды
+const PHOTO_SIZES = `(min-width: 900px) ${PHOTO_SIZE.md}px, (min-width: 600px) ${PHOTO_SIZE.sm}px, ${PHOTO_SIZE.xs}px`;
+const photoSrcSet = (ext: string) =>
+  [300, 400, 600].map((w) => `/img/photo-${w}.${ext} ${w}w`).join(", ");
 
 export const HeroPhoto = () => {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -165,46 +168,54 @@ export const HeroPhoto = () => {
             justifyContent: "center",
           }}
         >
-          <Box
-            component="img"
-            src={PHOTO_SRC}
-            alt="Сотников Дмитрий"
-            sx={{
-              width: "100%",
-              height: "100%",
-              objectFit: "cover",
-              display: "block",
-              background: `linear-gradient(135deg,
-                ${COLORS.bgElevated},
-                ${alpha(COLORS.neonBlue, 0.2)}
-              )`,
-            }}
-            onError={(e) => {
-              const target = e.currentTarget;
-              target.style.display = "none";
-              const parent = target.parentElement;
-              if (parent && !parent.querySelector(".photo-fallback")) {
-                const fallback = document.createElement("div");
-                fallback.className = "photo-fallback";
-                fallback.style.cssText = `
-                  width: 100%;
-                  height: 100%;
-                  display: flex;
-                  align-items: center;
-                  justify-content: center;
-                  font-family: 'Rubik Mono One', monospace;
-                  font-size: 2.5rem;
-                  color: ${COLORS.neonBlueSoft};
-                  background: linear-gradient(135deg,
-                    ${COLORS.bgElevated},
-                    ${alpha(COLORS.neonBlue, 0.15)}
-                  );
-                `;
-                fallback.textContent = "СД";
-                parent.appendChild(fallback);
-              }
-            }}
-          />
+          <picture style={{ display: "contents" }}>
+            <source type="image/avif" srcSet={photoSrcSet("avif")} sizes={PHOTO_SIZES} />
+            <source type="image/webp" srcSet={photoSrcSet("webp")} sizes={PHOTO_SIZES} />
+            <Box
+              component="img"
+              src="/img/photo-600.jpg"
+              alt="Сотников Дмитрий"
+              width={600}
+              height={600}
+              decoding="async"
+              fetchPriority="high"
+              sx={{
+                width: "100%",
+                height: "100%",
+                objectFit: "cover",
+                display: "block",
+                background: `linear-gradient(135deg,
+                  ${COLORS.bgElevated},
+                  ${alpha(COLORS.neonBlue, 0.2)}
+                )`,
+              }}
+              onError={(e) => {
+                const target = e.currentTarget;
+                target.style.display = "none";
+                const parent = target.parentElement;
+                if (parent && !parent.querySelector(".photo-fallback")) {
+                  const fallback = document.createElement("div");
+                  fallback.className = "photo-fallback";
+                  fallback.style.cssText = `
+                    width: 100%;
+                    height: 100%;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    font-family: 'Rubik Mono One', monospace;
+                    font-size: 2.5rem;
+                    color: ${COLORS.neonBlueSoft};
+                    background: linear-gradient(135deg,
+                      ${COLORS.bgElevated},
+                      ${alpha(COLORS.neonBlue, 0.15)}
+                    );
+                  `;
+                  fallback.textContent = "СД";
+                  parent.appendChild(fallback);
+                }
+              }}
+            />
+          </picture>
         </Box>
       </motion.div>
     </Box>

@@ -1,20 +1,22 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState } from 'react'
+import { useLocale } from '../i18n/locale'
 
 export const createDataHook = <T extends unknown>(
-  url: string,
-  defaultData: T,
+    filename: string,
+    defaultData: T,
 ) => {
-  return () => {
-    const [data, setData] = useState(defaultData);
+    return () => {
+        const [data, setData] = useState(defaultData)
+        const { locale } = useLocale()
 
-    useEffect(() => {
-      (async () => {
-        const res = await fetch(url);
+        useEffect(() => {
+            ;(async () => {
+                const res = await fetch(`/api/storage/${locale}/${filename}`)
 
-        setData(await res.json());
-      })();
-    }, []);
+                setData(await res.json())
+            })()
+        }, [locale])
 
-    return data;
-  };
-};
+        return data
+    }
+}

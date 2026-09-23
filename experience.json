@@ -1,37 +1,52 @@
 {
-  "company": "Яндекс",
-  "location": "Москва",
-  "items": [
-    {
-      "period": "08.2024 – н.в.",
-      "title": "Frontend-разработчик",
-      "description": "Разработка и поддержка высоконагруженных интерфейсов. Оптимизация производительности, внедрение новых фич. Помощь смежным командам. Обучение стажера. Создание новых страниц и расширение возможностьей фронтовой адмики (моя инициатива).",
-      "tags": [
-        "TypeScript",
-        "React",
-        "Next",
-        "SCSS",
-        "GraphQL",
-        "REST API",
-        "Jest",
-        "Storybook",
-        "и т.д"
-      ]
-    },
-    {
-      "period": "05.2024 – 08.2024",
-      "title": "Стажёр Frontend-разработчик",
-      "description": "Разработка новых фич для продукта с многими миллионами пользователей. Создание оптимизированных анимаций, внедреннее новых технологий и подходов.",
-      "tags": [
-        "TypeScript",
-        "React",
-        "Next",
-        "SCSS",
-        "Jest",
-        "Storybook",
-        "GraphQL",
-        "и т.д"
-      ]
-    }
-  ]
+    "company": "Yandex and MTS",
+    "location": "Moscow",
+    "items": [
+        {
+            "period": "05.2026 – present",
+            "title": "Frontend Developer (MTS)",
+            "description": "Browser game development with WebGL. Building game mechanics, integrating server APIs, and optimizing performance.",
+            "tags": [
+                "TypeScript",
+                "WebGL",
+                "Three.js",
+                "Pixi.js",
+                "Svelte",
+                "Threlte",
+                "React",
+                "Vite",
+                "Fastify",
+                "PostgreSQL"
+            ]
+        },
+        {
+            "period": "08.2024 – 03.2026",
+            "title": "Frontend Developer (Yandex)",
+            "description": "Development and support of high-load interfaces. Performance optimization, new feature delivery, support for neighboring teams, intern mentoring, and new frontend admin pages initiated by me.",
+            "tags": [
+                "TypeScript",
+                "React",
+                "Next",
+                "SCSS",
+                "GraphQL",
+                "REST API",
+                "Jest",
+                "Storybook"
+            ]
+        },
+        {
+            "period": "05.2024 – 08.2024",
+            "title": "Frontend Developer Intern (Yandex)",
+            "description": "Development of new features for a product with millions of users. Creating optimized animations and introducing new technologies and approaches.",
+            "tags": [
+                "TypeScript",
+                "React",
+                "Next",
+                "SCSS",
+                "Jest",
+                "Storybook",
+                "GraphQL"
+            ]
+        }
+    ]
 }

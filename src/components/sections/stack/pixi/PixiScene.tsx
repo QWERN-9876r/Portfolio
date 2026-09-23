@@ -29,22 +29,48 @@ export const PixiScene = ({
   const sceneW = isMobile ? Math.min(window.innerWidth - 32, SCENE_W) : SCENE_W;
   const sceneH = isMobile ? 220 : SCENE_H;
 
-  const { canvasRef, appRef, ready } = usePixiApp({
+  // WebGL-контекст живёт, только пока секция в пределах экрана от видимой области
+  const [isNear, setIsNear] = useState(false);
+  const { containerRef, appRef, ready } = usePixiApp({
     width: sceneW,
     height: sceneH,
+    enabled: isNear,
   });
   const sceneRef = useRef<Scene | null>(null);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    if (!appRef.current) return;
+    const el = containerRef.current;
+    if (!el) return;
 
-    if (isVisible) {
-      appRef.current.ticker.start();
-    } else {
-      appRef.current.ticker.stop();
-    }
-  }, [isVisible, appRef]);
+    // root — скролл-контейнер: у viewport rootMargin не выходит за его overflow
+    const observer = new IntersectionObserver(
+      ([entry]) => setIsNear(entry.isIntersecting),
+      { root: el.closest("#scroll-root"), rootMargin: "100% 0px" },
+    );
+
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [containerRef]);
+
+  // Тикер крутится, только когда секция видна и вкладка активна
+  useEffect(() => {
+    const app = appRef.current;
+    if (!ready || !app) return;
+
+    const syncTicker = () => {
+      if (isVisible && !document.hidden) {
+        app.ticker.start();
+      } else {
+        app.ticker.stop();
+      }
+    };
+
+    syncTicker();
+    document.addEventListener("visibilitychange", syncTicker);
+    return () =>
+      document.removeEventListener("visibilitychange", syncTicker);
+  }, [ready, isVisible, appRef]);
 
   useEffect(() => {
     if (!ready || !appRef.current) return;
@@ -121,31 +147,6 @@ export const PixiScene = ({
     };
   }, [ready, preset, appRef]);
 
-  // Пауза тикера когда секция не видна
-  useEffect(() => {
-    if (!appRef.current) return;
-    if (isVisible) {
-      appRef.current.ticker.start();
-    } else {
-      appRef.current.ticker.stop();
-    }
-  }, [isVisible, appRef]);
-
-  // Пауза при скрытии вкладки
-  useEffect(() => {
-    const handleVisibility = () => {
-      if (!appRef.current) return;
-      if (document.hidden) {
-        appRef.current.ticker.stop();
-      } else if (isVisible) {
-        appRef.current.ticker.start();
-      }
-    };
-    document.addEventListener("visibilitychange", handleVisibility);
-    return () =>
-      document.removeEventListener("visibilitychange", handleVisibility);
-  }, [isVisible, appRef]);
-
   // Обновляем активную технологию в сцене
   useEffect(() => {
     if (mounted && sceneRef.current) {
@@ -180,6 +181,7 @@ export const PixiScene = ({
 
   return (
     <Box
+      ref={containerRef}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
       sx={{
@@ -207,8 +209,6 @@ export const PixiScene = ({
           height: "100%",
         },
       }}
-    >
-      <canvas ref={canvasRef} />
-    </Box>
+    />
   );
 };
