@@ -1,44 +1,17 @@
-import { defineConfig } from "vite";
-import react from "@vitejs/plugin-react";
-import babel from "vite-plugin-babel";
+import { sveltekit } from '@sveltejs/kit/vite'
+import { defineConfig } from 'vite'
 
-const ReactCompilerConfig = {
-  target: "19",
-};
+// В проде то же самое делает nginx
+const storageProxy = {
+    '/api/storage': {
+        target: 'https://storage.yandexcloud.net',
+        changeOrigin: true,
+        rewrite: (path: string) => path.replace(/^\/api\/storage/, '/qwern-9876r'),
+    },
+}
 
 export default defineConfig({
-  plugins: [
-    react(),
-    babel({
-      filter: /\.[jt]sx?$/,
-      babelConfig: {
-        presets: ["@babel/preset-typescript"],
-        plugins: [["babel-plugin-react-compiler", ReactCompilerConfig]],
-      },
-    }),
-  ],
-  build: {
-    target: "es2020",
-    rollupOptions: {
-      output: {
-        manualChunks: {
-          mui: ["@mui/material", "@emotion/react", "@emotion/styled"],
-          framer: ["framer-motion"],
-        },
-      },
-    },
-  },
-  server: {
-    cors: {
-      origin: ["https://storage.yandexcloud.net"],
-      credentials: true,
-    },
-    proxy: {
-      "/api/storage": {
-        target: "https://storage.yandexcloud.net",
-        changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api\/storage/, "/qwern-9876r"),
-      },
-    },
-  },
-});
+    plugins: [sveltekit()],
+    server: { proxy: storageProxy },
+    preview: { proxy: storageProxy },
+})

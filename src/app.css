@@ -1,0 +1,302 @@
+/* ── Токены ──────────────────────────────────────────────────────────────────
+   Цвета — RGB-тройки, чтобы прозрачность задавалась как rgb(var(--c-neon) / 0.35) */
+:root {
+    --c-bg-deep: 5 8 22;
+    --c-bg-base: 8 13 36;
+    --c-bg-elevated: 13 20 53;
+    --c-neon: 41 121 255;
+    --c-neon-soft: 68 138 255;
+    --c-neon-glow: 21 101 192;
+    --c-text-primary: 232 234 246;
+    --c-text-secondary: 121 134 203;
+    --c-text-muted: 57 73 171;
+
+    --glass-bg: rgb(13 20 53 / 0.55);
+    --glass-border: rgb(41 121 255 / 0.25);
+    --glass-glow: rgb(41 121 255 / 0.12);
+
+    --font-body: 'Montserrat', sans-serif;
+    --font-display: 'Rubik Mono One', monospace;
+
+    --ease-out: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    --ease-overshoot: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+    --content-width: 1100px;
+}
+
+/* ── База (аналог CssBaseline + переопределения темы) ────────────────────── */
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    -webkit-text-size-adjust: 100%;
+    color-scheme: dark;
+}
+
+body {
+    margin: 0;
+    overflow-x: hidden;
+    background: rgb(var(--c-bg-deep));
+    color: rgb(var(--c-text-primary));
+    font-family: var(--font-body);
+    font-size: clamp(0.9rem, 1.1vw, 1.05rem);
+    font-weight: 400;
+    line-height: 1.75;
+}
+
+body::-webkit-scrollbar {
+    width: 4px;
+}
+body::-webkit-scrollbar-track {
+    background: transparent;
+}
+body::-webkit-scrollbar-thumb {
+    background: rgb(var(--c-neon) / 0.4);
+    border-radius: 4px;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p {
+    margin: 0;
+}
+
+strong,
+b {
+    font-weight: 700;
+}
+
+canvas {
+    display: block;
+    outline: none;
+}
+
+a,
+button {
+    -webkit-tap-highlight-color: transparent;
+}
+
+/* ── Типографика (варианты из темы MUI) ──────────────────────────────────── */
+.h1 {
+    font-family: var(--font-display);
+    font-size: clamp(2rem, 5vw, 4rem);
+    font-weight: 400;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+}
+.h2 {
+    font-family: var(--font-display);
+    font-size: clamp(1.5rem, 3.5vw, 2.75rem);
+    font-weight: 400;
+    line-height: 1.15;
+    letter-spacing: -0.01em;
+}
+.h3 {
+    font-family: var(--font-display);
+    font-size: clamp(1.1rem, 2vw, 1.75rem);
+    font-weight: 400;
+    line-height: 1.3;
+}
+.h4 {
+    font-family: var(--font-body);
+    font-size: clamp(1rem, 1.5vw, 1.35rem);
+    font-weight: 700;
+    line-height: 1.4;
+}
+.h5 {
+    font-family: var(--font-body);
+    font-size: 1rem;
+    font-weight: 600;
+    line-height: 1.5;
+}
+.body1 {
+    font-family: var(--font-body);
+    font-size: clamp(0.9rem, 1.1vw, 1.05rem);
+    font-weight: 400;
+    line-height: 1.75;
+}
+.body2 {
+    font-family: var(--font-body);
+    font-size: 0.875rem;
+    font-weight: 400;
+    line-height: 1.65;
+}
+.caption {
+    font-family: var(--font-body);
+    font-size: 0.75rem;
+    font-weight: 500;
+    line-height: 1.66;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+/* ── Каркас страницы ─────────────────────────────────────────────────────── */
+#bg-layer {
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    background:
+        radial-gradient(ellipse 80% 60% at 10% 20%, rgb(var(--c-neon) / 0.07) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 50% at 90% 80%, rgb(var(--c-neon-glow) / 0.08) 0%, transparent 60%),
+        radial-gradient(ellipse 50% 40% at 50% 50%, rgb(var(--c-bg-elevated) / 0.4) 0%, transparent 70%),
+        rgb(var(--c-bg-deep));
+}
+#bg-layer::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
+    background-repeat: repeat;
+    background-size: 256px 256px;
+    pointer-events: none;
+    opacity: 0.6;
+}
+
+#scroll-root {
+    height: 100svh;
+    overflow-y: auto;
+    overflow-x: hidden;
+    scroll-snap-type: y mandatory;
+    scroll-behavior: smooth;
+}
+#scroll-root::-webkit-scrollbar {
+    width: 4px;
+}
+#scroll-root::-webkit-scrollbar-track {
+    background: transparent;
+}
+#scroll-root::-webkit-scrollbar-thumb {
+    background: rgb(var(--c-neon) / 0.35);
+    border-radius: 4px;
+}
+#scroll-root::-webkit-scrollbar-thumb:hover {
+    background: rgb(var(--c-neon) / 0.6);
+}
+
+.snap-section {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100svh;
+    padding: 48px 16px;
+    scroll-snap-align: start;
+    scroll-snap-stop: always;
+}
+@media (min-width: 600px) {
+    .snap-section {
+        padding: 48px 32px;
+    }
+}
+@media (min-width: 900px) {
+    .snap-section {
+        padding: 0 48px;
+    }
+}
+@media (min-width: 1200px) {
+    .snap-section {
+        padding: 0 64px;
+    }
+}
+
+.section-content {
+    width: 100%;
+    max-width: var(--content-width);
+}
+
+.glass-panel {
+    background: var(--glass-bg);
+    backdrop-filter: blur(16px) saturate(180%);
+    -webkit-backdrop-filter: blur(16px) saturate(180%);
+    border: 1px solid var(--glass-border);
+    border-radius: 16px;
+    transition:
+        border-color 0.25s ease,
+        box-shadow 0.25s ease;
+}
+.glass-panel:hover {
+    border-color: rgb(var(--c-neon) / 0.45);
+    box-shadow: 0 0 32px rgb(var(--c-neon) / 0.1);
+}
+
+.neon-line {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgb(var(--c-neon)), transparent);
+    opacity: 0.5;
+}
+
+/* ── Кнопка (MUI Button contained primary) ───────────────────────────────── */
+.btn-primary {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 64px;
+    padding: 12px 28px;
+    border: 0;
+    border-radius: 10px;
+    background: linear-gradient(135deg, rgb(var(--c-neon)), rgb(var(--c-neon-soft)));
+    box-shadow: 0 0 20px rgb(var(--c-neon) / 0.35);
+    color: #fff;
+    font-family: var(--font-body);
+    font-size: 1rem;
+    font-weight: 600;
+    line-height: 1.75;
+    letter-spacing: 0.04em;
+    text-decoration: none;
+    cursor: pointer;
+    user-select: none;
+    transition: all 0.25s ease;
+}
+.btn-primary:hover {
+    box-shadow: 0 0 32px rgb(var(--c-neon) / 0.55);
+    transform: translateY(-1px);
+}
+.btn-primary:active {
+    transform: translateY(0);
+}
+.btn-primary:focus-visible {
+    outline: 2px solid rgb(var(--c-neon-soft));
+    outline-offset: 2px;
+}
+
+/* ── Появление секций при прокрутке ──────────────────────────────────────────
+   Скрытое состояние только с JS: без него контент виден сразу.
+   Секция получает data-revealed (attachment reveal), дочерние .reveal проявляются
+   с задержкой --delay. Начальное состояние меняется через --from и --blur. */
+.js .reveal {
+    opacity: 0;
+    transform: var(--from, translateY(30px));
+    filter: blur(var(--blur, 8px));
+    transition-property: opacity, transform, filter;
+    transition-duration: var(--duration, 0.65s);
+    transition-timing-function: var(--ease, var(--ease-out));
+    transition-delay: var(--delay, 0s);
+}
+.js [data-revealed] .reveal,
+.js .reveal[data-revealed] {
+    opacity: 1;
+    transform: none;
+    filter: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        transition-delay: 0s !important;
+        scroll-behavior: auto !important;
+    }
+}

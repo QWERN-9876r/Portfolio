@@ -1,1 +1,0 @@
-export { TechGroups } from "./StackGroupSection";

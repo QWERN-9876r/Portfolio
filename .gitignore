@@ -2,6 +2,8 @@ node_modules
 
 dist
 
+.svelte-kit
+
 *.json
 
 .DS_Store
