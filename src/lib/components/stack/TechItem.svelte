@@ -1,12 +1,14 @@
 <script lang="ts">
     import type { TechGroupItem } from '$lib/content'
     import { createSpring } from '$lib/motion'
+    import { glowPrism } from '$lib/three/prismGlow.svelte'
 
+    // onglow — технология зажглась или погасла: наведением, касанием или в онбординге
     let {
         item,
         index,
-        onhover,
-    }: { item: TechGroupItem; index: number; onhover: (name: string | null) => void } = $props()
+        onglow,
+    }: { item: TechGroupItem; index: number; onglow: (lit: boolean) => void } = $props()
 
     // Магнитный эффект и 3D-наклон иконки — пружины с параметрами из framer-motion
     const spring = { stiffness: 200, damping: 18, mass: 0.6 }
@@ -37,7 +39,6 @@
         y.target = 0
         rotateX.target = 0
         rotateY.target = 0
-        onhover(null)
     }
 </script>
 
@@ -45,9 +46,10 @@
     class="reveal item"
     style:--delay="{index * 0.08}s"
     role="presentation"
+    data-tech={item.name}
     onmousemove={handleMouseMove}
-    onmouseenter={() => onhover(item.name)}
     onmouseleave={handleMouseLeave}
+    {@attach glowPrism({ onchange: (lit) => onglow(lit) })}
 >
     <div class="card">
         <div
@@ -92,7 +94,8 @@
         transition: all 0.25s ease;
     }
 
-    .item:hover .card {
+    .item:hover .card,
+    .item:global([data-lit]) .card {
         border-color: rgb(var(--c-neon) / 0.45);
         background: rgb(var(--c-neon) / 0.06);
         box-shadow: 0 0 24px rgb(var(--c-neon) / 0.1);
@@ -116,7 +119,8 @@
         transition: box-shadow 0.25s ease;
     }
 
-    .item:hover .icon {
+    .item:hover .icon,
+    .item:global([data-lit]) .icon {
         box-shadow:
             0 0 20px rgb(var(--c-neon) / 0.25),
             0 0 40px rgb(var(--c-neon) / 0.1);
@@ -129,7 +133,8 @@
         transition: filter 0.25s ease;
     }
 
-    .item:hover img {
+    .item:hover img,
+    .item:global([data-lit]) img {
         filter: drop-shadow(0 0 6px rgb(var(--c-neon) / 0.6));
     }
 
@@ -152,7 +157,8 @@
         transition: color 0.2s ease;
     }
 
-    .item:hover .name {
+    .item:hover .name,
+    .item:global([data-lit]) .name {
         color: rgb(var(--c-text-primary));
     }
 

@@ -4,6 +4,7 @@
     import Tooltip from '$lib/components/Tooltip.svelte'
     import type { Tech } from '$lib/content'
     import type { Translation } from '$lib/i18n/translations'
+    import { glowPrism } from '$lib/three/prismGlow.svelte'
 
     let { t, technologies }: { t: Translation; technologies: Tech[] } = $props()
 
@@ -30,6 +31,7 @@
                             target="_blank"
                             rel="noopener noreferrer"
                             aria-label="{t.allTech.openSite} {tech.name}"
+                            {@attach glowPrism()}
                         >
                             <span class="icon">
                                 {#if failedIcons[tech.name]}
@@ -104,7 +106,8 @@
         transition: all 0.2s ease;
     }
 
-    .tile:hover {
+    .tile:hover,
+    .tile:global([data-lit]) {
         border-color: rgb(var(--c-neon) / 0.5);
         background: rgb(var(--c-neon) / 0.08);
         box-shadow:
@@ -124,7 +127,8 @@
         transition: transform 0.35s var(--ease-overshoot);
     }
 
-    .tile:hover .icon {
+    .tile:hover .icon,
+    .tile:global([data-lit]) .icon {
         transform: translateY(-3px) scale(1.15);
     }
 
@@ -149,11 +153,13 @@
         font-size: 1rem;
     }
 
-    .tile:hover img {
+    .tile:hover img,
+    .tile:global([data-lit]) img {
         filter: drop-shadow(0 0 6px rgb(var(--c-neon) / 0.6));
     }
 
-    .tile:hover .fallback {
+    .tile:hover .fallback,
+    .tile:global([data-lit]) .fallback {
         filter: drop-shadow(0 0 8px rgb(var(--c-neon) / 0.7));
     }
 
