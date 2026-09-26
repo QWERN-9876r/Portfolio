@@ -52,7 +52,8 @@
     const ONBOARDING_START = 1200
     const ONBOARDING_STEP = 3000
 
-    const companyTiles: HTMLElement[] = []
+    // $state: bind:this пишет в элементы массива, Svelte должен о них знать
+    const companyTiles: HTMLElement[] = $state([])
     let stopOnboarding = () => {}
 
     const onboard = (visible: boolean) => {
