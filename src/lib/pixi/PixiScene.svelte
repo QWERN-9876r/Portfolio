@@ -1,5 +1,5 @@
 <script lang="ts" module>
-    import type { Application } from 'pixi.js'
+    import type { Application, Ticker } from 'pixi.js'
     import type { Preset } from '$lib/content'
 
     interface Scene {
@@ -20,16 +20,36 @@
     // Не destroy(true): true ещё и чистит глобальные пулы Pixi (TexturePool),
     // общие для всех сцен на странице, и соседняя сцена с Text падает при своём destroy
     const DESTROY_OPTIONS = { removeView: true } as const
+
+    // Глобальный Ticker.system: на него подписан планировщик каждого рендерера Pixi
+    // (сборка мусора текстур и т.п.), и он будит rAF каждый кадр, пока жив хоть один
+    // рендерер — даже когда все сцены стоят. Держим его запущенным, только пока
+    // хотя бы одна сцена видна
+    let systemTicker: Ticker | null = null
+    let runningScenes = 0
+
+    const syncSystemTicker = () => {
+        if (runningScenes > 0) systemTicker?.start()
+        else systemTicker?.stop()
+    }
 </script>
 
 <script lang="ts">
     import { intersect } from '$lib/attachments/reveal'
 
+    // pointer — курсор из онбординга в координатах сцены: она ведёт себя как под мышью.
+    // null — «мышь ушла»
     let {
         preset,
         activeTech,
         isVisible,
-    }: { preset: Preset; activeTech: string | null; isVisible: boolean } = $props()
+        pointer = null,
+    }: {
+        preset: Preset
+        activeTech: string | null
+        isVisible: boolean
+        pointer?: { x: number; y: number } | null
+    } = $props()
 
     let container: HTMLDivElement
     // WebGL-контекст живёт, только пока секция в пределах экрана от видимой области
@@ -46,11 +66,12 @@
         let created: Scene | null = null
 
         const init = async () => {
-            const [{ Application }, createScene] = await Promise.all([
+            const [{ Application, Ticker }, createScene] = await Promise.all([
                 import('pixi.js'),
                 PRESETS[currentPreset](),
             ])
             if (cancelled) return
+            systemTicker = Ticker.system
 
             instance = new Application()
             await instance.init({
@@ -64,6 +85,13 @@
                 hello: false,
             })
             if (cancelled) return
+
+            // Мышь сцены обрабатываем через DOM. Система событий Pixi держит глобальный
+            // Ticker.system и будит rAF каждый кадр, даже когда тикер сцены остановлен.
+            // Pixi сам отключает её так же в EventSystem.destroy()
+            instance.renderer.events.setTargetElement(null as unknown as HTMLElement)
+            // Новый рендерер подписался на Ticker.system и запустил его
+            syncSystemTicker()
 
             // Canvas создаёт сам Pixi: destroy теряет WebGL-контекст,
             // и повторно использовать тот же <canvas> после этого нельзя
@@ -93,19 +121,42 @@
         if (!app) return
         const ticker = app.ticker
         const visible = isVisible
+        let running = false
 
-        const sync = () => {
-            if (visible && !document.hidden) ticker.start()
+        const setRunning = (value: boolean) => {
+            if (value === running) return
+            running = value
+            if (value) ticker.start()
             else ticker.stop()
+            runningScenes += value ? 1 : -1
+            syncSystemTicker()
         }
+        const sync = () => setRunning(visible && !document.hidden)
 
+        // Application запускает тикер сам при init — выравниваем с учётом
+        ticker.stop()
         sync()
         document.addEventListener('visibilitychange', sync)
-        return () => document.removeEventListener('visibilitychange', sync)
+        return () => {
+            document.removeEventListener('visibilitychange', sync)
+            setRunning(false)
+        }
     })
 
     $effect(() => {
         scene?.setActiveTech(activeTech)
+    })
+
+    let pointed = false
+    $effect(() => {
+        if (!scene) return
+        if (pointer) {
+            scene.onMouseMove(pointer.x, pointer.y)
+            pointed = true
+        } else if (pointed) {
+            scene.onMouseLeave()
+            pointed = false
+        }
     })
 
     const handleMouseMove = (event: MouseEvent) => {

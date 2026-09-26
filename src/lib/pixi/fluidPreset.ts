@@ -41,7 +41,6 @@ export const createFluidPreset = (app: Application): FluidScene => {
   let mouseX = width / 2;
   let mouseY = height / 2;
   let isOver = false;
-  let intensity = 1; // усиливается при hover на технологию
   let time = 0;
   let lastTime = Date.now();
 
@@ -71,9 +70,6 @@ export const createFluidPreset = (app: Application): FluidScene => {
     time += (Date.now() - lastTime) / 1000;
     lastTime = Date.now();
 
-    // Плавное затухание интенсивности
-    if (!isOver) intensity = Math.max(1, intensity * 0.97);
-
     waveGfx.clear();
     cursorGfx.clear();
 
@@ -86,7 +82,7 @@ export const createFluidPreset = (app: Application): FluidScene => {
 
       wave.forEach((p, ci) => {
         // Базовая синусоида
-        let amp = p.amplitude * intensity;
+        let amp = p.amplitude;
 
         // Влияние курсора: искажаем волну ближе к мыши
         if (isOver) {
@@ -94,7 +90,7 @@ export const createFluidPreset = (app: Application): FluidScene => {
           const dy = p.baseY - mouseY;
           const dist = Math.sqrt(dx * dx + dy * dy);
           if (dist < 120) {
-            amp += (1 - dist / 120) * 40 * intensity;
+            amp += (1 - dist / 120) * 40;
           }
         }
 
@@ -118,11 +114,10 @@ export const createFluidPreset = (app: Application): FluidScene => {
     // Круги вокруг курсора (только если мышь над сценой)
     if (isOver) {
       [60, 100, 140].forEach((r, i) => {
-        const a = (0.15 - i * 0.04) * intensity;
         cursorGfx.circle(mouseX, mouseY, r + Math.sin(time * 2 + i) * 8);
         cursorGfx.stroke({
           color: HEX_SOFT,
-          alpha: Math.max(0, a),
+          alpha: 0.15 - i * 0.04,
           width: 0.8,
         });
       });
@@ -138,9 +133,8 @@ export const createFluidPreset = (app: Application): FluidScene => {
         container.destroy({ children: true });
       } catch {}
     },
-    setActiveTech: (name) => {
-      intensity = name ? 2.5 : 1;
-    },
+    // Волны на подсветку технологий не реагируют — только на курсор
+    setActiveTech: () => {},
     onMouseMove: (x, y) => {
       mouseX = x;
       mouseY = y;
@@ -148,7 +142,6 @@ export const createFluidPreset = (app: Application): FluidScene => {
     },
     onMouseLeave: () => {
       isOver = false;
-      intensity = Math.max(1, intensity * 0.5);
     },
   };
 };

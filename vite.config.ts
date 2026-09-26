@@ -1,5 +1,16 @@
 import { sveltekit } from '@sveltejs/kit/vite'
-import { defineConfig } from 'vite'
+import { defineConfig, type Plugin } from 'vite'
+
+// В @threlte/core нет "sideEffects": false, поэтому прокси <T> (import * as THREE)
+// попадает в бандл даже без использования и тянет весь three: +~58 КБ gzip
+const treeShakeThrelteT = (): Plugin => ({
+    name: 'tree-shake-threlte-t',
+    transform(code, id) {
+        if (id.endsWith('/@threlte/core/dist/components/T/T.js')) {
+            return { code, map: null, moduleSideEffects: false }
+        }
+    },
+})
 
 // В проде то же самое делает nginx
 const storageProxy = {
@@ -11,7 +22,18 @@ const storageProxy = {
 }
 
 export default defineConfig({
-    plugins: [sveltekit()],
+    plugins: [treeShakeThrelteT(), sveltekit()],
+    build: {
+        rolldownOptions: {
+            output: {
+                // Рантайм Svelte — одним чанком. Иначе модули, общие для страницы и ленивого
+                // чанка Threlte, выносятся в отдельный файл: лишний запрос на первом экране
+                codeSplitting: {
+                    groups: [{ name: 'svelte', test: /node_modules[\\/]svelte[\\/]/ }],
+                },
+            },
+        },
+    },
     server: { proxy: storageProxy },
     preview: { proxy: storageProxy },
 })

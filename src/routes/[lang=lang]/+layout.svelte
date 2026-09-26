@@ -1,9 +1,11 @@
 <script lang="ts">
+    import { browser } from '$app/environment'
     import { page } from '$app/state'
     import LanguageToggle from '$lib/components/LanguageToggle.svelte'
+    import PrismLayer from '$lib/three/PrismLayer.svelte'
     import { LOCALES, translations, type Locale } from '$lib/i18n/translations'
     import { DEFAULT_ROLE, isRole, rolePath } from '$lib/role'
-    import { GITHUB_URL, HH_URL, NICKNAME, SITE_URL, TG_URL } from '$lib/site'
+    import { GITHUB_URL, HH_URL, NICKNAME, PHOTO, SITE_URL, TG_URL } from '$lib/site'
 
     let { data, children } = $props()
 
@@ -31,7 +33,7 @@
             alternateName: NICKNAME,
             jobTitle: t.seo.jobTitle,
             url: canonical,
-            image: `${SITE_URL}/img/photo-600.jpg`,
+            image: `${SITE_URL}${PHOTO}-600.jpg`,
             sameAs: [TG_URL, GITHUB_URL, HH_URL],
         }).replaceAll('<', '\\u003c'),
     )
@@ -48,20 +50,35 @@
     {/each}
     <link rel="alternate" hreflang="x-default" href={SITE_URL + rolePath('en', role)} />
 
+    <!-- Превью ссылки в Telegram, соцсетях и мессенджерах. site_name Telegram показывает
+         цветной строкой над заголовком; summary_large_image — крупная картинка, а не миниатюра -->
+    <meta property="og:site_name" content={NICKNAME} />
     <meta property="og:type" content="website" />
     <meta property="og:url" content={canonical} />
     <meta property="og:title" content={t.seo.title} />
     <meta property="og:description" content={t.seo.ogDescription} />
     <meta property="og:image" content={OG_IMAGE} />
+    <meta property="og:image:type" content="image/jpeg" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content={t.seo.ogImageAlt} />
     <meta property="og:locale" content={t.seo.ogLocale} />
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:image" content={OG_IMAGE} />
-
-    {#each FONT_PRELOADS[data.lang] as href (href)}
-        <link rel="preload" as="font" type="font/woff2" crossorigin="anonymous" {href} />
+    {#each LOCALES.filter((locale) => locale !== data.lang) as locale (locale)}
+        <meta property="og:locale:alternate" content={translations[locale].seo.ogLocale} />
     {/each}
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={t.seo.title} />
+    <meta name="twitter:description" content={t.seo.ogDescription} />
+    <meta name="twitter:image" content={OG_IMAGE} />
+    <meta name="twitter:image:alt" content={t.seo.ogImageAlt} />
+
+    <!-- Preload нужен только исходному HTML: при клиентской смене языка он приходит
+         уже после load, и браузер предупреждает о неиспользованной предзагрузке -->
+    {#if !browser}
+        {#each FONT_PRELOADS[data.lang] as href (href)}
+            <link rel="preload" as="font" type="font/woff2" crossorigin="anonymous" {href} />
+        {/each}
+    {/if}
 
     {@html `<script type="application/ld+json">${jsonLd}</script>`}
 </svelte:head>
@@ -70,3 +87,7 @@
 <LanguageToggle lang={data.lang} {role} />
 
 {@render children()}
+
+<!-- После контента: кнопка на кубе — последняя в порядке Tab.
+     Наложение слоёв задаёт z-index, а не порядок в DOM -->
+<PrismLayer {role} labels={t.prism} />
