@@ -1,12 +1,13 @@
 <script lang="ts">
     import { createSpring } from '$lib/motion'
+    import { PHOTO } from '$lib/site'
 
     let { alt, initials }: { alt: string; initials: string } = $props()
 
     // Размер фото по брейкпоинтам: xs 200, sm 250, md 300.
     // Внешний контейнер в 1.32 раза больше, чтобы кольца не обрезались
     const PHOTO_SIZES = '(min-width: 900px) 300px, (min-width: 600px) 250px, 200px'
-    const srcSet = (ext: string) => [300, 400, 600].map((w) => `/img/photo-${w}.${ext} ${w}w`).join(', ')
+    const srcSet = (ext: string) => [300, 400, 600].map((w) => `${PHOTO}-${w}.${ext} ${w}w`).join(', ')
 
     const spring = { stiffness: 80, damping: 20, mass: 0.8 }
     const rotateX = createSpring(spring)
@@ -43,7 +44,7 @@
                     <source type="image/avif" srcset={srcSet('avif')} sizes={PHOTO_SIZES} />
                     <source type="image/webp" srcset={srcSet('webp')} sizes={PHOTO_SIZES} />
                     <img
-                        src="/img/photo-600.jpg"
+                        src="{PHOTO}-600.jpg"
                         {alt}
                         width="600"
                         height="600"
