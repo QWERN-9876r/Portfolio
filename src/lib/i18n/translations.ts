@@ -95,6 +95,12 @@ export interface Translation {
         backToTop: string
         strike: string
     }
+    resume: {
+        title: string
+        download: string
+        cases: string
+        online: string
+    }
 }
 
 export const translations: Record<Locale, Translation> = {
@@ -216,6 +222,12 @@ export const translations: Record<Locale, Translation> = {
             backToTop: 'Back to top',
             strike: 'Strike the prism with the beam',
         },
+        resume: {
+            title: 'Resume',
+            download: 'Resume PDF',
+            cases: 'Cases',
+            online: 'Interactive version with 3D and live metrics',
+        },
     },
     ru: {
         seo: {
@@ -336,6 +348,12 @@ export const translations: Record<Locale, Translation> = {
         prism: {
             backToTop: 'Наверх',
             strike: 'Ударить лучом по призме',
+        },
+        resume: {
+            title: 'Резюме',
+            download: 'Резюме PDF',
+            cases: 'Кейсы',
+            online: 'Интерактивная версия с 3D и живыми метриками',
         },
     },
 }

@@ -2,7 +2,7 @@
     import Icon from '$lib/components/Icon.svelte'
     import type { Locale, Translation } from '$lib/i18n/translations'
     import type { Role } from '$lib/role'
-    import { NICKNAME, TG_URL } from '$lib/site'
+    import { NICKNAME, resumePdf, TG_URL } from '$lib/site'
     import HeroPhoto from './HeroPhoto.svelte'
     import HeroRole from './HeroRole.svelte'
 
@@ -53,10 +53,14 @@
                     </p>
                 </div>
 
-                <div class="item" style:--delay={delay(6)}>
+                <div class="item actions" style:--delay={delay(6)}>
                     <a class="btn-primary cta" href={TG_URL} target="_blank" rel="noopener noreferrer">
                         <span class="cta-icon"><Icon name="telegram" size={22} /></span>
                         {t.hero.telegram}
+                    </a>
+                    <a class="resume" href={resumePdf(lang)} target="_blank" rel="noopener">
+                        <Icon name="download" size={20} />
+                        {t.resume.download}
                     </a>
                 </div>
             </div>
@@ -177,9 +181,47 @@
         font-weight: 600;
     }
 
+    .actions {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+        margin-top: 4px;
+    }
+
     .cta {
         width: fit-content;
-        margin-top: 4px;
+    }
+
+    /* Вторичная кнопка: контур вместо заливки, чтобы главной оставался Telegram */
+    .resume {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 11px 22px;
+        border: 1px solid rgb(var(--c-neon) / 0.5);
+        border-radius: 10px;
+        background: rgb(var(--c-neon) / 0.08);
+        color: rgb(var(--c-text-primary));
+        font-size: 1rem;
+        font-weight: 600;
+        line-height: 1.75;
+        letter-spacing: 0.04em;
+        text-decoration: none;
+        transition:
+            border-color 0.25s ease,
+            background 0.25s ease;
+    }
+
+    .resume:hover {
+        border-color: rgb(var(--c-neon));
+        background: rgb(var(--c-neon) / 0.16);
+    }
+
+    .resume:focus-visible {
+        outline: 2px solid rgb(var(--c-neon-soft));
+        outline-offset: 2px;
     }
 
     .cta-icon {
@@ -233,6 +275,10 @@
             flex-direction: row;
             justify-content: space-between;
             gap: 32px;
+        }
+
+        .actions {
+            justify-content: flex-start;
         }
 
         .text {

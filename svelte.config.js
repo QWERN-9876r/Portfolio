@@ -26,11 +26,15 @@ const config = {
                     `/${lang}`,
                     ...ROLE_SEGMENTS.map((role) => `/${lang}/${role}`),
                     `/${lang}/manifest.webmanifest`,
+                    // Страница резюме: из неё после сборки печатается PDF
+                    `/resume/${lang}`,
                 ]),
             ],
             handleHttpError: ({ path, message }) => {
                 // Иконки из бакета в проде отдаёт прокси nginx, при сборке их нет
                 if (path.startsWith('/api/storage/')) return
+                // PDF-резюме печатается из /resume/{lang} уже после пререндера
+                if (path.startsWith('/resume/') && path.endsWith('.pdf')) return
                 throw new Error(message)
             },
         },

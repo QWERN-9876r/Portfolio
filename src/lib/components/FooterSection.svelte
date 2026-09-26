@@ -3,16 +3,18 @@
     import Icon, { type IconName } from '$lib/components/Icon.svelte'
     import Tooltip from '$lib/components/Tooltip.svelte'
     import type { Translation } from '$lib/i18n/translations'
-    import { EMAIL, GITHUB_URL, HH_URL, NICKNAME, TG_URL } from '$lib/site'
+    import type { Locale } from '$lib/i18n/translations'
+    import { EMAIL, GITHUB_URL, HH_URL, NICKNAME, resumePdf, TG_URL } from '$lib/site'
 
-    let { t }: { t: Translation } = $props()
+    let { t, lang }: { t: Translation; lang: Locale } = $props()
 
-    const SOCIAL_LINKS: { icon: IconName; label: string; href: string; primary?: boolean }[] = [
+    const socialLinks: { icon: IconName; label: string; href: string; primary?: boolean }[] = $derived([
         { icon: 'telegram', label: 'Telegram', href: TG_URL, primary: true },
         { icon: 'github', label: 'GitHub', href: GITHUB_URL },
         { icon: 'email', label: 'Email', href: `mailto:${EMAIL}` },
         { icon: 'work', label: 'HeadHunter', href: HH_URL },
-    ]
+        { icon: 'download', label: t.resume.download, href: resumePdf(lang) },
+    ])
 
     const year = new Date().getFullYear()
     const delay = (index: number) => `${0.1 + index * 0.12}s`
@@ -34,7 +36,7 @@
 
         <div class="reveal item" style:--delay={delay(2)}>
             <div class="socials">
-                {#each SOCIAL_LINKS as link (link.label)}
+                {#each socialLinks as link (link.href)}
                     <Tooltip label={link.label}>
                         <a
                             class="social"

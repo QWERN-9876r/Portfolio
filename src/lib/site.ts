@@ -1,3 +1,5 @@
+import type { Locale } from '$lib/i18n/translations'
+
 // Используется в canonical, hreflang, og:url, JSON-LD, robots.txt и sitemap.xml
 export const SITE_URL = 'https://qwern9876r.ru'
 
@@ -7,6 +9,9 @@ export const PHOTO = '/img/photo-3c2880ff'
 
 // На чём сделан сам сайт: в опыте работы с тем же стеком — бейдж «этот сайт — на том же стеке»
 export const SITE_STACK = ['Svelte', 'Threlte', 'Three.js', 'Pixi.js', 'WebGL']
+
+// PDF-резюме: печатается из /resume/{lang} после сборки (scripts/resume-pdf.mjs)
+export const resumePdf = (lang: Locale) => `/resume/dmitry-sotnikov-${lang}.pdf`
 
 export const NICKNAME = 'Qwern_9876r'
 export const TG_URL = 'https://t.me/Qwern_9876r'

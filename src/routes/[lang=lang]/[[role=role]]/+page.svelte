@@ -101,5 +101,5 @@
         />
     {/each}
 
-    <FooterSection {t} />
+    <FooterSection {t} lang={data.lang} />
 </main>
