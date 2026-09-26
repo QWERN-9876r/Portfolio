@@ -65,18 +65,18 @@
 
 <main id="scroll-root">
     <HeroSection {t} lang={data.lang} {role} />
-    <AboutSection {t} />
-    <SellingPointsSection {t} />
+    <AboutSection {t} cases={content.cases} />
+    <SellingPointsSection {t} cases={content.cases} />
 
     {#each groups as group (group.id)}
         <StackGroupSection {group} />
     {/each}
 
     <AllTechSection {t} technologies={content.allTechnologies} />
-    <ExperienceSection {t} experience={content.experience} />
+    <ExperienceSection {t} lang={data.lang} experience={content.experience} cases={content.cases} />
 
     {#each content.cases as caseItem (caseItem.id)}
-        <CaseSection {t} {caseItem} />
+        <CaseSection {t} {caseItem} cases={content.cases} experience={content.experience} />
     {/each}
 
     <FooterSection {t} />
