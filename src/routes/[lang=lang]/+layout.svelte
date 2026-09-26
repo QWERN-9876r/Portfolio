@@ -49,6 +49,7 @@
         <link rel="alternate" hreflang={locale} href={SITE_URL + rolePath(locale, role)} />
     {/each}
     <link rel="alternate" hreflang="x-default" href={SITE_URL + rolePath('en', role)} />
+    <link rel="manifest" href="/{data.lang}/manifest.webmanifest" />
 
     <!-- Превью ссылки в Telegram, соцсетях и мессенджерах. site_name Telegram показывает
          цветной строкой над заголовком; summary_large_image — крупная картинка, а не миниатюра -->

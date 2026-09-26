@@ -4,7 +4,10 @@
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <meta name="theme-color" content="#050816" />
-        <link rel="icon" href="%sveltekit.assets%/favicon.ico" />
+        <!-- Вкладка: SVG у современных браузеров, ico — у остальных; iPhone — подробная призма -->
+        <link rel="icon" href="%sveltekit.assets%/favicon.ico" sizes="32x32" />
+        <link rel="icon" href="%sveltekit.assets%/favicon.svg" type="image/svg+xml" />
+        <link rel="apple-touch-icon" href="%sveltekit.assets%/apple-touch-icon.png" />
 
         <!-- Без JS контент показывается сразу, анимации появления включаются только с ним -->
         <script>

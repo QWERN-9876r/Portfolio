@@ -25,6 +25,7 @@ const config = {
                 ...LOCALES.flatMap((lang) => [
                     `/${lang}`,
                     ...ROLE_SEGMENTS.map((role) => `/${lang}/${role}`),
+                    `/${lang}/manifest.webmanifest`,
                 ]),
             ],
             handleHttpError: ({ path, message }) => {
