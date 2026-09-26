@@ -10,7 +10,7 @@ export interface CaseStep {
 
 export interface CaseItem {
     id: string
-    index: number // номер секции в общем списке
+    index?: number // устарело: номер секции считается по порядку на странице
     title: string
     company: string
     period?: string

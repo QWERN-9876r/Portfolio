@@ -12,10 +12,12 @@
 
     let {
         t,
+        index,
         caseItem,
         cases,
         experience,
-    }: { t: Translation; caseItem: CaseItem; cases: CaseItem[]; experience: ExperienceData } = $props()
+    }: { t: Translation; index: number; caseItem: CaseItem; cases: CaseItem[]; experience: ExperienceData } =
+        $props()
 
     // Цифры результата — в цветах спектра: при появлении кейса призма бьёт в них лучами
     const COLORS = [SPECTRUM.violet, SPECTRUM.blue, SPECTRUM.cyan]
@@ -45,7 +47,7 @@
 <section id={caseItem.id} class="snap-section" {@attach reveal('-10%')} {@attach castSpectrum(COLORS)}>
     <div class="section-content main">
         <div class="reveal heading">
-            <SectionIndex index={caseItem.index}>
+            <SectionIndex {index}>
                 <span class="caption case-label">
                     {t.cases.label}{#if position >= 0}&nbsp;{position + 1} {t.cases.of} {cases.length}{/if}
                 </span>

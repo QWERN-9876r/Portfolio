@@ -17,7 +17,7 @@ export type Preset =
 // Тип группы технологий (один экран)
 export interface TechGroup {
     id: string
-    index: number // порядковый номер секции (для заголовка "03", "04" ...)
+    index?: number // устарело: номер секции считается по порядку на странице
     title: string
     subtitle?: string
     pixiPreset: Preset

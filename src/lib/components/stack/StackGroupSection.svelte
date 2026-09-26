@@ -15,7 +15,7 @@
     import { on } from 'svelte/events'
     import TechItem from './TechItem.svelte'
 
-    let { group }: { group: TechGroup } = $props()
+    let { group, index }: { group: TechGroup; index: number } = $props()
 
     let isVisible = $state(false)
     let activeTech = $state<string | null>(null)
@@ -175,7 +175,7 @@
     <div class="section-content layout">
         <div class="main">
             <div class="reveal heading">
-                <SectionIndex index={group.index} />
+                <SectionIndex {index} />
                 <h2 class="h2 title">{group.title}</h2>
                 {#if group.subtitle}
                     <p class="body2 subtitle">{group.subtitle}</p>

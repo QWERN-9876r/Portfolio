@@ -18,10 +18,12 @@
 
     let {
         t,
+        index,
         lang,
         experience,
         cases,
-    }: { t: Translation; lang: Locale; experience: ExperienceData; cases: CaseItem[] } = $props()
+    }: { t: Translation; index: number; lang: Locale; experience: ExperienceData; cases: CaseItem[] } =
+        $props()
 
     const LOGOS: Record<string, string> = {
         Яндекс: '/icons/yandex.svg',
@@ -133,7 +135,7 @@
 <section id="experience" class="snap-section" {@attach reveal()}>
     <div class="section-content stack">
         <div class="reveal heading">
-            <SectionIndex index={11} />
+            <SectionIndex {index} />
             <div class="title-row">
                 <h2 class="h2 title">{t.sections.experience}</h2>
                 <p class="h2 company">{experience.company}</p>

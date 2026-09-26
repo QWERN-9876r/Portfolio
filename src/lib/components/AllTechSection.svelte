@@ -6,7 +6,7 @@
     import type { Translation } from '$lib/i18n/translations'
     import { glowPrism } from '$lib/three/prismGlow.svelte'
 
-    let { t, technologies }: { t: Translation; technologies: Tech[] } = $props()
+    let { t, index, technologies }: { t: Translation; index: number; technologies: Tech[] } = $props()
 
     let failedIcons = $state<Record<string, boolean>>({})
 
@@ -16,7 +16,7 @@
 <section id="all-tech" class="snap-section" {@attach reveal('-10%')}>
     <div class="section-content stack">
         <div class="reveal heading">
-            <SectionIndex index={10} />
+            <SectionIndex {index} />
             <h2 class="h2 title">{t.sections.technologies}</h2>
             <p class="body2 hint">{t.sections.technologiesHint}</p>
         </div>

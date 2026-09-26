@@ -28,6 +28,16 @@
         content.techGroups.filter((group) => !group.roles || group.roles.includes(role)),
     )
 
+    // Номера секций по порядку на странице: набор секций стека зависит от роли.
+    // 01 — «О себе», 02 — «Почему я»
+    const numbers = $derived.by(() => {
+        let next = 3
+        const stack = groups.map(() => next++)
+        const allTech = next++
+        const experience = next++
+        return { stack, allTech, experience, cases: content.cases.map(() => next++) }
+    })
+
     $effect(() => {
         const lang = data.lang
         const built = data.content
@@ -68,15 +78,27 @@
     <AboutSection {t} cases={content.cases} />
     <SellingPointsSection {t} cases={content.cases} />
 
-    {#each groups as group (group.id)}
-        <StackGroupSection {group} />
+    {#each groups as group, index (group.id)}
+        <StackGroupSection {group} index={numbers.stack[index]} />
     {/each}
 
-    <AllTechSection {t} technologies={content.allTechnologies} />
-    <ExperienceSection {t} lang={data.lang} experience={content.experience} cases={content.cases} />
+    <AllTechSection {t} index={numbers.allTech} technologies={content.allTechnologies} />
+    <ExperienceSection
+        {t}
+        index={numbers.experience}
+        lang={data.lang}
+        experience={content.experience}
+        cases={content.cases}
+    />
 
-    {#each content.cases as caseItem (caseItem.id)}
-        <CaseSection {t} {caseItem} cases={content.cases} experience={content.experience} />
+    {#each content.cases as caseItem, index (caseItem.id)}
+        <CaseSection
+            {t}
+            index={numbers.cases[index]}
+            {caseItem}
+            cases={content.cases}
+            experience={content.experience}
+        />
     {/each}
 
     <FooterSection {t} />
