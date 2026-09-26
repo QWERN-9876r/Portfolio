@@ -80,8 +80,10 @@ export interface RumSummary {
     js: Stat
 }
 
-// Медианы за последние дни; нет сервиса (dev, preview) или мало замеров — null
+// Медианы за последние дни; нет сервиса или мало замеров — null.
+// В dev не спрашиваем вовсе, как и не отправляем: сервис проверяют через preview
 export const fetchRumSummary = async (): Promise<RumSummary | null> => {
+    if (dev) return null
     try {
         const response = await fetch(`${ENDPOINT}/summary`)
         if (!response.ok) return null
