@@ -69,16 +69,38 @@ const jsSize = async (entry: PerformanceResourceTiming) => {
     return entry.encodedBodySize
 }
 
+// LCP, а где его нет (Safari) — FCP; на момент вызова, LCP может ещё уточниться
+export const currentPaint = (): PageMetrics['paint'] => {
+    const fcp = performance.getEntriesByName('first-contentful-paint')[0]?.startTime ?? null
+    return lcp !== null ? { kind: 'lcp', ms: lcp } : fcp !== null ? { kind: 'fcp', ms: fcp } : null
+}
+
+// На быстрой сети и из кэша load бывает раньше первой отрисовки — ждём и её.
+// Фоновая вкладка не рисует вовсе, поэтому не дольше 3 с
+const firstPaint = () =>
+    new Promise<void>((resolve) => {
+        const painted = () => performance.getEntriesByName('first-contentful-paint').length > 0
+        if (painted()) return resolve()
+        const done = () => {
+            observer.disconnect()
+            clearTimeout(timer)
+            resolve()
+        }
+        const observer = new PerformanceObserver(() => painted() && done())
+        observer.observe({ type: 'paint', buffered: true })
+        const timer = setTimeout(done, 3000)
+    })
+
 export const measurePage = async (): Promise<PageMetrics> => {
     if (document.readyState !== 'complete') {
         await new Promise((resolve) => addEventListener('load', resolve, { once: true }))
     }
+    await firstPaint()
     // loadEventEnd заполняется после обработчиков load
     await new Promise((resolve) => setTimeout(resolve))
 
     const navigation = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming | undefined
     const loadEnd = navigation?.loadEventEnd || null
-    const fcp = performance.getEntriesByName('first-contentful-paint')[0]?.startTime ?? null
 
     const scripts = (performance.getEntriesByType('resource') as PerformanceResourceTiming[]).filter(
         (entry) => JS.test(entry.name) && (loadEnd === null || entry.startTime < loadEnd),
@@ -86,7 +108,7 @@ export const measurePage = async (): Promise<PageMetrics> => {
     const jsBytes = (await Promise.all(scripts.map(jsSize))).reduce((sum, size) => sum + size, 0)
 
     return {
-        paint: lcp !== null ? { kind: 'lcp', ms: lcp } : fcp !== null ? { kind: 'fcp', ms: fcp } : null,
+        paint: currentPaint(),
         loadMs: loadEnd,
         // 0 — браузер не отдал размеры, а не «JS нет»
         jsBytes: jsBytes || null,

@@ -5,12 +5,12 @@
     import LiveMetrics from '$lib/components/LiveMetrics.svelte'
     import SectionIndex from '$lib/components/SectionIndex.svelte'
     import { findResult, type CaseItem } from '$lib/content'
-    import type { Translation } from '$lib/i18n/translations'
+    import type { Locale, Translation } from '$lib/i18n/translations'
     import type { Rgb } from '$lib/three/prism'
     import { castSpectrum, glowPrism } from '$lib/three/prismGlow.svelte'
     import { cssRgb, SPECTRUM } from '$lib/three/spectrum'
 
-    let { t, cases }: { t: Translation; cases: CaseItem[] } = $props()
+    let { t, lang, cases }: { t: Translation; lang: Locale; cases: CaseItem[] } = $props()
 
     // Три качества — три цвета, на которые призма расщепляет свет.
     // results — подписи результатов из кейсов, которыми качество подтверждается
@@ -57,7 +57,7 @@
                         <p class="body2 description">{t.sellingPoints[index].description}</p>
 
                         {#if index === 0}
-                            <LiveMetrics {t} />
+                            <LiveMetrics {t} {lang} />
                         {:else if proofs[index].length > 0}
                             {@const caseItem = proofs[index][0].caseItem}
                             <div class="proof">

@@ -12,6 +12,7 @@
     import { refreshContent, type Content } from '$lib/content'
     import { translations, type Locale } from '$lib/i18n/translations'
     import { DEFAULT_ROLE, isRole, rolePath } from '$lib/role'
+    import { startRum } from '$lib/rum'
     import { onMount } from 'svelte'
 
     let { data } = $props()
@@ -63,6 +64,9 @@
         }
     })
 
+    // Метрики и путь посетителя уходят на deploy/rum одним beacon при уходе со страницы
+    onMount(() => startRum(() => ({ lang: data.lang, role })))
+
     // Старые ссылки вида /en?role=backend (в проде их перенаправляет nginx)
     onMount(() => {
         const legacyRole = new URLSearchParams(location.search).get('role')
@@ -76,7 +80,7 @@
 <main id="scroll-root">
     <HeroSection {t} lang={data.lang} {role} />
     <AboutSection {t} cases={content.cases} />
-    <SellingPointsSection {t} cases={content.cases} />
+    <SellingPointsSection {t} lang={data.lang} cases={content.cases} />
 
     {#each groups as group, index (group.id)}
         <StackGroupSection {group} index={numbers.stack[index]} />

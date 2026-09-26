@@ -1,10 +1,11 @@
 <script lang="ts">
     import { intersect } from '$lib/attachments/reveal'
     import CountUp from '$lib/components/CountUp.svelte'
-    import type { Translation } from '$lib/i18n/translations'
+    import type { Locale, Translation } from '$lib/i18n/translations'
     import { measurePage, watchIdleFps, type PageMetrics } from '$lib/pageMetrics'
+    import { fetchRumSummary, type RumSummary } from '$lib/rum'
 
-    let { t }: { t: Translation } = $props()
+    let { t, lang }: { t: Translation; lang: Locale } = $props()
 
     const DASH = '—'
 
@@ -20,6 +21,32 @@
     // Кадры в покое считаем, только пока блок на экране
     $effect(() => {
         if (visible) return watchIdleFps((value) => (fps = value))
+    })
+
+    // Медианы настоящих посетителей — тоже только когда блок показался
+    let visitors = $state.raw<RumSummary | null>(null)
+    let asked = false
+    $effect(() => {
+        if (!visible || asked) return
+        asked = true
+        fetchRumSummary().then((value) => (visitors = value))
+    })
+
+    const plural = $derived(new Intl.PluralRules(lang))
+    const visitorsLine = $derived.by(() => {
+        if (!visitors) return null
+        const { whyMe } = t
+        const form = (forms: typeof whyMe.people, n: number) => forms[plural.select(n)] ?? forms.other
+        const title = whyMe.visitors
+            .replace('{n}', String(visitors.visitors))
+            .replace('{people}', form(whyMe.people, visitors.visitors))
+            .replace('{days}', String(visitors.days))
+            .replace('{daysWord}', form(whyMe.daysWord, visitors.days))
+        const values = [
+            visitors.lcp.count > 0 ? `${whyMe.metrics.lcp} ${time(visitors.lcp.p50)}` : null,
+            visitors.js.count > 0 ? `JS ${Math.round(visitors.js.p50 / 1024)} ${whyMe.units.kb}` : null,
+        ].filter(Boolean)
+        return { title, values: values.join(' · ') }
     })
 
     const time = (ms: number | null | undefined) => {
@@ -54,6 +81,12 @@
             </div>
         {/each}
     </dl>
+    {#if visitorsLine}
+        <p class="visitors">
+            <span class="caption visitors-title">{visitorsLine.title}</span>
+            <span class="visitors-values">{visitorsLine.values}</span>
+        </p>
+    {/if}
 </div>
 
 <style>
@@ -93,6 +126,29 @@
         line-height: 1.3;
         letter-spacing: 0.04em;
         text-transform: none;
+    }
+
+    .visitors {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        margin: 0;
+        padding: 8px 12px;
+        border-left: 2px solid rgb(var(--c-accent) / 0.6);
+        background: rgb(var(--c-accent) / 0.05);
+    }
+
+    .visitors-title {
+        color: rgb(var(--c-text-secondary));
+        font-size: 0.6rem;
+        letter-spacing: 0.06em;
+        text-transform: none;
+    }
+
+    .visitors-values {
+        color: rgb(var(--c-text-primary));
+        font-family: var(--font-display);
+        font-size: 0.8rem;
     }
 
     .value {

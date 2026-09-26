@@ -40,6 +40,10 @@ export interface Translation {
     }
     sellingPoints: { title: string; description: string }[]
     whyMe: {
+        // «Медиана у {n} {people} за {days} {daysWord}»: числа и формы слов подставляет LiveMetrics
+        visitors: string
+        people: Partial<Record<Intl.LDMLPluralRule, string>> & { other: string }
+        daysWord: Partial<Record<Intl.LDMLPluralRule, string>> & { other: string }
         measured: string
         metrics: Record<'lcp' | 'fcp' | 'load' | 'js' | 'fps', string>
         units: Record<'ms' | 's' | 'kb' | 'decimal', string>
@@ -158,6 +162,9 @@ export const translations: Record<Locale, Translation> = {
             },
         ],
         whyMe: {
+            visitors: 'Median across {n} {people}, last {days} {daysWord}',
+            people: { one: 'visitor', other: 'visitors' },
+            daysWord: { one: 'day', other: 'days' },
             measured: 'This page, in your browser',
             metrics: {
                 lcp: 'LCP',
@@ -285,6 +292,9 @@ export const translations: Record<Locale, Translation> = {
             },
         ],
         whyMe: {
+            visitors: 'Медиана у {n} {people} за {days} {daysWord}',
+            people: { one: 'посетителя', few: 'посетителей', many: 'посетителей', other: 'посетителя' },
+            daysWord: { one: 'день', few: 'дня', many: 'дней', other: 'дня' },
             measured: 'Эта страница в вашем браузере',
             metrics: {
                 lcp: 'LCP',

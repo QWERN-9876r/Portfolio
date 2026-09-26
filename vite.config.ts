@@ -21,6 +21,9 @@ const storageProxy = {
     },
 }
 
+// Метрики посетителей: локально — сервис deploy/rum на 8090 (в проде проксирует nginx)
+const rumProxy = { '/api/rum': { target: 'http://127.0.0.1:8090' } }
+
 export default defineConfig({
     plugins: [treeShakeThrelteT(), sveltekit()],
     build: {
@@ -35,5 +38,5 @@ export default defineConfig({
         },
     },
     server: { proxy: storageProxy },
-    preview: { proxy: storageProxy },
+    preview: { proxy: { ...storageProxy, ...rumProxy } },
 })

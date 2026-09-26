@@ -77,6 +77,8 @@ sw.addEventListener('fetch', (event) => {
     if (request.method !== 'GET') return
     const url = new URL(request.url)
     if (url.origin !== sw.location.origin) return
+    // Метрики посетителей: всегда сеть, ничего не кэшируем
+    if (url.pathname.startsWith('/api/rum')) return
     // В dev ничего не кэшируем: правки должны быть видны сразу
     if (import.meta.env.DEV) return
 
