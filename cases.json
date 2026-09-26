@@ -102,5 +102,60 @@
             "Next.js",
             "Server Components"
         ]
+    },
+    {
+        "id": "case-3",
+        "title": "This website",
+        "company": "Personal project",
+        "period": "09.2026",
+        "problem": "A portfolio of a developer whose main argument is performance. The site itself has to be the proof: 3D, animations, and interactivity — while still flying on any phone.",
+        "solution": "The site was rewritten from React to SvelteKit with prerendering: every page is ready-made HTML, and the first screen ships only the JS it needs. The Threlte prism and Pixi scenes load after the page and render frames only while animating, then fall asleep at rest. The metrics in “Why me” are live measurements in the visitor's browser via the Performance API. A service worker makes the site a PWA and caches only what the visitor has already downloaded.",
+        "results": [
+            {
+                "label": "JS on the first screen",
+                "value": "62 KB"
+            },
+            {
+                "label": "frames at rest",
+                "value": "0"
+            },
+            {
+                "label": "3D, after the page loads",
+                "value": "139 KB"
+            }
+        ],
+        "context": "Build measurements: gzip, as served by nginx",
+        "facts": [
+            "Personal project",
+            "Speed is the main requirement",
+            "Own server: nginx and Let's Encrypt"
+        ],
+        "steps": [
+            {
+                "title": "SvelteKit with prerendering",
+                "text": "Every page is ready-made HTML; the first screen ships only the JS it needs"
+            },
+            {
+                "title": "3D with no weight at start",
+                "text": "The Threlte prism and Pixi scenes load after the page and render frames only while animating"
+            },
+            {
+                "title": "The site measures itself",
+                "text": "Live metrics in the visitor's browser via the Performance API, no libraries"
+            },
+            {
+                "title": "A PWA with no extra traffic",
+                "text": "The service worker caches only what the visitor has already downloaded"
+            }
+        ],
+        "tags": [
+            "SvelteKit",
+            "Svelte 5",
+            "Threlte",
+            "Three.js",
+            "Pixi.js",
+            "WebGL",
+            "PWA"
+        ]
     }
 ]
