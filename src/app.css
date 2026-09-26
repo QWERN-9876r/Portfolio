@@ -165,7 +165,9 @@ button {
     height: 100svh;
     overflow-y: auto;
     overflow-x: hidden;
-    scroll-snap-type: y mandatory;
+    /* Мягкое прилипание: к началу секции подтягивает, только если прокрутка
+       закончилась рядом с ним. Высокие секции (опыт, кейсы, всё на телефоне) листаются свободно */
+    scroll-snap-type: y proximity;
     scroll-behavior: smooth;
 }
 #scroll-root::-webkit-scrollbar {
@@ -190,7 +192,6 @@ button {
     min-height: 100svh;
     padding: 48px 16px;
     scroll-snap-align: start;
-    scroll-snap-stop: always;
 }
 @media (min-width: 600px) {
     .snap-section {
