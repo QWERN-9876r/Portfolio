@@ -1,9 +1,10 @@
-import { browser, dev } from '$app/environment'
+import { browser } from '$app/environment'
 import { currentPaint, measurePage, type PageMetrics } from '$lib/pageMetrics'
 
 // Метрики настоящих посетителей (сервис — deploy/rum). При уходе со страницы один beacon:
 // замеры, какие секции посетитель увидел и по каким контактам кликнул.
-// Без cookie, идентификаторов и IP; автотесты и боты (navigator.webdriver) не считаются
+// Без cookie, идентификаторов и IP; автотесты и боты (navigator.webdriver) не считаются.
+// Локально (dev и preview) запросы уходят в локальный сервис через прокси Vite, не в прод
 
 const ENDPOINT = '/api/rum'
 // Меньше замеров — медиана случайна, в «Почему я» её не показываем
@@ -18,7 +19,7 @@ const CTA: [RegExp, string][] = [
 ]
 
 export const startRum = (context: () => { lang: string; role: string }) => {
-    if (!browser || dev || navigator.webdriver || !('sendBeacon' in navigator)) return () => {}
+    if (!browser || navigator.webdriver || !('sendBeacon' in navigator)) return () => {}
 
     let metrics: PageMetrics | null = null
     measurePage().then((value) => (metrics = value))
@@ -80,10 +81,8 @@ export interface RumSummary {
     js: Stat
 }
 
-// Медианы за последние дни; нет сервиса или мало замеров — null.
-// В dev не спрашиваем вовсе, как и не отправляем: сервис проверяют через preview
+// Медианы за последние дни; нет сервиса или мало замеров — null
 export const fetchRumSummary = async (): Promise<RumSummary | null> => {
-    if (dev) return null
     try {
         const response = await fetch(`${ENDPOINT}/summary`)
         if (!response.ok) return null

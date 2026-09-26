@@ -21,7 +21,8 @@ const storageProxy = {
     },
 }
 
-// Метрики посетителей: локально — сервис deploy/rum на 8090 (в проде проксирует nginx)
+// Метрики посетителей: локально — сервис deploy/rum на 8090 (в проде проксирует nginx).
+// Не запущен — Vite пишет ошибку прокси, а сводка в «Почему я» просто не показывается
 const rumProxy = { '/api/rum': { target: 'http://127.0.0.1:8090' } }
 
 export default defineConfig({
@@ -37,6 +38,6 @@ export default defineConfig({
             },
         },
     },
-    server: { proxy: storageProxy },
+    server: { proxy: { ...storageProxy, ...rumProxy } },
     preview: { proxy: { ...storageProxy, ...rumProxy } },
 })
