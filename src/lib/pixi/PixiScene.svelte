@@ -117,10 +117,31 @@
     })
 
     // Тикер крутится, только когда секция видна и вкладка активна
+    // Сцена засыпает, если IDLE_MS нет курсора над ней, подсветки технологии и подсказки
+    // пальцем: тикер стоит, на canvas остаётся последний кадр — в покое страница не рисует
+    const IDLE_MS = 4000
+    let awake = $state(true)
+    let idleTimer = 0
+    const wake = () => {
+        awake = true
+        clearTimeout(idleTimer)
+        idleTimer = window.setTimeout(() => (awake = false), IDLE_MS)
+    }
+    // Пока технология горит или палец над сценой — не засыпаем
+    const hold = () => {
+        awake = true
+        clearTimeout(idleTimer)
+    }
+
+    $effect(() => {
+        if (isVisible) wake()
+    })
+    $effect(() => () => clearTimeout(idleTimer))
+
     $effect(() => {
         if (!app) return
         const ticker = app.ticker
-        const visible = isVisible
+        const visible = isVisible && awake
         let running = false
 
         const setRunning = (value: boolean) => {
@@ -145,6 +166,8 @@
 
     $effect(() => {
         scene?.setActiveTech(activeTech)
+        if (activeTech) hold()
+        else wake()
     })
 
     let pointed = false
@@ -153,15 +176,23 @@
         if (pointer) {
             scene.onMouseMove(pointer.x, pointer.y)
             pointed = true
+            hold()
         } else if (pointed) {
             scene.onMouseLeave()
             pointed = false
+            wake()
         }
     })
 
     const handleMouseMove = (event: MouseEvent) => {
         const rect = container.getBoundingClientRect()
         scene?.onMouseMove(event.clientX - rect.left, event.clientY - rect.top)
+        wake()
+    }
+
+    const handleMouseLeave = () => {
+        scene?.onMouseLeave()
+        wake()
     }
 </script>
 
@@ -171,7 +202,7 @@
     class:mounted={scene !== null}
     role="presentation"
     onmousemove={handleMouseMove}
-    onmouseleave={() => scene?.onMouseLeave()}
+    onmouseleave={handleMouseLeave}
     {@attach intersect((near) => (isNear = near), (node) => ({
         // root — скролл-контейнер: у viewport rootMargin не выходит за его overflow
         root: node.closest('#scroll-root'),
