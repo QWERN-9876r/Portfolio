@@ -28,6 +28,8 @@ export interface Translation {
         telegram: string
         photoAlt: string
         roles: Record<Role, string>
+        // Статус поиска работы над ником: что ищу и в каком формате
+        status: { label: string; detail: string }
     }
     sections: {
         about: string
@@ -123,6 +125,7 @@ export const translations: Record<Locale, Translation> = {
                 fullstack: 'Fullstack',
                 backend: 'Backend',
             },
+            status: { label: 'Open to offers', detail: 'Middle+ Frontend / Fullstack · Moscow or remote' },
         },
         sections: {
             about: 'About me',
@@ -242,6 +245,7 @@ export const translations: Record<Locale, Translation> = {
                 fullstack: 'Fullstack',
                 backend: 'Backend',
             },
+            status: { label: 'Открыт к предложениям', detail: 'Middle+ Frontend / Fullstack · Москва или удалёнка' },
         },
         sections: {
             about: 'О себе',

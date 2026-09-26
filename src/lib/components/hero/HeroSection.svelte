@@ -17,10 +17,18 @@
         <div class="layout">
             <div class="text">
                 <div class="item" style:--delay={delay(0)}>
-                    <p class="nickname">{NICKNAME}</p>
+                    <p class="status">
+                        <span class="status-dot" aria-hidden="true"></span>
+                        <span>{t.hero.status.label}</span>
+                        <span class="status-detail">{t.hero.status.detail}</span>
+                    </p>
                 </div>
 
                 <div class="item" style:--delay={delay(1)}>
+                    <p class="nickname">{NICKNAME}</p>
+                </div>
+
+                <div class="item" style:--delay={delay(2)}>
                     <h1 class="h1 name">
                         {t.hero.lastName}
                         <br />
@@ -28,15 +36,15 @@
                     </h1>
                 </div>
 
-                <div class="item" style:--delay={delay(2)}>
+                <div class="item" style:--delay={delay(3)}>
                     <HeroRole {lang} {role} labels={t.hero.roles} />
                 </div>
 
-                <div class="item divider" style:--delay={delay(3)}>
+                <div class="item divider" style:--delay={delay(4)}>
                     <div class="neon-line"></div>
                 </div>
 
-                <div class="item" style:--delay={delay(4)}>
+                <div class="item" style:--delay={delay(5)}>
                     <p class="body1 intro">
                         {t.hero.intro}
                         <span>{t.hero.introAccent}</span>
@@ -45,7 +53,7 @@
                     </p>
                 </div>
 
-                <div class="item" style:--delay={delay(5)}>
+                <div class="item" style:--delay={delay(6)}>
                     <a class="btn-primary cta" href={TG_URL} target="_blank" rel="noopener noreferrer">
                         <span class="cta-icon"><Icon name="telegram" size={22} /></span>
                         {t.hero.telegram}
@@ -95,6 +103,37 @@
 
     .item {
         animation: item-in 0.65s var(--ease-out) var(--delay) both;
+    }
+
+    /* Статус поиска работы: точка цвета спектра, без бесконечной анимации */
+    .status {
+        display: inline-flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: center;
+        gap: 4px 10px;
+        margin: 0;
+        padding: 6px 14px;
+        border: 1px solid rgb(34 211 238 / 0.35);
+        border-radius: 999px;
+        background: rgb(34 211 238 / 0.08);
+        color: rgb(var(--c-text-primary));
+        font-size: 0.8rem;
+        font-weight: 600;
+        line-height: 1.4;
+    }
+
+    .status-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #22d3ee;
+        box-shadow: 0 0 10px #22d3ee;
+    }
+
+    .status-detail {
+        color: rgb(var(--c-text-secondary));
+        font-weight: 500;
     }
 
     .nickname {
