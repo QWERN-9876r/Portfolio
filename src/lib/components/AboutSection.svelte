@@ -100,7 +100,13 @@
                 </div>
 
                 <div class="reveal item side" style:--delay="{delay(2)}s">
-                    <div class="stats">
+                    <div
+                        class="stats"
+                        style:--chars={Math.max(
+                            String(COMPANIES.length).length,
+                            ...stats.map(({ result }) => result.value.length),
+                        )}
+                    >
                         {#each stats as { caseItem, result } (result.label)}
                             <a class="glass-panel stat" href="#{caseItem.id}" title="{t.cases.label} «{caseItem.title}»">
                                 <span class="stat-value">
@@ -220,6 +226,9 @@
     }
 
     .stat {
+        /* Цифры по ширине плитки: самое длинное значение ряда (--chars знаков по 0,85 em)
+           всегда помещается, на узких экранах текст уменьшается */
+        container-type: inline-size;
         display: flex;
         flex-direction: column;
         gap: 6px;
@@ -246,7 +255,7 @@
     .stat-value {
         color: rgb(var(--c-neon-soft));
         font-family: var(--font-display);
-        font-size: 1.5rem;
+        font-size: min(1.5rem, calc(115cqi / var(--chars)));
         line-height: 1;
         text-shadow: 0 0 20px rgb(var(--c-neon) / 0.5);
         white-space: nowrap;

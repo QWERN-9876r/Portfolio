@@ -61,7 +61,10 @@
                         {:else if proofs[index].length > 0}
                             {@const caseItem = proofs[index][0].caseItem}
                             <div class="proof">
-                                <div class="results">
+                                <div
+                                    class="results"
+                                    style:--chars={Math.max(1, ...proofs[index].map(({ result }) => result.value.length))}
+                                >
                                     {#each proofs[index] as { result } (result.label)}
                                         <p class="result">
                                             <span class="result-value">
@@ -187,6 +190,9 @@
     }
 
     .result {
+        /* Цифры по ширине плитки: самое длинное значение ряда (--chars знаков по 0,85 em)
+           всегда помещается, на узких экранах текст уменьшается */
+        container-type: inline-size;
         display: flex;
         flex: 1;
         flex-direction: column;
@@ -201,7 +207,7 @@
     .result-value {
         color: rgb(var(--c-text-primary));
         font-family: var(--font-display);
-        font-size: 1.4rem;
+        font-size: min(1.4rem, calc(115cqi / var(--chars)));
         line-height: 1.1;
         text-shadow: 0 0 20px rgb(var(--c-accent) / 0.6);
         white-space: nowrap;

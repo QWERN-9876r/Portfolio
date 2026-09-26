@@ -70,7 +70,7 @@
         <!-- Результат первым: по цифрам решают, читать ли дальше -->
         <div class="hero">
             <div class="reveal outcome" style:--delay={delay(1)}>
-                <div class="results">
+                <div class="results" style:--chars={Math.max(1, ...caseItem.results.map((r) => r.value.length))}>
                     {#each caseItem.results as result, index (result.label)}
                         <div class="result" style:--c-accent={cssRgb(COLORS[index % COLORS.length])} data-spectrum>
                             <span class="result-value">
@@ -256,6 +256,9 @@
     }
 
     .result {
+        /* Цифры по ширине плитки: самое длинное значение ряда (--chars знаков по 0,85 em)
+           всегда помещается, на узких экранах текст уменьшается */
+        container-type: inline-size;
         display: flex;
         flex-direction: column;
         gap: 4px;
@@ -269,7 +272,7 @@
     .result-value {
         color: rgb(var(--c-text-primary));
         font-family: var(--font-display);
-        font-size: 1.9rem;
+        font-size: min(1.9rem, calc(115cqi / var(--chars)));
         line-height: 1.1;
         text-shadow: 0 0 22px rgb(var(--c-accent) / 0.8);
         white-space: nowrap;
@@ -547,7 +550,7 @@
         }
 
         .result-value {
-            font-size: 2.3rem;
+            font-size: min(2.3rem, calc(115cqi / var(--chars)));
         }
     }
 </style>

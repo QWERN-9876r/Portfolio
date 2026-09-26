@@ -4,8 +4,9 @@
     import type { Rgb } from '$lib/three/prism'
     import { cssRgb } from '$lib/three/spectrum'
 
-    // Цифры кейса наглядно: столбики «до» и «после» в цветах спектра, для команды — схема
-    // «было → осталось». Повторяет результат из плиток, поэтому скрыт от скринридеров
+    // Цифры кейса наглядно: столбики «до» и «после» в цветах спектра, размеры — одной полосой
+    // «что грузится и когда», для команды — схема «было → осталось».
+    // Повторяет результат из плиток, поэтому скрыт от скринридеров
     let { t, caseItem, colors }: { t: Translation; caseItem: CaseItem; colors: readonly Rgb[] } = $props()
 
     // «+53%» → «после» выше «до» на 53%; результаты без процентов не рисуем
@@ -19,9 +20,22 @@
         const max = Math.max(100, ...items.map((item) => item.after))
         return items.map((item) => ({ ...item, before: 100 / max, after: item.after / max }))
     })
+
+    // «62 КБ», «1,2 MB» → килобайты; доли полосы — от суммы. Нужно хотя бы два размера
+    const SIZE = /(\d+(?:[.,]\d+)?)\s*(KB|КБ|MB|МБ)/i
+    const sizes = $derived.by(() => {
+        const items = caseItem.results.flatMap((result, index) => {
+            const match = SIZE.exec(result.value)
+            if (!match) return []
+            const kb = Number(match[1].replace(',', '.')) * (/^(MB|МБ)$/i.test(match[2]) ? 1024 : 1)
+            return [{ result, color: colors[index % colors.length], kb }]
+        })
+        const total = items.reduce((sum, item) => sum + item.kb, 0)
+        return items.length > 1 ? items.map((item) => ({ ...item, share: item.kb / total })) : []
+    })
 </script>
 
-{#if bars.length > 0 || caseItem.team}
+{#if bars.length > 0 || sizes.length > 0 || caseItem.team}
     <div class="glass-panel visual" aria-hidden="true">
         {#if bars.length > 0}
             <span class="caption label">{t.cases.visual}</span>
@@ -41,6 +55,29 @@
                     </div>
                 {/each}
             </div>
+        {/if}
+
+        {#if bars.length === 0 && sizes.length > 0}
+            <span class="caption label">{t.cases.sizes}</span>
+            <div class="stacked">
+                {#each sizes as size, index (size.result.label)}
+                    <div
+                        class="segment"
+                        style:--share={size.share}
+                        style:--c-accent={cssRgb(size.color)}
+                        style:--i={index}
+                    ></div>
+                {/each}
+            </div>
+            <ul class="legend">
+                {#each sizes as size (size.result.label)}
+                    <li style:--c-accent={cssRgb(size.color)}>
+                        <span class="swatch"></span>
+                        <span class="legend-value">{size.result.value}</span>
+                        <span class="legend-label">{t.cases.resultLabels[size.result.label] ?? size.result.label}</span>
+                    </li>
+                {/each}
+            </ul>
         {/if}
 
         {#if caseItem.team}
@@ -153,6 +190,69 @@
         font-size: 0.6rem;
         letter-spacing: 0.06em;
         text-transform: none;
+    }
+
+    /* Одна полоса: доли размеров. Сегменты вырастают слева направо, когда кейс появился */
+    .stacked {
+        display: flex;
+        gap: 3px;
+        height: 28px;
+        margin-top: 6px;
+    }
+
+    .segment {
+        flex: var(--share);
+        border-radius: 6px;
+        background: linear-gradient(to right, rgb(var(--c-accent) / 0.55), rgb(var(--c-accent)));
+        box-shadow: 0 0 16px rgb(var(--c-accent) / 0.4);
+        transform-origin: left;
+    }
+
+    :global(.js) .segment {
+        transform: scaleX(0);
+        transition: transform 0.8s var(--ease-out) calc(0.5s + var(--i) * 0.3s);
+    }
+
+    :global(.js [data-revealed]) .segment {
+        transform: none;
+    }
+
+    .legend {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        margin: 0;
+        padding: 0;
+        list-style: none;
+    }
+
+    .legend li {
+        display: flex;
+        align-items: baseline;
+        gap: 10px;
+    }
+
+    .swatch {
+        flex-shrink: 0;
+        width: 10px;
+        height: 10px;
+        border-radius: 3px;
+        background: rgb(var(--c-accent));
+        box-shadow: 0 0 8px rgb(var(--c-accent) / 0.7);
+        transform: translateY(1px);
+    }
+
+    .legend-value {
+        color: rgb(var(--c-text-primary));
+        font-family: var(--font-display);
+        font-size: 0.95rem;
+        white-space: nowrap;
+    }
+
+    .legend-label {
+        color: rgb(var(--c-text-secondary));
+        font-size: 0.8rem;
+        line-height: 1.3;
     }
 
     .team {

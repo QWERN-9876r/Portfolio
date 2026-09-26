@@ -73,7 +73,7 @@
 
 <div class="metrics" {@attach intersect((value) => (visible = value))}>
     <span class="caption measured">{t.whyMe.measured}</span>
-    <dl class="grid">
+    <dl class="grid" style:--chars={Math.max(1, ...cells.map((cell) => cell.value.length))}>
         {#each cells as cell (cell.key)}
             <div class="cell">
                 <dt class="caption label">{cell.label}</dt>
@@ -110,6 +110,9 @@
     }
 
     .cell {
+        /* Цифры по ширине плитки: самое длинное значение ряда (--chars знаков по 0,85 em)
+           всегда помещается, на узких экранах текст уменьшается */
+        container-type: inline-size;
         display: flex;
         flex-direction: column-reverse;
         justify-content: flex-end;
@@ -155,7 +158,7 @@
         margin: 0;
         color: rgb(var(--c-text-primary));
         font-family: var(--font-display);
-        font-size: 1rem;
+        font-size: min(1rem, calc(115cqi / var(--chars)));
         line-height: 1.1;
         text-shadow: 0 0 16px rgb(var(--c-accent) / 0.6);
         white-space: nowrap;

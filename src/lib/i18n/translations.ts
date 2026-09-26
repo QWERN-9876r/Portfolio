@@ -79,6 +79,7 @@ export interface Translation {
         prev: string
         next: string
         visual: string
+        sizes: string
         before: string
         after: string
         team: string
@@ -209,6 +210,7 @@ export const translations: Record<Locale, Translation> = {
             prev: 'Previous case',
             next: 'Next case',
             visual: 'Before → after',
+            sizes: 'What loads, and when',
             before: 'before',
             after: 'after',
             team: 'Frontend team',
@@ -339,6 +341,7 @@ export const translations: Record<Locale, Translation> = {
             prev: 'Предыдущий кейс',
             next: 'Следующий кейс',
             visual: 'Было → стало',
+            sizes: 'Что грузится и когда',
             before: 'до',
             after: 'после',
             team: 'Фронтенд в команде',
