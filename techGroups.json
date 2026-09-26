@@ -163,7 +163,7 @@
     {
         "id": "stack-7",
         "index": 9,
-        "title": "Базы данных",
+        "title": "Data Bases",
         "subtitle": "MongoDB · PostgreSQL",
         "roles": ["backend", "fullstack"],
         "pixiPreset": "particles",

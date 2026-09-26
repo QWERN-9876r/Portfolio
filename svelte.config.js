@@ -20,6 +20,8 @@ const config = {
         prerender: {
             entries: [
                 '/',
+                '/robots.txt',
+                '/sitemap.xml',
                 ...LOCALES.flatMap((lang) => [
                     `/${lang}`,
                     ...ROLE_SEGMENTS.map((role) => `/${lang}/${role}`),

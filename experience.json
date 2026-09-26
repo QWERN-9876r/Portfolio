@@ -4,10 +4,17 @@
     "items": [
         {
             "period": "05.2026 – present",
-            "title": "Frontend Developer (MTS)",
-            "description": "Browser game development with WebGL. Building game mechanics, integrating server APIs, and optimizing performance.",
+            "title": "Fullstack Developer",
+            "company": "MTS",
+            "achievements": [
+                "Designed and built an admin panel and modules for creating games",
+                "Building browser games with WebGL: game mechanics and server APIs",
+                "Optimizing game performance in the browser"
+            ],
+            "description": "Browser game development with WebGL: game mechanics, server APIs, and performance optimization. Designed and built an admin panel and modules for creating games.",
             "tags": [
                 "TypeScript",
+                "Go",
                 "WebGL",
                 "Three.js",
                 "Pixi.js",
@@ -21,7 +28,13 @@
         },
         {
             "period": "08.2024 – 03.2026",
-            "title": "Frontend Developer (Yandex)",
+            "title": "Frontend Developer",
+            "company": "Yandex",
+            "achievements": [
+                "Built and supported high-load interfaces: new features and performance optimization",
+                "On my own initiative, created new pages and extended the frontend admin panel",
+                "Supported neighboring teams and mentored an intern"
+            ],
             "description": "Development and support of high-load interfaces. Performance optimization, new feature delivery, support for neighboring teams, intern mentoring, and new frontend admin pages initiated by me.",
             "tags": [
                 "TypeScript",
@@ -36,7 +49,12 @@
         },
         {
             "period": "05.2024 – 08.2024",
-            "title": "Frontend Developer Intern (Yandex)",
+            "title": "Frontend Developer Intern",
+            "company": "Yandex",
+            "achievements": [
+                "Developed new features for a product with millions of users",
+                "Built optimized animations and introduced new technologies and approaches"
+            ],
             "description": "Development of new features for a product with millions of users. Creating optimized animations and introducing new technologies and approaches.",
             "tags": [
                 "TypeScript",

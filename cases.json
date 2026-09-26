@@ -21,8 +21,33 @@
                 "value": "+32.5%"
             }
         ],
-        "tags": ["Animations", "Initiative"],
-        "hideRightSlot": true
+        "context": "Summer 2024 campaign · a product with millions of users",
+        "facts": [
+            "The task: a small home page animation, no designs",
+            "The reward mechanic was my idea"
+        ],
+        "steps": [
+            {
+                "title": "Turned the animation into a mini-game",
+                "text": "Significantly improved the animation and added interaction"
+            },
+            {
+                "title": "Optimized it",
+                "text": "Lazy loading and animation-level performance work: it ran smoothly even on older phones"
+            },
+            {
+                "title": "Came up with a reward mechanic",
+                "text": "Interacting with the animation earned a symbolic reward"
+            },
+            {
+                "title": "Marketing picked it up",
+                "text": "The mini-game attracted many daily users, and a summer campaign with bloggers was built around it"
+            }
+        ],
+        "tags": [
+            "Animations",
+            "Initiative"
+        ]
     },
     {
         "id": "case-2",
@@ -42,7 +67,40 @@
                 "value": "+15%"
             }
         ],
-        "tags": ["TypeScript", "Rive", "React", "Next.js", "Server Components"],
-        "hideRightSlot": true
+        "context": "A new game page built solo by the deadline",
+        "facts": [
+            "1 frontend developer instead of 3",
+            "Part-time",
+            "First time with Rive and Server Components"
+        ],
+        "steps": [
+            {
+                "title": "A new page with game mechanics",
+                "text": "Game mechanics and rewards"
+            },
+            {
+                "title": "A new stack for the project",
+                "text": "Server Components and REST API instead of GraphQL"
+            },
+            {
+                "title": "Learned Rive from scratch",
+                "text": "An interactive layer on Rive, never used in the project before"
+            },
+            {
+                "title": "Delivered solo on time",
+                "text": "My Rive component became the foundation for the team and Yandex Plus"
+            }
+        ],
+        "team": {
+            "before": 3,
+            "after": 1
+        },
+        "tags": [
+            "TypeScript",
+            "Rive",
+            "React",
+            "Next.js",
+            "Server Components"
+        ]
     }
 ]

@@ -6,8 +6,10 @@ import { DEFAULT_EXPERIENCE, type ExperienceData } from './experience'
 import { DEFAULT_TECH_GROUPS, type TechGroup } from './techGroups'
 
 export type { Tech } from './allTechnologies'
-export type { CaseItem, CaseResult } from './cases'
+export type { CaseItem, CaseResult, CaseStep } from './cases'
+export { findResult } from './cases'
 export type { ExperienceData, ExperienceItem } from './experience'
+export { overlaps, parsePeriod, roleAnchor, splitRole, type Period } from './experience'
 export type { TechGroup, TechGroupItem, Preset } from './techGroups'
 
 export interface Content {
