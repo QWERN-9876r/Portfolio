@@ -1,106 +1,178 @@
 <script lang="ts">
+    import { scrollToAnchor } from '$lib/attachments/anchor'
     import { reveal } from '$lib/attachments/reveal'
+    import CaseVisual from '$lib/components/CaseVisual.svelte'
     import Chip from '$lib/components/Chip.svelte'
+    import CountUp from '$lib/components/CountUp.svelte'
     import SectionIndex from '$lib/components/SectionIndex.svelte'
-    import type { CaseItem } from '$lib/content'
+    import { overlaps, parsePeriod, roleAnchor, splitRole, type CaseItem, type ExperienceData } from '$lib/content'
     import type { Translation } from '$lib/i18n/translations'
+    import { castSpectrum, glowPrism } from '$lib/three/prismGlow.svelte'
+    import { cssRgb, SPECTRUM } from '$lib/three/spectrum'
 
-    let { t, caseItem }: { t: Translation; caseItem: CaseItem } = $props()
+    let {
+        t,
+        caseItem,
+        cases,
+        experience,
+    }: { t: Translation; caseItem: CaseItem; cases: CaseItem[]; experience: ExperienceData } = $props()
 
-    const blockDelay = (index: number) => `${0.1 + index * 0.15}s`
-    const resultDelay = (index: number) => `${0.05 + index * 0.1}s`
+    // Цифры результата — в цветах спектра: при появлении кейса призма бьёт в них лучами
+    const COLORS = [SPECTRUM.violet, SPECTRUM.blue, SPECTRUM.cyan]
+
+    const position = $derived(cases.findIndex((item) => item.id === caseItem.id))
+    const prev = $derived(position > 0 ? cases[position - 1] : null)
+    const next = $derived(position >= 0 ? (cases[position + 1] ?? null) : null)
+
+    // Должность, во время которой сделан кейс: та же компания и пересекающийся период
+    const role = $derived.by(() => {
+        const period = parsePeriod(caseItem.period)
+        if (!period) return null
+        for (const item of experience.items) {
+            const { title, company } = splitRole(item)
+            const span = parsePeriod(item.period)
+            const anchor = roleAnchor(item)
+            if (span && anchor && (!company || company === caseItem.company) && overlaps(period, span)) {
+                return { title, anchor }
+            }
+        }
+        return null
+    })
+
+    const delay = (index: number) => `${0.1 + index * 0.12}s`
 </script>
 
-<section id={caseItem.id} class="snap-section" {@attach reveal('-10%')}>
-    <div class="section-content layout" class:with-slot={!caseItem.hideRightSlot}>
-        <div class="main">
-            <div class="reveal heading">
-                <SectionIndex index={caseItem.index}>
-                    <span class="caption case-label">{t.cases.label}</span>
-                </SectionIndex>
+<section id={caseItem.id} class="snap-section" {@attach reveal('-10%')} {@attach castSpectrum(COLORS)}>
+    <div class="section-content main">
+        <div class="reveal heading">
+            <SectionIndex index={caseItem.index}>
+                <span class="caption case-label">
+                    {t.cases.label}{#if position >= 0}&nbsp;{position + 1} {t.cases.of} {cases.length}{/if}
+                </span>
+            </SectionIndex>
 
-                <h2 class="h2 title">{caseItem.title}</h2>
+            <h2 class="h2 title">{caseItem.title}</h2>
 
-                <div class="meta">
-                    <p class="body2 company">{caseItem.company}</p>
-                    {#if caseItem.period}
-                        <span class="meta-dot"></span>
-                        <p class="body2 period">{caseItem.period}</p>
-                    {/if}
+            <div class="meta">
+                <p class="body2 company">{caseItem.company}</p>
+                {#if caseItem.period}
+                    <span class="meta-dot"></span>
+                    <p class="body2 period">{caseItem.period}</p>
+                {/if}
+            </div>
+            {#if role}
+                <a class="body2 role-link" href="#{role.anchor}" {@attach scrollToAnchor}>{t.cases.during}: {role.title} ↗</a>
+            {/if}
+        </div>
+
+        <!-- Результат первым: по цифрам решают, читать ли дальше -->
+        <div class="hero">
+            <div class="reveal outcome" style:--delay={delay(1)}>
+                <div class="results">
+                    {#each caseItem.results as result, index (result.label)}
+                        <div class="result" style:--c-accent={cssRgb(COLORS[index % COLORS.length])} data-spectrum>
+                            <span class="result-value">
+                                <CountUp value={result.value} delay={0.3 + index * 0.15} />
+                            </span>
+                            <span class="caption result-label">
+                                {t.cases.resultLabels[result.label] ?? result.label}
+                            </span>
+                            {#if t.cases.resultHints[result.label]}
+                                <span class="result-hint">{t.cases.resultHints[result.label]}</span>
+                            {/if}
+                        </div>
+                    {/each}
                 </div>
+                {#if caseItem.context}
+                    <p class="body2 context">{caseItem.context}</p>
+                {/if}
             </div>
 
-            <div class="blocks">
-                {@render contentBlock(t.cases.problem, 'problem', caseItem.problem, 0)}
-                {@render contentBlock(t.cases.solution, 'solution', caseItem.solution, 1)}
-
-                <div class="reveal block" style:--delay={blockDelay(2)}>
-                    <div class="glass-panel panel">
-                        <span class="caption results-label">{t.cases.result}</span>
-                        <div class="results">
-                            {#each caseItem.results as result, index (result.label)}
-                                <div class="reveal result-wrap" style:--delay={resultDelay(index)}>
-                                    <div class="result">
-                                        <p class="result-value">{result.value}</p>
-                                        <span class="caption result-label">{result.label}</span>
-                                    </div>
-                                </div>
-                            {/each}
-                        </div>
-                    </div>
-                </div>
-
-                {#if caseItem.tags?.length}
-                    <div class="reveal block tags" style:--delay={blockDelay(3)}>
-                        {#each caseItem.tags as tag (tag)}
-                            <Chip label={tag} />
-                        {/each}
-                    </div>
-                {/if}
+            <div class="reveal visual-wrap" style:--delay={delay(2)}>
+                <CaseVisual {t} {caseItem} colors={COLORS} />
             </div>
         </div>
 
-        {#if !caseItem.hideRightSlot}
-            <!-- Точка монтирования будущих 3D-сцен (Threlte) -->
-            <div class="reveal slot-wrap">
-                <div class="slot" data-case-id={caseItem.id}>
-                    <span class="caption slot-label">
-                        ПРАВЫЙ СЛОТ<br />{caseItem.id.toUpperCase()}<br />ТВОЙ ИНТЕРАКТИВ
-                    </span>
+        {#if caseItem.facts?.length}
+            <div class="reveal facts-block" style:--delay={delay(3)}>
+                <span class="caption facts-label">{t.cases.facts}</span>
+                <ul class="facts">
+                    {#each caseItem.facts as fact (fact)}
+                        <li class="body2 fact">{fact}</li>
+                    {/each}
+                </ul>
+            </div>
+        {/if}
+
+        <div class="blocks">
+            <div class="reveal block" style:--delay={delay(4)}>
+                <div class="glass-panel panel content-block">
+                    <span class="caption block-label">{t.cases.problem}</span>
+                    <p class="body2 block-text">{caseItem.problem}</p>
                 </div>
+            </div>
+
+            <div class="reveal block" style:--delay={delay(5)}>
+                <div class="glass-panel panel content-block solution">
+                    <span class="caption block-label">{t.cases.solution}</span>
+                    {#if caseItem.steps?.length}
+                        <ol class="steps">
+                            {#each caseItem.steps as step, index (step.title)}
+                                <li class="step">
+                                    <span class="step-index">{index + 1}</span>
+                                    <div class="step-body">
+                                        <p class="step-title">{step.title}</p>
+                                        {#if step.text}
+                                            <p class="body2 step-text">{step.text}</p>
+                                        {/if}
+                                    </div>
+                                </li>
+                            {/each}
+                        </ol>
+                        <details class="details">
+                            <summary class="body2">{t.cases.details}</summary>
+                            <p class="body2 block-text">{caseItem.solution}</p>
+                        </details>
+                    {:else}
+                        <p class="body2 block-text">{caseItem.solution}</p>
+                    {/if}
+                </div>
+            </div>
+        </div>
+
+        {#if caseItem.tags?.length}
+            <div class="reveal tags" style:--delay={delay(6)}>
+                {#each caseItem.tags as tag (tag)}
+                    <!-- Технологии кейса зажигают призму, как в стеке -->
+                    <span class="tag" {@attach glowPrism()}><Chip label={tag} /></span>
+                {/each}
+            </div>
+        {/if}
+
+        {#if prev || next}
+            <div class="reveal case-nav" style:--delay={delay(7)}>
+                {#if prev}
+                    <a class="nav-link" href="#{prev.id}">
+                        <span class="caption nav-label">← {t.cases.prev}</span>
+                        <span class="body2 nav-title">{prev.title}</span>
+                    </a>
+                {/if}
+                {#if next}
+                    <a class="nav-link next" href="#{next.id}">
+                        <span class="caption nav-label">{t.cases.next} →</span>
+                        <span class="body2 nav-title">{next.title}</span>
+                    </a>
+                {/if}
             </div>
         {/if}
     </div>
 </section>
 
-{#snippet contentBlock(label: string, kind: 'problem' | 'solution', text: string, index: number)}
-    <div class="reveal block" style:--delay={blockDelay(index)}>
-        <div class="glass-panel panel content-block {kind}">
-            <span class="caption block-label">{label}</span>
-            <p class="body2 block-text">{text}</p>
-        </div>
-    </div>
-{/snippet}
-
 <style>
-    .layout {
-        display: flex;
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 32px;
-    }
-
     .main {
         display: flex;
-        flex: none;
         flex-direction: column;
         gap: 24px;
-        width: 100%;
-        min-width: 0;
-    }
-
-    .with-slot .main {
-        flex: 1;
     }
 
     .heading {
@@ -123,7 +195,7 @@
         display: flex;
         flex-wrap: wrap;
         align-items: center;
-        gap: 12px;
+        gap: 8px 12px;
     }
 
     .company {
@@ -144,6 +216,130 @@
         font-size: 0.85rem;
         font-style: italic;
     }
+
+    .role-link {
+        width: fit-content;
+        margin-top: -4px;
+        color: rgb(var(--c-neon-soft));
+        font-size: 0.85rem;
+        text-decoration: none;
+        text-underline-offset: 3px;
+    }
+
+    .role-link:hover {
+        text-decoration: underline;
+    }
+
+    /* ── Результат: цифры и визуализация ── */
+
+    .hero {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .outcome {
+        --from: translateY(24px);
+        display: flex;
+        flex: 1;
+        flex-direction: column;
+        gap: 14px;
+        min-width: 0;
+    }
+
+    .results {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+        gap: 12px;
+    }
+
+    .result {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        padding: 16px;
+        border: 1px solid rgb(var(--c-accent) / 0.3);
+        border-radius: 14px;
+        background: rgb(var(--c-accent) / 0.08);
+        box-shadow: 0 0 24px rgb(var(--c-accent) / 0.08);
+    }
+
+    .result-value {
+        color: rgb(var(--c-text-primary));
+        font-family: var(--font-display);
+        font-size: 1.9rem;
+        line-height: 1.1;
+        text-shadow: 0 0 22px rgb(var(--c-accent) / 0.8);
+        white-space: nowrap;
+    }
+
+    .result-label {
+        color: rgb(var(--c-accent));
+        font-size: 0.75rem;
+        letter-spacing: 0.08em;
+        text-transform: none;
+    }
+
+    .result-hint {
+        color: rgb(var(--c-text-secondary));
+        font-size: 0.75rem;
+        line-height: 1.3;
+    }
+
+    .context {
+        color: rgb(var(--c-text-secondary));
+        font-style: italic;
+    }
+
+    .visual-wrap {
+        --from: translateX(30px);
+    }
+
+    /* ── Роль и условия ── */
+
+    .facts-block {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .facts-label {
+        color: rgb(var(--c-neon-soft));
+        letter-spacing: 0.2em;
+    }
+
+    .facts {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin: 0;
+        padding: 0;
+        list-style: none;
+    }
+
+    .fact {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 12px;
+        border: 1px solid rgb(var(--c-neon) / 0.25);
+        border-radius: 10px;
+        background: rgb(var(--c-bg-elevated) / 0.6);
+        color: rgb(var(--c-text-primary));
+        line-height: 1.4;
+    }
+
+    .fact::before {
+        content: '';
+        flex-shrink: 0;
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: rgb(var(--c-neon-soft));
+        box-shadow: 0 0 6px rgb(var(--c-neon));
+    }
+
+    /* ── Проблема и решение ── */
 
     .blocks {
         display: flex;
@@ -183,62 +379,79 @@
         line-height: 1.8;
     }
 
-    .results-label {
-        display: block;
-        margin-bottom: 16px;
-        color: rgb(var(--c-neon-soft));
-        letter-spacing: 0.2em;
-    }
-
-    .results {
-        display: flex;
-        flex-wrap: wrap;
-        justify-content: center;
-        gap: 16px;
-    }
-
-    .result-wrap {
-        --from: scale(0.8);
-        --blur: 4px;
-        --duration: 0.45s;
-        --ease: var(--ease-overshoot);
-    }
-
-    .result {
+    .steps {
         display: flex;
         flex-direction: column;
-        align-items: center;
-        gap: 4px;
-        padding: 12px;
-        border: 1px solid rgb(var(--c-neon) / 0.15);
-        border-radius: 12px;
-        background: rgb(var(--c-neon) / 0.06);
-        text-align: center;
-        transition: all 0.25s ease;
+        gap: 14px;
+        margin: 0;
+        padding: 0;
+        list-style: none;
     }
 
-    .result:hover {
-        border-color: rgb(var(--c-neon) / 0.4);
-        background: rgb(var(--c-neon) / 0.1);
-        box-shadow: 0 0 20px rgb(var(--c-neon) / 0.12);
-        transform: translateY(-2px);
+    .step {
+        display: flex;
+        align-items: flex-start;
+        gap: 14px;
     }
 
-    .result-value {
-        color: rgb(var(--c-neon-soft));
+    .step-index {
+        display: grid;
+        flex-shrink: 0;
+        place-items: center;
+        width: 28px;
+        height: 28px;
+        border: 1px solid rgb(var(--c-neon) / 0.5);
+        border-radius: 50%;
+        background: rgb(var(--c-neon) / 0.15);
+        color: rgb(var(--c-text-primary));
         font-family: var(--font-display);
-        font-size: 1.4rem;
-        line-height: 1;
-        text-shadow: 0 0 20px rgb(var(--c-neon) / 0.5);
+        font-size: 0.75rem;
+        box-shadow: 0 0 12px rgb(var(--c-neon) / 0.25);
     }
 
-    .result-label {
-        color: rgb(var(--c-text-secondary));
-        font-size: 0.7rem;
-        line-height: 1.3;
-        letter-spacing: 0.04em;
-        text-transform: none;
+    .step-body {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        padding-top: 3px;
     }
+
+    .step-title {
+        margin: 0;
+        color: rgb(var(--c-text-primary));
+        font-weight: 600;
+        line-height: 1.4;
+    }
+
+    .step-text {
+        margin: 0;
+        color: rgb(var(--c-text-secondary));
+        line-height: 1.6;
+    }
+
+    .details {
+        margin-top: 16px;
+        padding-top: 12px;
+        border-top: 1px solid rgb(var(--c-neon) / 0.15);
+    }
+
+    .details summary {
+        width: fit-content;
+        color: rgb(var(--c-neon-soft));
+        cursor: pointer;
+    }
+
+    .details summary:focus-visible {
+        border-radius: 4px;
+        outline: 2px solid rgb(var(--c-neon-soft));
+        outline-offset: 2px;
+    }
+
+    .details[open] summary {
+        margin-bottom: 10px;
+    }
+
+    /* ── Теги и навигация ── */
 
     .tags {
         display: flex;
@@ -246,43 +459,81 @@
         gap: 8px;
     }
 
-    .slot-wrap {
-        --from: translateX(40px);
-        --blur: 10px;
-        --duration: 0.75s;
-        --delay: 0.2s;
-        flex-shrink: 0;
-        width: 100%;
+    .tag {
+        display: inline-flex;
+        border-radius: 12px;
+        cursor: default;
+        transition: box-shadow 0.25s ease;
     }
 
-    .slot {
+    .tag:hover,
+    .tag:global([data-lit]) {
+        box-shadow: 0 0 16px rgb(var(--c-neon) / 0.45);
+    }
+
+    .case-nav {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        gap: 12px;
+        padding-top: 16px;
+        border-top: 1px solid rgb(var(--c-neon) / 0.15);
+    }
+
+    .nav-link {
         display: flex;
         flex-direction: column;
-        flex-shrink: 0;
-        align-items: center;
-        justify-content: center;
-        gap: 12px;
-        width: 100%;
-        height: 220px;
-        border: 1px dashed rgb(var(--c-neon) / 0.2);
-        border-radius: 20px;
-        background:
-            radial-gradient(ellipse 60% 50% at 50% 50%, rgb(var(--c-neon) / 0.04) 0%, transparent 70%),
-            rgb(var(--c-bg-elevated) / 0.2);
-        backdrop-filter: blur(8px);
-        -webkit-backdrop-filter: blur(8px);
+        gap: 2px;
+        max-width: 100%;
+        color: inherit;
+        text-decoration: none;
     }
 
-    .slot-label {
-        color: rgb(var(--c-neon-soft) / 0.25);
-        font-size: 0.65rem;
-        letter-spacing: 0.2em;
-        text-align: center;
+    .nav-link.next {
+        margin-left: auto;
+        text-align: right;
+    }
+
+    .nav-label {
+        color: rgb(var(--c-neon-soft));
+        letter-spacing: 0.12em;
+    }
+
+    .nav-title {
+        color: rgb(var(--c-text-secondary));
+        transition: color 0.2s ease;
+    }
+
+    .nav-link:hover .nav-title {
+        color: rgb(var(--c-text-primary));
+    }
+
+    .nav-link:focus-visible,
+    .role-link:focus-visible {
+        border-radius: 4px;
+        outline: 2px solid rgb(var(--c-neon-soft));
+        outline-offset: 2px;
     }
 
     @media (min-width: 900px) {
+        /* Кейс выше окна: без отступов заголовок прилипал бы к краю */
+        section {
+            padding-block: 56px;
+        }
+
         .main {
             gap: 28px;
+        }
+
+        .hero {
+            flex-direction: row;
+            align-items: stretch;
+            gap: 24px;
+        }
+
+        .visual-wrap {
+            flex-shrink: 0;
+            width: 340px;
         }
 
         .panel {
@@ -290,31 +541,11 @@
         }
 
         .result {
-            padding: 16px;
+            padding: 20px;
         }
 
         .result-value {
-            font-size: 1.75rem;
-        }
-    }
-
-    @media (min-width: 1200px) {
-        .layout {
-            align-items: center;
-        }
-
-        .layout.with-slot {
-            flex-direction: row;
-            gap: 48px;
-        }
-
-        .slot-wrap {
-            width: auto;
-        }
-
-        .slot {
-            width: 400px;
-            height: 400px;
+            font-size: 2.3rem;
         }
     }
 </style>
