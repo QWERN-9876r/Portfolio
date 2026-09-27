@@ -7,23 +7,13 @@
 
 ## Выкладка
 
-```bash
-# 1. Сборка под сервер (Linux x86-64) — на Mac, Go на сервере не нужен
-cd deploy/rum && GOOS=linux GOARCH=amd64 go build -o portfolio-rum .
-
-# 2. Бинарник и юнит на сервер
-scp portfolio-rum portfolio-rum.service portfolio:/tmp/
-ssh portfolio 'sudo mv /tmp/portfolio-rum /usr/local/bin/ && sudo mv /tmp/portfolio-rum.service /etc/systemd/system/ \
-  && sudo systemctl daemon-reload && sudo systemctl enable --now portfolio-rum'
-
-# 3. В конфиг nginx — блоки /api/rum из deploy/nginx.example.conf, затем
-ssh portfolio 'sudo nginx -t && sudo systemctl reload nginx'
-```
+Push в `main` с правками в `deploy/rum/` — CI тестирует, собирает под Linux и перезапускает
+сервис (`.github/workflows/deploy-rum.yml`). Разовая настройка сервера и вручную — `deploy/README.md`.
 
 ## Что смотрят посетители
 
 ```bash
-ssh portfolio 'sudo /usr/local/bin/portfolio-rum report -data /var/lib/portfolio-rum/events.jsonl'
+ssh portfolio 'sudo /opt/portfolio-rum/portfolio-rum report -data /var/lib/portfolio-rum/events.jsonl'
 ```
 
 Визиты за 30 дней, медиана LCP и JS, устройства, язык, роль, до каких секций досматривают

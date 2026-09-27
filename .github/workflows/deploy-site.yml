@@ -1,0 +1,67 @@
+# Сайт: проверка типов, сборка (HTML + PDF-резюме) и rsync на сервер.
+# Контент живёт в бакете — после его правок запусти вручную (Actions → Run workflow),
+# чтобы пересобрать HTML. Настройка секретов и сервера — deploy/README.md
+name: Deploy site
+
+on:
+  push:
+    branches: [main]
+    # Сервер и сервис метрик выкладываются отдельно (deploy-rum.yml и вручную)
+    paths-ignore: ['deploy/**', '.github/workflows/deploy-rum.yml']
+  workflow_dispatch:
+
+# Выкладки не наслаиваются: следующая ждёт окончания предыдущей
+concurrency:
+  group: deploy-site
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: production
+    env:
+      SITE_URL: https://qwern9876r.ru
+      WEB_ROOT: /var/www/portfolio/dist
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+      - run: npm run check
+
+      # vite build и печать PDF-резюме в Chrome — он на раннерах GitHub уже установлен
+      - run: npm run build
+
+      - name: SSH-ключ и отпечаток сервера
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          SSH_KNOWN_HOSTS: ${{ secrets.SSH_KNOWN_HOSTS }}
+        run: |
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          printf '%s\n' "$SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
+
+      # 1. Новые чанки — раньше HTML, который на них ссылается.
+      # 2. Остальное с --delete, но старые чанки не трогаем: они нужны вкладкам, открытым до выкладки.
+      # 3. Чанки, которых нет в сборках больше недели, удаляем. У файлов текущей сборки
+      #    rsync только что выставил свежее mtime, поэтому под удаление они не попадают
+      - name: Выкладка dist
+        env:
+          TARGET: ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}
+        run: |
+          export RSYNC_RSH="ssh -i $HOME/.ssh/deploy_key"
+          rsync -az dist/_app/ "$TARGET:$WEB_ROOT/_app/"
+          rsync -az --delete --exclude=/_app/immutable/ dist/ "$TARGET:$WEB_ROOT/"
+          ssh -i ~/.ssh/deploy_key "$TARGET" "find $WEB_ROOT/_app/immutable -type f -mtime +7 -delete"
+
+      - name: Сайт и резюме отвечают
+        run: |
+          curl -fsS -o /dev/null "$SITE_URL/en"
+          curl -fsS -o /dev/null "$SITE_URL/ru"
+          curl -fsS -o /dev/null "$SITE_URL/resume/dmitry-sotnikov-en.pdf"
+          curl -fsS -o /dev/null "$SITE_URL/resume/dmitry-sotnikov-ru.pdf"

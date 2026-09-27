@@ -7,3 +7,5 @@ dist
 *.json
 
 .DS_Store
+
+deploy/rum/portfolio-rum
