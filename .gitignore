@@ -4,8 +4,14 @@ dist
 
 .svelte-kit
 
+test-results
+
+playwright-report
+
 *.json
 
 .DS_Store
 
 deploy/rum/portfolio-rum
+
+.ssh

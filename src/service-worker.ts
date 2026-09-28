@@ -14,30 +14,32 @@ const CACHE = `cache-${version}`
 // Корень — редирект на /en (nginx отвечает 302): такой ответ в кэш не кладём
 const KNOWN = [...build, ...files, ...prerendered].filter((path) => path !== '/')
 
-// При установке забираем только то, что браузер уже скачал: only-if-cached берёт ответ
-// из HTTP-кэша и в сеть не ходит. Посетитель, зашедший один раз, не качает лишнего —
+// Забираем только то, что браузер уже скачал: only-if-cached берёт ответ из HTTP-кэша
+// и в сеть не ходит. Посетитель, зашедший один раз, не качает лишнего —
 // ни чанков Pixi, ни фото в других форматах. Остальное попадёт в кэш по ходу просмотра
-sw.addEventListener('install', (event) => {
-    event.waitUntil(
-        caches.open(CACHE).then((cache) =>
-            Promise.all(
-                KNOWN.map((path) =>
-                    fetch(path, { cache: 'only-if-cached', mode: 'same-origin' })
-                        .then((response) => (response.ok ? cache.put(path, response) : undefined))
-                        .catch(() => {}),
-                ),
-            ),
+const saveDownloaded = async () => {
+    const cache = await caches.open(CACHE)
+    await Promise.all(
+        KNOWN.map((path) =>
+            fetch(path, { cache: 'only-if-cached', mode: 'same-origin' })
+                .then((response) => (response.ok ? cache.put(path, response) : undefined))
+                .catch(() => {}),
         ),
     )
-})
+}
 
-// Первый воркер сразу берёт открытую страницу: её дальнейшие загрузки уже кэшируются
+sw.addEventListener('install', (event) => event.waitUntil(saveDownloaded()))
+
+// Первый воркер сразу берёт открытую страницу: её дальнейшие загрузки уже кэшируются.
+// Скачанное, пока воркер устанавливался, мимо него — забираем ещё раз. Иначе второй визит
+// без сети покажет HTML, но приложение не поднимется: нет модулей, загруженных в эти секунды
 sw.addEventListener('activate', (event) => {
     event.waitUntil(
         caches
             .keys()
             .then((keys) => Promise.all(keys.filter((key) => key !== CACHE).map((key) => caches.delete(key))))
-            .then(() => sw.clients.claim()),
+            .then(() => sw.clients.claim())
+            .then(saveDownloaded),
     )
 })
 

@@ -30,10 +30,13 @@
         let cancelled = false
         let cancelScheduled = () => {}
 
+        // Чанк сцены не скачался (нет сети, а в кэше воркера его нет) — как без WebGL: без призмы
         const load = () =>
-            import('./PrismCanvas.svelte').then((module) => {
-                if (!cancelled) Canvas = module.default
-            })
+            import('./PrismCanvas.svelte')
+                .then((module) => {
+                    if (!cancelled) Canvas = module.default
+                })
+                .catch((error) => console.warn('Prism layer disabled:', error))
 
         const schedule = () => {
             if ('requestIdleCallback' in window) {

@@ -1,4 +1,4 @@
-# Сайт: проверка типов, сборка (HTML + PDF-резюме) и rsync на сервер.
+# Сайт: тесты (test.yml) и rsync проверенной сборки на сервер.
 # Контент живёт в бакете — после его правок запусти вручную (Actions → Run workflow),
 # чтобы пересобрать HTML. Настройка секретов и сервера — deploy/README.md
 name: Deploy site
@@ -16,35 +16,38 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  test:
+    uses: ./.github/workflows/test.yml
+
   deploy:
+    needs: test
     runs-on: ubuntu-latest
     environment: production
     env:
       SITE_URL: https://qwern9876r.ru
       WEB_ROOT: /var/www/portfolio/dist
     steps:
-      - uses: actions/checkout@v5
-
-      - uses: actions/setup-node@v5
+      # Та самая сборка, на которой прошли e2e
+      - uses: actions/download-artifact@v8
         with:
-          node-version: 24
-          cache: npm
-
-      - run: npm ci
-      - run: npm run check
-
-      # vite build и печать PDF-резюме в Chrome — он на раннерах GitHub уже установлен
-      - run: npm run build
+          name: site-dist
+          path: dist
 
       - name: SSH-ключ и отпечаток сервера
         env:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
           SSH_KNOWN_HOSTS: ${{ secrets.SSH_KNOWN_HOSTS }}
+          SSH_HOST: ${{ secrets.SSH_HOST }}
         run: |
           install -m 700 -d ~/.ssh
           printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/deploy_key
           chmod 600 ~/.ssh/deploy_key
           printf '%s\n' "$SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          # ssh ищет ключ по тому имени, к которому подключается: запись для домена не подходит к IP
+          if ! ssh-keygen -F "$SSH_HOST" -f ~/.ssh/known_hosts > /dev/null; then
+            echo "::error::В SSH_KNOWN_HOSTS нет ключа для SSH_HOST — снимите его для того же имени: ssh-keyscan -t ed25519 <SSH_HOST> (deploy/README.md)"
+            exit 1
+          fi
 
       # 1. Новые чанки — раньше HTML, который на них ссылается.
       # 2. Остальное с --delete, но старые чанки не трогаем: они нужны вкладкам, открытым до выкладки.

@@ -1,19 +1,33 @@
 # Выкладка
 
-Push в `main` запускает GitHub Actions:
+Push в `main` запускает GitHub Actions. Оба workflow сначала прогоняют тесты (`test.yml`), выкладка — только если они прошли:
 
-| Что изменилось | Workflow | Что делает |
+| Что изменилось | Workflow | Что выкладывает |
 | --- | --- | --- |
-| всё, кроме `deploy/` | `deploy-site.yml` | `npm run check`, сборка с PDF-резюме, rsync `dist/` в `/var/www/portfolio/dist` |
-| `deploy/rum/` | `deploy-rum.yml` | `go vet`, `go test`, сборка под Linux, замена бинарника в `/opt/portfolio-rum`, перезапуск |
+| всё, кроме `deploy/` | `deploy-site.yml` | сборку с PDF-резюме, на которой прошли e2e, — rsync в `/var/www/portfolio/dist` |
+| `deploy/rum/` | `deploy-rum.yml` | бинарник под Linux в `/opt/portfolio-rum`, перезапуск сервиса |
 
-Оба можно запустить вручную: Actions → workflow → Run workflow. Сайт стоит пересобрать так
+Push в другие ветки запускает только тесты.
+
+Выкладки можно запустить вручную: Actions → workflow → Run workflow. Сайт стоит пересобрать так
 после правок контента в бакете — HTML пререндерится из него при сборке.
 
 Выкладка сайта не ломает открытые вкладки: старые чанки `_app/immutable` остаются на сервере
 ещё неделю после того, как пропали из сборки.
 
 Конфиг nginx (`nginx.example.conf`) и юнит systemd CI не трогает — их правки выкладываются вручную.
+
+## Тесты
+
+```bash
+npm test             # всё: unit, сервис метрик, e2e
+npm run test:unit    # Vitest: логика сайта и service worker (src/**/*.test.ts)
+npm run test:rum     # Go: сервис метрик, HTTP и журнал на диске (deploy/rum/*_test.go)
+npm run test:e2e     # Playwright: собранный сайт + настоящий сервис метрик (tests/e2e)
+```
+
+E2e нужны установленные Chrome и Go; локально сайт собирается перед тестами сам. Сервис метрик
+для них — свой, на порту 8091 с временным журналом, рабочий на 8090 не трогается.
 
 ## Разовая настройка
 
@@ -61,11 +75,14 @@ gh api -X PUT repos/QWERN-9876r/Portfolio/environments/production
 gh secret set SSH_HOST --env production --body qwern9876r.ru
 gh secret set SSH_USER --env production --body <пользователь на сервере>
 gh secret set SSH_PRIVATE_KEY --env production < ~/.ssh/portfolio_ci
-gh secret set SSH_KNOWN_HOSTS --env production --body "$(ssh-keyscan -t ed25519 qwern9876r.ru)"
+gh secret set SSH_KNOWN_HOSTS --env production --body "$(ssh-keyscan -t ed25519 111.88.240.234 qwern9876r.ru)"
 ```
 
-Отпечаток из `ssh-keyscan` стоит сверить с тем, что знает твой ssh:
-`ssh-keygen -lf <(ssh-keyscan -t ed25519 qwern9876r.ru)` и `ssh-keygen -lF qwern9876r.ru`.
+ssh ищет ключ сервера по тому имени, к которому подключается: запись для `qwern9876r.ru`
+не подходит, если в `SSH_HOST` IP (как `HostName` в `~/.ssh/config`), — `Host key verification failed`.
+Поэтому в `SSH_KNOWN_HOSTS` оба имени. Отпечаток стоит сверить с тем, что уже знает твой ssh:
+`ssh-keygen -lf <(ssh-keyscan -t ed25519 111.88.240.234)` и `ssh-keygen -lF 111.88.240.234` —
+должно совпасть (`SHA256:xISUl5QGCIut9keyrrrZjtmrsTmelUHCJMIKv93inqs`).
 
 Сервер не x86-64 — переменная `SERVER_ARCH` (например, `arm64`):
 `gh variable set SERVER_ARCH --env production --body arm64`.
