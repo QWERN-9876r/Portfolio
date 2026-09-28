@@ -1,4 +1,5 @@
 <script lang="ts">
+    import { page } from '$app/state'
     import { useTask, useThrelte } from '@threlte/core'
     import { Camera, Mesh, PlaneGeometry, Scene, ShaderMaterial, Vector2, Vector3, WebGLRenderer } from 'three'
     import { untrack } from 'svelte'
@@ -466,10 +467,15 @@
         kick()
     })
 
-    $effect(() => {
+    // Прокрутка — у #scroll-root текущей страницы. Сцена живёт в общем макете и переживает
+    // переходы (главная ↔ /stats), а #scroll-root у каждой страницы свой: после перехода
+    // подписываемся заново и сразу берём его положение, иначе лучи застынут как при уходе
+    let unbindScroll = () => {}
+    const bindScroll = () => {
+        unbindScroll()
         const root = document.getElementById('scroll-root')
-        if (!root) return
         scrollRoot = root
+        if (!root) return
 
         const onScroll = () => {
             scroll = root.scrollTop
@@ -479,7 +485,15 @@
 
         onScroll()
         root.addEventListener('scroll', onScroll, { passive: true })
-        return () => root.removeEventListener('scroll', onScroll)
+        unbindScroll = () => root.removeEventListener('scroll', onScroll)
+    }
+    // При монтировании и после каждого перехода: эффект идёт после обновления DOM, новая
+    // страница уже на месте. Не afterNavigate: при ленивом монтировании сцены он не зовётся,
+    // а $app/navigation в этом чанке стал бы лишним запросом на первом экране
+    $effect(() => {
+        void page.url.pathname
+        untrack(bindScroll)
+        return () => unbindScroll()
     })
 
     // Удар отдаётся вибрацией на сенсорных экранах. Chrome разрешает vibrate лишь после

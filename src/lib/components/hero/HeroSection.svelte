@@ -16,14 +16,6 @@
     <div class="content">
         <div class="layout">
             <div class="text">
-                <div class="item" style:--delay={delay(0)}>
-                    <p class="status">
-                        <span class="status-dot" aria-hidden="true"></span>
-                        <span>{t.hero.status.label}</span>
-                        <span class="status-detail">{t.hero.status.detail}</span>
-                    </p>
-                </div>
-
                 <div class="item" style:--delay={delay(1)}>
                     <p class="nickname">{NICKNAME}</p>
                 </div>
@@ -107,37 +99,6 @@
 
     .item {
         animation: item-in 0.65s var(--ease-out) var(--delay) both;
-    }
-
-    /* Статус поиска работы: точка цвета спектра, без бесконечной анимации */
-    .status {
-        display: inline-flex;
-        flex-wrap: wrap;
-        align-items: center;
-        justify-content: center;
-        gap: 4px 10px;
-        margin: 0;
-        padding: 6px 14px;
-        border: 1px solid rgb(34 211 238 / 0.35);
-        border-radius: 999px;
-        background: rgb(34 211 238 / 0.08);
-        color: rgb(var(--c-text-primary));
-        font-size: 0.8rem;
-        font-weight: 600;
-        line-height: 1.4;
-    }
-
-    .status-dot {
-        width: 8px;
-        height: 8px;
-        border-radius: 50%;
-        background: #22d3ee;
-        box-shadow: 0 0 10px #22d3ee;
-    }
-
-    .status-detail {
-        color: rgb(var(--c-text-secondary));
-        font-weight: 500;
     }
 
     .nickname {
