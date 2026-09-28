@@ -37,11 +37,17 @@ jobs:
         env:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
           SSH_KNOWN_HOSTS: ${{ secrets.SSH_KNOWN_HOSTS }}
+          SSH_HOST: ${{ secrets.SSH_HOST }}
         run: |
           install -m 700 -d ~/.ssh
           printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/deploy_key
           chmod 600 ~/.ssh/deploy_key
           printf '%s\n' "$SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          # ssh ищет ключ по тому имени, к которому подключается: запись для домена не подходит к IP
+          if ! ssh-keygen -F "$SSH_HOST" -f ~/.ssh/known_hosts > /dev/null; then
+            echo "::error::В SSH_KNOWN_HOSTS нет ключа для SSH_HOST — снимите его для того же имени: ssh-keyscan -t ed25519 <SSH_HOST> (deploy/README.md)"
+            exit 1
+          fi
 
       # 1. Новые чанки — раньше HTML, который на них ссылается.
       # 2. Остальное с --delete, но старые чанки не трогаем: они нужны вкладкам, открытым до выкладки.

@@ -32,8 +32,29 @@ export const ignoreErrors = (errors: string[], pattern: RegExp) => {
 
 // Кадры, в которые страница что-то рисовала через requestAnimationFrame: так рисуют Svelte,
 // three и Pixi. Так же считает сама страница (pageMetrics.ts) — ставим раньше её кода
-export const trackFrames = (page: Page) =>
-    page.addInitScript(() => {
+export const trackFrames = async (page: Page) => {
+    await page.addInitScript((fps) => {
+        const raf = window.requestAnimationFrame.bind(window)
+        let queue = new Map<number, FrameRequestCallback>()
+        let timer = 0
+        let last = 0
+        let id = 0
+        const flush = () =>
+            raf((time) => {
+                timer = 0
+                last = performance.now()
+                const batch = queue
+                queue = new Map()
+                batch.forEach((callback) => callback(time))
+            })
+        window.requestAnimationFrame = (callback) => {
+            queue.set(++id, callback)
+            if (!timer) timer = window.setTimeout(flush, Math.max(0, last + 1000 / fps - performance.now()))
+            return id
+        }
+        window.cancelAnimationFrame = (handle) => void queue.delete(handle)
+    }, Number(process.env.E2E_FPS))
+    return page.addInitScript(() => {
         const requestFrame = window.requestAnimationFrame.bind(window)
         let lastFrame = -1
         window.__frames = 0
@@ -46,6 +67,7 @@ export const trackFrames = (page: Page) =>
                 callback(time)
             })
     })
+}
 
 export const framesInSecond = async (page: Page) => {
     const frames = () => page.evaluate(() => window.__frames)
@@ -55,8 +77,10 @@ export const framesInSecond = async (page: Page) => {
 }
 
 // Страница затихла: несколько секунд подряд ни одного кадра. Одной секунды мало — длинная
-// задача (компиляция шейдеров в SwiftShader) блокирует rAF посреди анимации
-export const waitForQuiet = async (page: Page, { seconds = 3, timeout = 30_000 } = {}) => {
+// задача (компиляция шейдеров в SwiftShader) блокирует rAF посреди анимации.
+// На раннере с 2 ядрами SwiftShader рисует ~1–2 кадра в секунду, и интро идёт медленнее
+// (шаг анимации призмы не больше 0,05 с на кадр): тесты с ожиданием тишины — test.slow()
+export const waitForQuiet = async (page: Page, { seconds = 3, timeout = 60_000 } = {}) => {
     const deadline = Date.now() + timeout
     const history: number[] = []
     while (history.length < seconds || history.slice(-seconds).some((frames) => frames > 0)) {

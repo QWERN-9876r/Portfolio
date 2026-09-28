@@ -75,11 +75,14 @@ gh api -X PUT repos/QWERN-9876r/Portfolio/environments/production
 gh secret set SSH_HOST --env production --body qwern9876r.ru
 gh secret set SSH_USER --env production --body <пользователь на сервере>
 gh secret set SSH_PRIVATE_KEY --env production < ~/.ssh/portfolio_ci
-gh secret set SSH_KNOWN_HOSTS --env production --body "$(ssh-keyscan -t ed25519 qwern9876r.ru)"
+gh secret set SSH_KNOWN_HOSTS --env production --body "$(ssh-keyscan -t ed25519 111.88.240.234 qwern9876r.ru)"
 ```
 
-Отпечаток из `ssh-keyscan` стоит сверить с тем, что знает твой ssh:
-`ssh-keygen -lf <(ssh-keyscan -t ed25519 qwern9876r.ru)` и `ssh-keygen -lF qwern9876r.ru`.
+ssh ищет ключ сервера по тому имени, к которому подключается: запись для `qwern9876r.ru`
+не подходит, если в `SSH_HOST` IP (как `HostName` в `~/.ssh/config`), — `Host key verification failed`.
+Поэтому в `SSH_KNOWN_HOSTS` оба имени. Отпечаток стоит сверить с тем, что уже знает твой ssh:
+`ssh-keygen -lf <(ssh-keyscan -t ed25519 111.88.240.234)` и `ssh-keygen -lF 111.88.240.234` —
+должно совпасть (`SHA256:xISUl5QGCIut9keyrrrZjtmrsTmelUHCJMIKv93inqs`).
 
 Сервер не x86-64 — переменная `SERVER_ARCH` (например, `arm64`):
 `gh variable set SERVER_ARCH --env production --body arm64`.

@@ -27,6 +27,7 @@ test(`JS до load — не больше ${JS_BUDGET_KB} КБ gzip`, async ({ pa
 })
 
 test('в покое страница не рисует ни одного кадра', async ({ page }) => {
+    test.slow()
     await trackFrames(page)
     await page.goto('/en')
 
@@ -35,13 +36,15 @@ test('в покое страница не рисует ни одного кад�
 })
 
 test('сцена Pixi рисует, пока на неё смотрят, и засыпает в покое', async ({ page }) => {
-    test.slow()
+    // Дважды ждём тишины: после интро и после сцены
+    test.setTimeout(150_000)
     await trackFrames(page)
     await page.goto('/en')
     await waitForQuiet(page)
 
     await page.locator('#stack-1').scrollIntoViewIfNeeded()
-    await expect.poll(() => framesInSecond(page), { timeout: 10_000, intervals: [0] }).toBeGreaterThan(5)
+    // Hero уже затих — кадры теперь рисует только сцена
+    await expect.poll(() => framesInSecond(page), { timeout: 10_000, intervals: [0] }).toBeGreaterThan(0)
     // Подсказка пальцем, затем IDLE_MS без курсора — и сцена спит
     await waitForQuiet(page)
 })
