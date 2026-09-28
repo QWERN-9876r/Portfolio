@@ -1,10 +1,10 @@
 <script lang="ts">
     import { browser } from '$app/environment'
     import { page } from '$app/state'
-    import LanguageToggle from '$lib/components/LanguageToggle.svelte'
+    import TopBar from '$lib/components/TopBar.svelte'
     import PrismLayer from '$lib/three/PrismLayer.svelte'
     import { LOCALES, translations, type Locale } from '$lib/i18n/translations'
-    import { DEFAULT_ROLE, isRole, rolePath } from '$lib/role'
+    import { DEFAULT_ROLE, isRole } from '$lib/role'
     import { GITHUB_URL, HH_URL, NICKNAME, PHOTO, SITE_URL, TG_URL } from '$lib/site'
 
     let { data, children } = $props()
@@ -23,7 +23,12 @@
     $effect(() => {
         document.documentElement.lang = data.lang
     })
-    const canonical = $derived(SITE_URL + rolePath(data.lang, role))
+    // Та же страница на другом языке: /en/backend → /ru/backend, /en/stats → /ru/stats
+    const localePath = (locale: Locale) => page.url.pathname.replace(/^\/[^/]+/, `/${locale}`)
+    const hrefs = $derived(
+        Object.fromEntries(LOCALES.map((locale) => [locale, localePath(locale)])) as Record<Locale, string>,
+    )
+    const canonical = $derived(SITE_URL + hrefs[data.lang])
 
     const jsonLd = $derived(
         JSON.stringify({
@@ -46,9 +51,9 @@
     <meta name="robots" content="index, follow" />
     <link rel="canonical" href={canonical} />
     {#each LOCALES as locale (locale)}
-        <link rel="alternate" hreflang={locale} href={SITE_URL + rolePath(locale, role)} />
+        <link rel="alternate" hreflang={locale} href={SITE_URL + hrefs[locale]} />
     {/each}
-    <link rel="alternate" hreflang="x-default" href={SITE_URL + rolePath('en', role)} />
+    <link rel="alternate" hreflang="x-default" href={SITE_URL + hrefs.en} />
     <link rel="manifest" href="/{data.lang}/manifest.webmanifest" />
 
     <!-- Превью ссылки в Telegram, соцсетях и мессенджерах. site_name Telegram показывает
@@ -85,7 +90,7 @@
 </svelte:head>
 
 <div id="bg-layer" aria-hidden="true"></div>
-<LanguageToggle lang={data.lang} {role} />
+<TopBar lang={data.lang} {hrefs} />
 
 {@render children()}
 

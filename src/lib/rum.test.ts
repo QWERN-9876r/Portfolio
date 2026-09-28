@@ -1,6 +1,6 @@
 // @vitest-environment happy-dom
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { fetchRumSummary, RUM_MIN_VISITORS, startRum } from './rum'
+import { fetchRumSummary, RUM_MIN_VISITORS, sentBeacon, startRum } from './rum'
 
 vi.mock('$app/environment', () => ({ browser: true, building: false, dev: false }))
 
@@ -121,11 +121,29 @@ describe('startRum', () => {
         expect(sendBeacon).not.toHaveBeenCalled()
     })
 
-    it('после остановки ничего не шлёт', () => {
+    it('переход на другую страницу сайта — тоже уход: beacon один, дальше тишина', () => {
         startRum(() => ({ lang: 'en', role: 'frontend' }))()
         leave()
+        document.dispatchEvent(new Event('visibilitychange'))
 
-        expect(sendBeacon).not.toHaveBeenCalled()
+        expect(sendBeacon).toHaveBeenCalledTimes(1)
+    })
+
+    it('отправленный визит помнится — по нему статистика узнаёт «ваш» визит', async () => {
+        stop = startRum(() => ({ lang: 'ru', role: 'backend' }))
+        await flush()
+        leave()
+
+        expect(sentBeacon()).toEqual(beacons()[0].event)
+    })
+
+    it('браузер не принял beacon — помнить нечего', () => {
+        const previous = sentBeacon()
+        sendBeacon.mockReturnValueOnce(false)
+        stop = startRum(() => ({ lang: 'en', role: 'fullstack' }))
+        leave()
+
+        expect(sentBeacon()).toBe(previous)
     })
 })
 

@@ -29,6 +29,8 @@ const config = {
                         `/${lang}`,
                         ...ROLE_SEGMENTS.map((role) => /** @type {const} */ (`/${lang}/${role}`)),
                         `/${lang}/manifest.webmanifest`,
+                        // Живая статистика: HTML-каркас, данные приходят в браузере
+                        `/${lang}/stats`,
                         // Страница резюме: из неё после сборки печатается PDF
                         `/resume/${lang}`,
                     ],

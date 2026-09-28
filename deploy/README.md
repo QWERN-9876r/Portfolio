@@ -63,7 +63,8 @@ ssh portfolio
 Запустит сервис первая выкладка из CI. Если раньше бинарник ставился в `/usr/local/bin`,
 его можно удалить.
 
-В конфиг nginx на сервере — блоки `/api/rum` из `nginx.example.conf`, затем
+В конфиг nginx на сервере — блоки `/api/rum` из `nginx.example.conf`: точный для приёма визитов
+и префиксный `^~ /api/rum/` для сводки и живой ленты (SSE, без буфера). Затем
 `sudo nginx -t && sudo systemctl reload nginx`.
 
 ### 3. Секреты GitHub

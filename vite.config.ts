@@ -30,17 +30,19 @@ const RUM_SERVICE = process.env.RUM_SERVICE ?? 'http://127.0.0.1:8090'
 const rumLocal = (): Plugin => {
     let warned = false
     const forward: Connect.NextHandleFunction = async (req, res) => {
+        // Зритель ушёл — обрываем и запрос к сервису: иначе живая лента висела бы открытой
+        const abort = new AbortController()
+        res.on('close', () => abort.abort())
+
+        let upstream: Response
         try {
             const chunks: Buffer[] = []
             for await (const chunk of req) chunks.push(chunk)
-            const upstream = await fetch(RUM_SERVICE + (req.originalUrl ?? req.url), {
+            upstream = await fetch(RUM_SERVICE + (req.originalUrl ?? req.url), {
                 method: req.method,
                 body: req.method === 'POST' ? Buffer.concat(chunks).toString() : undefined,
+                signal: abort.signal,
             })
-            res.statusCode = upstream.status
-            const type = upstream.headers.get('content-type')
-            if (type) res.setHeader('Content-Type', type)
-            res.end(new Uint8Array(await upstream.arrayBuffer()))
         } catch {
             if (!warned) {
                 warned = true
@@ -48,7 +50,24 @@ const rumLocal = (): Plugin => {
             }
             res.statusCode = 204
             res.end()
+            return
         }
+
+        res.statusCode = upstream.status
+        for (const name of ['content-type', 'cache-control']) {
+            const value = upstream.headers.get(name)
+            if (value) res.setHeader(name, value)
+        }
+        // Потоком, а не целиком: события живой ленты (SSE) уходят в браузер сразу
+        const reader = upstream.body?.getReader()
+        try {
+            for (let chunk = await reader?.read(); chunk && !chunk.done; chunk = await reader?.read()) {
+                res.write(chunk.value)
+            }
+        } catch {
+            // Зритель закрыл страницу посреди потока
+        }
+        res.end()
     }
     return {
         name: 'rum-local',
@@ -67,9 +86,16 @@ export default defineConfig({
         rolldownOptions: {
             output: {
                 // Рантайм Svelte — одним чанком. Иначе модули, общие для страницы и ленивого
-                // чанка Threlte, выносятся в отдельный файл: лишний запрос на первом экране
+                // чанка Threlte, выносятся в отдельный файл: лишний запрос на первом экране.
+                // Туда же — свои модули, общие для главной и /stats (замеры, RUM, роли, оценки):
+                // иначе у главной лишние маленькие запросы
                 codeSplitting: {
-                    groups: [{ name: 'svelte', test: /node_modules[\\/]svelte[\\/]/ }],
+                    groups: [
+                        {
+                            name: 'svelte',
+                            test: /node_modules[\\/]svelte[\\/]|src[\\/]lib[\\/](pageMetrics|rum|role|stats[\\/]vitals)\.ts$/,
+                        },
+                    ],
                 },
             },
         },

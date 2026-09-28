@@ -1,8 +1,8 @@
 <script lang="ts">
     import { LOCALES, translations, type Locale } from '$lib/i18n/translations'
-    import { rolePath, type Role } from '$lib/role'
 
-    let { lang, role }: { lang: Locale; role: Role } = $props()
+    // hrefs — та же страница на каждом языке
+    let { lang, hrefs }: { lang: Locale; hrefs: Record<Locale, string> } = $props()
 
     const t = $derived(translations[lang].languageToggle)
 </script>
@@ -10,7 +10,7 @@
 <nav aria-label={t.label}>
     {#each LOCALES as locale (locale)}
         <a
-            href={rolePath(locale, role)}
+            href={hrefs[locale]}
             hreflang={locale}
             class="caption"
             class:active={locale === lang}
@@ -26,10 +26,6 @@
 
 <style>
     nav {
-        position: fixed;
-        top: 16px;
-        right: 16px;
-        z-index: 20;
         display: flex;
         gap: 2px;
         padding: 4px;
@@ -38,13 +34,6 @@
         background: rgb(var(--c-bg-elevated) / 0.78);
         backdrop-filter: blur(14px);
         -webkit-backdrop-filter: blur(14px);
-    }
-
-    @media (min-width: 900px) {
-        nav {
-            top: 24px;
-            right: 32px;
-        }
     }
 
     a {

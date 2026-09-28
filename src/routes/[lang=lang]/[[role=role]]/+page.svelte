@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { goto } from '$app/navigation'
+    import { beforeNavigate, goto } from '$app/navigation'
     import { page } from '$app/state'
     import AboutSection from '$lib/components/AboutSection.svelte'
     import AllTechSection from '$lib/components/AllTechSection.svelte'
@@ -64,8 +64,14 @@
         }
     })
 
-    // Метрики и путь посетителя уходят на deploy/rum одним beacon при уходе со страницы
-    onMount(() => startRum(() => ({ lang: data.lang, role })))
+    // Метрики и путь посетителя уходят на deploy/rum одним beacon при уходе со страницы.
+    // Переход на другую страницу сайта (статистику) — тоже уход: отправляем до смены страницы,
+    // пока её секции на месте, — после DOM уже убран и увиденные секции не найти
+    let leaveRum = () => {}
+    onMount(() => (leaveRum = startRum(() => ({ lang: data.lang, role }))))
+    beforeNavigate(({ to }) => {
+        if (to && to.route.id !== page.route.id) leaveRum()
+    })
 
     // Старые ссылки вида /en?role=backend (в проде их перенаправляет nginx)
     onMount(() => {

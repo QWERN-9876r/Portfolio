@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { match as langParam } from '../../params/lang'
+import { statsTranslations } from './stats'
 import { isLocale, LOCALES, translations } from './translations'
 
 // Словари с произвольными ключами: подписи из cases.json переводятся выборочно
@@ -35,16 +36,20 @@ describe('языки', () => {
     })
 })
 
-describe('переводы', () => {
+// Основные строки и строки страницы /stats (отдельный модуль) проверяются одинаково
+describe.each([
+    ['переводы', translations],
+    ['строки /stats', statsTranslations],
+] as const)('%s', (_, strings: Record<(typeof LOCALES)[number], object>) => {
     const [base, ...others] = LOCALES
-    const baseLeaves = flatten(translations[base])
+    const baseLeaves = flatten(strings[base])
 
     it.each(others)(`у %s те же строки, что у ${base}`, (lang) => {
-        expect([...flatten(translations[lang]).keys()].sort()).toEqual([...baseLeaves.keys()].sort())
+        expect([...flatten(strings[lang]).keys()].sort()).toEqual([...baseLeaves.keys()].sort())
     })
 
     it.each(others)(`у %s те же подстановки {…}, что у ${base}`, (lang) => {
-        const leaves = flatten(translations[lang])
+        const leaves = flatten(strings[lang])
         for (const [path, leaf] of baseLeaves) {
             const other = leaves.get(path)
             if (leaf.kind === 'text' && other?.kind === 'text') {
@@ -54,7 +59,7 @@ describe('переводы', () => {
     })
 
     it.each(LOCALES)('%s: пустых строк нет', (lang) => {
-        for (const [path, leaf] of flatten(translations[lang])) {
+        for (const [path, leaf] of flatten(strings[lang])) {
             const texts = leaf.kind === 'text' ? [leaf.value] : Object.values(leaf.forms)
             for (const text of texts) expect(text.trim(), path).not.toBe('')
         }
@@ -63,7 +68,7 @@ describe('переводы', () => {
     // Без нужной формы LiveMetrics возьмёт other: «у 5 посетителя»
     it.each(LOCALES)('%s: формы множественного числа — на все случаи языка', (lang) => {
         const categories = new Intl.PluralRules(lang).resolvedOptions().pluralCategories
-        for (const [path, leaf] of flatten(translations[lang])) {
+        for (const [path, leaf] of flatten(strings[lang])) {
             if (leaf.kind === 'plural') expect(Object.keys(leaf.forms).sort(), path).toEqual([...categories].sort())
         }
     })

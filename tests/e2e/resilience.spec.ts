@@ -8,24 +8,26 @@ test('второй визит открывается без сети', async ({ 
     // воркер устанавливался, проверяет unit-тест service-worker.test.ts — здесь эта гонка
     // зависела бы от нагрузки на машину
     await page.reload()
-    await page.waitForLoadState('networkidle')
 
     // Худший случай: ленивые чанки приложения (3D, Pixi), скачанные после load, не попали в кэш
-    // воркера — например, грузились, пока он активировался. Без них страница должна работать
-    const dropped = await page.evaluate(async () => {
+    // воркера — например, грузились, пока он активировался. Без них страница должна работать.
+    // Призма импортируется в requestIdleCallback — ждём, пока хоть один чанк догрузится
+    const lazy = await page.waitForFunction(() => {
         const { loadEventEnd } = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming
-        const lazy = performance
+        const names = performance
             .getEntriesByType('resource')
             .filter(
                 (entry) =>
                     entry.startTime > loadEventEnd &&
                     /^\/_app\/immutable\/chunks\/.+\.js$/.test(new URL(entry.name).pathname),
             )
-        const cache = await caches.open((await caches.keys())[0])
-        await Promise.all(lazy.map((entry) => cache.delete(entry.name)))
-        return lazy.length
+            .map((entry) => entry.name)
+        return names.length > 0 && names
     })
-    expect(dropped).toBeGreaterThan(0)
+    await page.evaluate(async (names) => {
+        const cache = await caches.open((await caches.keys())[0])
+        await Promise.all(names.map((name) => cache.delete(name)))
+    }, (await lazy.jsonValue()) as string[])
 
     await context.setOffline(true)
     await page.reload()

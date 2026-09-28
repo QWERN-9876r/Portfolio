@@ -4,6 +4,8 @@
     import type { Locale, Translation } from '$lib/i18n/translations'
     import { measurePage, watchIdleFps, type PageMetrics } from '$lib/pageMetrics'
     import { fetchRumSummary, type RumSummary } from '$lib/rum'
+    import { JS_BUDGET_KB } from '$lib/site'
+    import { rate, rateBudget, rateIdleFrames, type Rating } from '$lib/stats/vitals'
 
     let { t, lang }: { t: Translation; lang: Locale } = $props()
 
@@ -56,17 +58,30 @@
         return `${(ms / 1000).toFixed(1).replace('.', units.decimal)} ${units.s}`
     }
 
-    const cells = $derived.by(() => {
+    // Оценка — цветом значения: хорошие цифры видны сразу (нормы Google, бюджет JS, ноль кадров в покое)
+    const cells = $derived.by((): { key: string; label: string; value: string; rating?: Rating }[] => {
         const { metrics: labels, units } = t.whyMe
+        const paint = metrics?.paint
         return [
-            { key: 'paint', label: labels[metrics?.paint?.kind ?? 'lcp'], value: time(metrics?.paint?.ms) },
+            {
+                key: 'paint',
+                label: labels[paint?.kind ?? 'lcp'],
+                value: time(paint?.ms),
+                rating: paint ? rate(paint.kind, paint.ms) : undefined,
+            },
             { key: 'load', label: labels.load, value: time(metrics?.loadMs) },
             {
                 key: 'js',
                 label: labels.js,
                 value: metrics?.jsBytes ? `${Math.round(metrics.jsBytes / 1024)} ${units.kb}` : DASH,
+                rating: metrics?.jsBytes ? rateBudget(metrics.jsBytes / 1024, JS_BUDGET_KB) : undefined,
             },
-            { key: 'fps', label: labels.fps, value: fps === null ? DASH : String(fps) },
+            {
+                key: 'fps',
+                label: labels.fps,
+                value: fps === null ? DASH : String(fps),
+                rating: fps === null ? undefined : rateIdleFrames(fps),
+            },
         ]
     })
 </script>
@@ -75,7 +90,7 @@
     <span class="caption measured">{t.whyMe.measured}</span>
     <dl class="grid" style:--chars={Math.max(1, ...cells.map((cell) => cell.value.length))}>
         {#each cells as cell (cell.key)}
-            <div class="cell">
+            <div class="cell" data-rating={cell.rating}>
                 <dt class="caption label">{cell.label}</dt>
                 <dd class="value"><CountUp value={cell.value} /></dd>
             </div>
@@ -87,6 +102,9 @@
             <span class="visitors-values">{visitorsLine.values}</span>
         </p>
     {/if}
+    <a class="body2 stats-link" href="/{lang}/stats">
+        {t.whyMe.statsLink}<span class="arrow" aria-hidden="true">→</span>
+    </a>
 </div>
 
 <style>
@@ -152,6 +170,50 @@
         color: rgb(var(--c-text-primary));
         font-family: var(--font-display);
         font-size: 0.8rem;
+    }
+
+    /* Как ссылки на кейсы в соседних карточках */
+    .stats-link {
+        align-self: flex-start;
+        color: rgb(var(--c-accent));
+        line-height: 1.4;
+        text-decoration: none;
+        text-underline-offset: 3px;
+    }
+
+    .stats-link:hover {
+        text-decoration: underline;
+    }
+
+    .stats-link:focus-visible {
+        border-radius: 4px;
+        outline: 2px solid rgb(var(--c-accent));
+        outline-offset: 2px;
+    }
+
+    .arrow {
+        display: inline-block;
+        margin-left: 6px;
+        transition: transform 0.2s ease;
+    }
+
+    .stats-link:hover .arrow {
+        transform: translateX(3px);
+    }
+
+    .cell[data-rating='good'] {
+        --c-rating: var(--c-good);
+    }
+    .cell[data-rating='fair'] {
+        --c-rating: var(--c-fair);
+    }
+    .cell[data-rating='poor'] {
+        --c-rating: var(--c-poor);
+    }
+
+    .cell[data-rating] .value {
+        color: rgb(var(--c-rating));
+        text-shadow: 0 0 16px rgb(var(--c-rating) / 0.55);
     }
 
     .value {

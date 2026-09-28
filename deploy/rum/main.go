@@ -5,6 +5,8 @@
 //
 //	portfolio-rum -addr 127.0.0.1:8090 -data events.jsonl   — сервер
 //	portfolio-rum report -data events.jsonl                  — что смотрят посетители
+//
+// GET /api/rum/summary — медианы за окно, GET /api/rum/live — живая лента визитов (SSE)
 package main
 
 import (
@@ -85,6 +87,7 @@ type store struct {
 	file   *os.File
 	events []Event
 	window time.Duration
+	live   hub
 
 	cached   []byte
 	cachedAt time.Time
@@ -117,12 +120,35 @@ func (s *store) add(e Event) error {
 		return err
 	}
 	s.mu.Lock()
-	defer s.mu.Unlock()
 	if _, err := s.file.Write(append(line, '\n')); err != nil {
+		s.mu.Unlock()
 		return err
 	}
 	s.events = append(s.events, e)
+	s.mu.Unlock()
+	s.live.publish(e)
 	return nil
+}
+
+// Убирает события старше окна; вызывать под s.mu
+func (s *store) prune() {
+	since := time.Now().Add(-s.window).Unix()
+	s.events = slices.DeleteFunc(s.events, func(e Event) bool { return e.Time < since })
+}
+
+func (s *store) days() int { return int(s.window.Hours() / 24) }
+
+// Последние n визитов за окно, новые первыми, и сколько всего визитов в окне
+func (s *store) recent(n int) ([]Event, int) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.prune()
+	visits := slices.Clone(s.events[max(0, len(s.events)-n):])
+	slices.Reverse(visits)
+	if visits == nil {
+		visits = []Event{}
+	}
+	return visits, len(s.events)
 }
 
 type stat struct {
@@ -174,11 +200,63 @@ func (s *store) summary() []byte {
 	if s.cached != nil && time.Since(s.cachedAt) < time.Minute {
 		return s.cached
 	}
-	since := time.Now().Add(-s.window).Unix()
-	s.events = slices.DeleteFunc(s.events, func(e Event) bool { return e.Time < since })
-	s.cached, _ = json.Marshal(summarize(s.events, int(s.window.Hours()/24)))
+	s.prune()
+	s.cached, _ = json.Marshal(summarize(s.events, s.days()))
 	s.cachedAt = time.Now()
 	return s.cached
+}
+
+// Живая лента для страницы статистики: при подключении — последние визиты, дальше — новые
+// по мере записи (Server-Sent Events). Поля те же, что в журнале: без IP и идентификаторов
+const (
+	liveBacklog    = 20
+	maxLiveClients = 100
+)
+
+// Пинг держит соединение открытым через прокси: у nginx proxy_read_timeout по умолчанию 60 с
+var liveHeartbeat = 25 * time.Second
+
+type hub struct {
+	mu      sync.Mutex
+	clients map[chan Event]struct{}
+}
+
+func (h *hub) subscribe() (chan Event, bool) {
+	h.mu.Lock()
+	defer h.mu.Unlock()
+	if len(h.clients) >= maxLiveClients {
+		return nil, false
+	}
+	if h.clients == nil {
+		h.clients = map[chan Event]struct{}{}
+	}
+	ch := make(chan Event, 16)
+	h.clients[ch] = struct{}{}
+	return ch, true
+}
+
+func (h *hub) unsubscribe(ch chan Event) {
+	h.mu.Lock()
+	defer h.mu.Unlock()
+	delete(h.clients, ch)
+}
+
+// Отстающий зритель пропускает визит, а не задерживает запись журнала
+func (h *hub) publish(e Event) {
+	h.mu.Lock()
+	defer h.mu.Unlock()
+	for ch := range h.clients {
+		select {
+		case ch <- e:
+		default:
+		}
+	}
+}
+
+type liveSnapshot struct {
+	Days     int     `json:"days"`
+	Visitors int     `json:"visitors"`
+	Visits   []Event `json:"visits"`
 }
 
 // Грубое ограничение частоты на весь сервис: защита журнала от заливки мусором
@@ -244,6 +322,45 @@ func newHandler(s *store, limit *limiter) http.Handler {
 		w.Header().Set("Content-Type", "application/json")
 		w.Header().Set("Cache-Control", "public, max-age=300")
 		w.Write(s.summary())
+	})
+	mux.HandleFunc("GET /api/rum/live", func(w http.ResponseWriter, r *http.Request) {
+		flusher, ok := w.(http.Flusher)
+		if !ok {
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		ch, ok := s.live.subscribe()
+		if !ok {
+			w.WriteHeader(http.StatusServiceUnavailable)
+			return
+		}
+		defer s.live.unsubscribe(ch)
+
+		header := w.Header()
+		header.Set("Content-Type", "text/event-stream")
+		header.Set("Cache-Control", "no-store")
+		// nginx отдаёт поток сразу, не копя его в буфере
+		header.Set("X-Accel-Buffering", "no")
+
+		visits, total := s.recent(liveBacklog)
+		snapshot, _ := json.Marshal(liveSnapshot{Days: s.days(), Visitors: total, Visits: visits})
+		fmt.Fprintf(w, "retry: 5000\nevent: snapshot\ndata: %s\n\n", snapshot)
+		flusher.Flush()
+
+		heartbeat := time.NewTicker(liveHeartbeat)
+		defer heartbeat.Stop()
+		for {
+			select {
+			case <-r.Context().Done():
+				return
+			case e := <-ch:
+				data, _ := json.Marshal(e)
+				fmt.Fprintf(w, "event: visit\ndata: %s\n\n", data)
+			case <-heartbeat.C:
+				fmt.Fprint(w, ": ping\n\n")
+			}
+			flusher.Flush()
+		}
 	})
 	return mux
 }

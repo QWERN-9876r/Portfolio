@@ -70,4 +70,6 @@ test('«Почему я» показывает медиану посетител
     await expect(visitors).toContainText(/Медиана у \d+ посетителей за 30 дней/)
     await expect(visitors).toContainText(`LCP ${SEEDED.lcpMs} мс`)
     await expect(visitors).toContainText(`JS ${SEEDED.jsBytes / 1024} КБ`)
+    // Замеры этой вкладки — с оценкой цветом (нормы Google, бюджет JS)
+    await expect(page.locator('#selling-points .cell[data-rating]').first()).toBeVisible()
 })

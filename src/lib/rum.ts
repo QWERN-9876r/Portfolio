@@ -2,7 +2,8 @@ import { browser } from '$app/environment'
 import { currentPaint, measurePage, type PageMetrics } from '$lib/pageMetrics'
 
 // Метрики настоящих посетителей (сервис — deploy/rum). При уходе со страницы один beacon:
-// замеры, какие секции посетитель увидел и по каким контактам кликнул.
+// замеры, какие секции посетитель увидел и по каким контактам кликнул. Уход — это и закрытие
+// вкладки, и переход на другую страницу сайта (статистику): тогда визит виден в её ленте сразу.
 // Без cookie, идентификаторов и IP; автотесты и боты (navigator.webdriver) не считаются.
 // Локально (dev и preview) запросы уходят в локальный сервис через прокси Vite, не в прод
 
@@ -17,6 +18,22 @@ const CTA: [RegExp, string][] = [
     [/^https:\/\/github\.com\//, 'github'],
     [/^https:\/\/hh\.ru\//, 'hh'],
 ]
+
+export interface VisitBeacon {
+    lang: string
+    role: string
+    device: 'mobile' | 'desktop'
+    paint?: 'lcp' | 'fcp'
+    paintMs?: number
+    loadMs?: number
+    js?: number
+    sections: string[]
+    cta: string[]
+}
+
+// Что эта вкладка отправила последним — страница статистики узнаёт по нему «ваш» визит в ленте
+let lastBeacon: VisitBeacon | null = null
+export const sentBeacon = () => lastBeacon
 
 export const startRum = (context: () => { lang: string; role: string }) => {
     if (!browser || navigator.webdriver || !('sendBeacon' in navigator)) return () => {}
@@ -39,19 +56,17 @@ export const startRum = (context: () => { lang: string; role: string }) => {
         const sections = [...document.querySelectorAll('#scroll-root > section[data-revealed]')].map((s) => s.id)
         // Отрисовку — на момент ухода: LCP мог уточниться после замера
         const paint = currentPaint()
-        navigator.sendBeacon(
-            ENDPOINT,
-            JSON.stringify({
-                ...context(),
-                device: matchMedia('(pointer: coarse)').matches ? 'mobile' : 'desktop',
-                paint: paint?.kind,
-                paintMs: paint?.ms,
-                loadMs: metrics?.loadMs ?? undefined,
-                js: metrics?.jsBytes ?? undefined,
-                sections,
-                cta: [...cta],
-            }),
-        )
+        const beacon: VisitBeacon = {
+            ...context(),
+            device: matchMedia('(pointer: coarse)').matches ? 'mobile' : 'desktop',
+            paint: paint?.kind,
+            paintMs: paint?.ms,
+            loadMs: metrics?.loadMs ?? undefined,
+            js: metrics?.jsBytes ?? undefined,
+            sections,
+            cta: [...cta],
+        }
+        if (navigator.sendBeacon(ENDPOINT, JSON.stringify(beacon))) lastBeacon = beacon
     }
     const onVisibility = () => {
         if (document.visibilityState === 'hidden') send()
@@ -60,7 +75,9 @@ export const startRum = (context: () => { lang: string; role: string }) => {
     document.addEventListener('click', onClick, true)
     document.addEventListener('visibilitychange', onVisibility)
     addEventListener('pagehide', send)
+    // Переход на другую страницу сайта — тоже уход
     return () => {
+        send()
         document.removeEventListener('click', onClick, true)
         document.removeEventListener('visibilitychange', onVisibility)
         removeEventListener('pagehide', send)

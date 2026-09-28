@@ -26,6 +26,9 @@ let firstInput = Infinity
 // buffered вернёт и то, что было до загрузки этого модуля
 let lcp: number | null = null
 
+// Кадры с открытия вкладки: из разницы за секунду страница статистики рисует график
+export const framesDrawn = () => frames
+
 if (browser) {
     window.requestAnimationFrame = (callback) =>
         nextFrame((time) => {
@@ -69,6 +72,10 @@ const jsSize = async (entry: PerformanceResourceTiming) => {
     return entry.encodedBodySize
 }
 
+// Сжатый JS по записям Resource Timing — так же, как в measurePage
+export const scriptBytes = async (entries: PerformanceResourceTiming[]) =>
+    (await Promise.all(entries.filter((entry) => JS.test(entry.name)).map(jsSize))).reduce((sum, size) => sum + size, 0)
+
 // LCP, а где его нет (Safari) — FCP; на момент вызова, LCP может ещё уточниться
 export const currentPaint = (): PageMetrics['paint'] => {
     const fcp = performance.getEntriesByName('first-contentful-paint')[0]?.startTime ?? null
@@ -102,10 +109,11 @@ export const measurePage = async (): Promise<PageMetrics> => {
     const navigation = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming | undefined
     const loadEnd = navigation?.loadEventEnd || null
 
-    const scripts = (performance.getEntriesByType('resource') as PerformanceResourceTiming[]).filter(
-        (entry) => JS.test(entry.name) && (loadEnd === null || entry.startTime < loadEnd),
+    const jsBytes = await scriptBytes(
+        (performance.getEntriesByType('resource') as PerformanceResourceTiming[]).filter(
+            (entry) => loadEnd === null || entry.startTime < loadEnd,
+        ),
     )
-    const jsBytes = (await Promise.all(scripts.map(jsSize))).reduce((sum, size) => sum + size, 0)
 
     return {
         paint: currentPaint(),

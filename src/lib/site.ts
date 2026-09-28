@@ -7,6 +7,9 @@ export const SITE_URL = 'https://qwern9876r.ru'
 // после замены фото браузеры не покажут старое из кэша (nginx кэширует картинки на 30 дней)
 export const PHOTO = '/img/photo-3c2880ff'
 
+// JS до события load, КБ gzip: держит e2e-тест, показывают «Почему я» и /stats
+export const JS_BUDGET_KB = 70
+
 // На чём сделан сам сайт: в опыте работы с тем же стеком — бейдж «этот сайт — на том же стеке»
 export const SITE_STACK = ['Svelte', 'Threlte', 'Three.js', 'Pixi.js', 'WebGL']
 

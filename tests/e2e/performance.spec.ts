@@ -1,9 +1,9 @@
 import { statSync } from 'node:fs'
+import { JS_BUDGET_KB } from '../../src/lib/site'
 import { expect, framesInSecond, test, trackFrames, waitForQuiet } from './fixtures'
 
 // JS до события load в сжатом виде — как его отдаёт nginx (gzip_static, .gz из сборки).
 // Держит цифру «JS на первом экране» в кейсе «Этот сайт»: three и Pixi (~140 КБ) грузятся после load
-const JS_BUDGET_KB = 70
 
 test(`JS до load — не больше ${JS_BUDGET_KB} КБ gzip`, async ({ page }) => {
     await page.goto('/en')

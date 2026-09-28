@@ -10,6 +10,10 @@
     --c-text-primary: 232 234 246;
     --c-text-secondary: 121 134 203;
     --c-text-muted: 57 73 171;
+    /* Оценки метрик: хорошо / можно лучше / плохо — как в Lighthouse */
+    --c-good: 74 222 128;
+    --c-fair: 251 191 36;
+    --c-poor: 251 113 133;
 
     --glass-bg: rgb(13 20 53 / 0.55);
     --glass-border: rgb(41 121 255 / 0.25);

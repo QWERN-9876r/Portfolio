@@ -3,7 +3,9 @@ package main
 // Интеграционные: настоящий HTTP-сервер и журнал на диске — как у сервиса на проде за nginx
 
 import (
+	"bufio"
 	"bytes"
+	"encoding/json"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -187,5 +189,131 @@ func TestReport(t *testing.T) {
 		if !strings.Contains(out.String(), want) {
 			t.Errorf("в отчёте нет %q:\n%s", want, out.String())
 		}
+	}
+}
+
+type sseEvent struct{ name, data string }
+
+// Читает события потока в фоне: тест ждёт следующее с таймаутом, а не висит на чтении
+func openLive(t *testing.T, server *httptest.Server) (*http.Response, <-chan sseEvent) {
+	t.Helper()
+	res, err := http.Get(server.URL + "/api/rum/live")
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { res.Body.Close() })
+	events := make(chan sseEvent, 16)
+	go func() {
+		defer close(events)
+		scanner := bufio.NewScanner(res.Body)
+		var event sseEvent
+		for scanner.Scan() {
+			line := scanner.Text()
+			switch {
+			case line == "":
+				if event != (sseEvent{}) {
+					events <- event
+				}
+				event = sseEvent{}
+			case strings.HasPrefix(line, ": "):
+				event.name = "comment"
+			case strings.HasPrefix(line, "event: "):
+				event.name = strings.TrimPrefix(line, "event: ")
+			case strings.HasPrefix(line, "data: "):
+				event.data = strings.TrimPrefix(line, "data: ")
+			}
+		}
+	}()
+	return res, events
+}
+
+func nextEvent(t *testing.T, events <-chan sseEvent) sseEvent {
+	t.Helper()
+	select {
+	case event, ok := <-events:
+		if !ok {
+			t.Fatal("поток закрылся")
+		}
+		return event
+	case <-time.After(3 * time.Second):
+		t.Fatal("события нет 3 с")
+	}
+	return sseEvent{}
+}
+
+func TestLiveFeed(t *testing.T) {
+	server, s := startServer(t, filepath.Join(t.TempDir(), "events.jsonl"))
+	post(t, server, validEvent)
+
+	res, events := openLive(t, server)
+	if res.StatusCode != http.StatusOK || res.Header.Get("Content-Type") != "text/event-stream" ||
+		res.Header.Get("X-Accel-Buffering") != "no" {
+		t.Fatalf("поток: %d %v", res.StatusCode, res.Header)
+	}
+
+	// Сразу — визиты, которые уже есть
+	event := nextEvent(t, events)
+	var snapshot liveSnapshot
+	if err := json.Unmarshal([]byte(event.data), &snapshot); event.name != "snapshot" || err != nil {
+		t.Fatalf("первое событие %+v (%v)", event, err)
+	}
+	if snapshot.Days != 30 || snapshot.Visitors != 1 || len(snapshot.Visits) != 1 || snapshot.Visits[0].Role != "backend" {
+		t.Fatalf("снимок %+v", snapshot)
+	}
+
+	// Новый визит приходит в тот же поток, с временем сервера
+	post(t, server, strings.Replace(validEvent, `"backend"`, `"fullstack"`, 1))
+	event = nextEvent(t, events)
+	var visit Event
+	if err := json.Unmarshal([]byte(event.data), &visit); event.name != "visit" || err != nil {
+		t.Fatalf("визит %+v (%v)", event, err)
+	}
+	if visit.Role != "fullstack" || visit.Time < time.Now().Add(-time.Minute).Unix() || *visit.PaintMs != 420 {
+		t.Fatalf("визит записан не так: %+v", visit)
+	}
+
+	// Зритель ушёл — подписка снята
+	res.Body.Close()
+	deadline := time.Now().Add(3 * time.Second)
+	for {
+		s.live.mu.Lock()
+		clients := len(s.live.clients)
+		s.live.mu.Unlock()
+		if clients == 0 {
+			break
+		}
+		if time.Now().After(deadline) {
+			t.Fatalf("после отключения осталось зрителей: %d", clients)
+		}
+		time.Sleep(10 * time.Millisecond)
+	}
+}
+
+func TestLiveHeartbeat(t *testing.T) {
+	defer func(interval time.Duration) { liveHeartbeat = interval }(liveHeartbeat)
+	liveHeartbeat = 20 * time.Millisecond
+
+	server, _ := startServer(t, filepath.Join(t.TempDir(), "events.jsonl"))
+	_, events := openLive(t, server)
+	if event := nextEvent(t, events); event.name != "snapshot" {
+		t.Fatalf("первое событие %+v", event)
+	}
+	if event := nextEvent(t, events); event.name != "comment" {
+		t.Fatalf("вместо пинга %+v", event)
+	}
+}
+
+func TestLiveClientsLimit(t *testing.T) {
+	server, s := startServer(t, filepath.Join(t.TempDir(), "events.jsonl"))
+	for range maxLiveClients {
+		s.live.subscribe()
+	}
+	res, err := http.Get(server.URL + "/api/rum/live")
+	if err != nil {
+		t.Fatal(err)
+	}
+	res.Body.Close()
+	if res.StatusCode != http.StatusServiceUnavailable {
+		t.Fatalf("сверх лимита: %d, ожидался 503", res.StatusCode)
 	}
 }

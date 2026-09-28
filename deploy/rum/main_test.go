@@ -184,3 +184,61 @@ func decodeSummary(t *testing.T, body []byte) summary {
 	}
 	return s
 }
+
+func TestRecent(t *testing.T) {
+	s := &store{window: 30 * 24 * time.Hour}
+	if visits, total := s.recent(20); total != 0 || visits == nil || len(visits) != 0 {
+		t.Fatalf("пустой журнал — пустой список, не null: %v %d", visits, total)
+	}
+
+	now := time.Now()
+	s.events = []Event{{Time: now.Add(-40 * 24 * time.Hour).Unix(), Role: "устарело"}}
+	for _, role := range []string{"a", "b", "c"} {
+		s.events = append(s.events, Event{Time: now.Unix(), Role: role})
+	}
+	visits, total := s.recent(2)
+	if total != 3 || len(visits) != 2 || visits[0].Role != "c" || visits[1].Role != "b" {
+		t.Fatalf("последние два, новые первыми, без устаревших: %+v из %d", visits, total)
+	}
+	// Копия: разворот не трогает журнал в памяти
+	if s.events[len(s.events)-1].Role != "c" {
+		t.Fatal("recent изменил порядок событий в журнале")
+	}
+}
+
+func TestHub(t *testing.T) {
+	var h hub
+	ch, ok := h.subscribe()
+	if !ok {
+		t.Fatal("подписка отклонена")
+	}
+	// Отстающий зритель: буфер полон — визит пропускается, publish не блокируется
+	done := make(chan struct{})
+	go func() {
+		for range cap(ch) + 5 {
+			h.publish(Event{Role: "backend"})
+		}
+		close(done)
+	}()
+	select {
+	case <-done:
+	case <-time.After(time.Second):
+		t.Fatal("publish ждёт медленного зрителя")
+	}
+	if len(ch) != cap(ch) {
+		t.Fatalf("в буфере %d из %d", len(ch), cap(ch))
+	}
+
+	h.unsubscribe(ch)
+	h.publish(Event{})
+	if len(h.clients) != 0 {
+		t.Fatal("отписка не сработала")
+	}
+
+	for range maxLiveClients {
+		h.subscribe()
+	}
+	if _, ok := h.subscribe(); ok {
+		t.Fatalf("больше %d зрителей", maxLiveClients)
+	}
+}

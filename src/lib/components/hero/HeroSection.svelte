@@ -264,6 +264,13 @@
         }
     }
 
+    /* На телефоне и планшете контент первого экрана начинается у верхнего края —
+       опускаем его под закреплённую панель (статистика и язык, до 56 px). На десктопе
+       контент по центру экрана и до панели не достаёт */
+    #hero {
+        padding-top: 72px;
+    }
+
     @media (min-width: 600px) {
         .nickname {
             font-size: 1.65rem;
@@ -271,6 +278,10 @@
     }
 
     @media (min-width: 900px) {
+        #hero {
+            padding-top: 0;
+        }
+
         .layout {
             flex-direction: row;
             justify-content: space-between;

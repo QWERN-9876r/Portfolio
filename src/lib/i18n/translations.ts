@@ -40,6 +40,8 @@ export interface Translation {
     }
     sellingPoints: { title: string; description: string }[]
     whyMe: {
+        // Ссылка на страницу живой статистики /stats
+        statsLink: string
         // «Медиана у {n} {people} за {days} {daysWord}»: числа и формы слов подставляет LiveMetrics
         visitors: string
         people: Partial<Record<Intl.LDMLPluralRule, string>> & { other: string }
@@ -96,6 +98,8 @@ export interface Translation {
         label: string
         switchTo: string
     }
+    // Кнопка живой статистики в верхней панели
+    statsNav: string
     prism: {
         backToTop: string
         strike: string
@@ -163,6 +167,7 @@ export const translations: Record<Locale, Translation> = {
             },
         ],
         whyMe: {
+            statsLink: 'All live stats',
             visitors: 'Median across {n} {people}, last {days} {daysWord}',
             people: { one: 'visitor', other: 'visitors' },
             daysWord: { one: 'day', other: 'days' },
@@ -227,6 +232,7 @@ export const translations: Record<Locale, Translation> = {
             label: 'Language',
             switchTo: 'Switch language to',
         },
+        statsNav: 'Live stats',
         prism: {
             backToTop: 'Back to top',
             strike: 'Strike the prism with the beam',
@@ -294,6 +300,7 @@ export const translations: Record<Locale, Translation> = {
             },
         ],
         whyMe: {
+            statsLink: 'Вся статистика вживую',
             visitors: 'Медиана у {n} {people} за {days} {daysWord}',
             people: { one: 'посетителя', few: 'посетителей', many: 'посетителей', other: 'посетителя' },
             daysWord: { one: 'день', few: 'дня', many: 'дней', other: 'дня' },
@@ -358,6 +365,7 @@ export const translations: Record<Locale, Translation> = {
             label: 'Язык',
             switchTo: 'Переключить язык на',
         },
+        statsNav: 'Статистика',
         prism: {
             backToTop: 'Наверх',
             strike: 'Ударить лучом по призме',
