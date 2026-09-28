@@ -22,13 +22,17 @@ const config = {
                 '/',
                 '/robots.txt',
                 '/sitemap.xml',
-                ...LOCALES.flatMap((lang) => [
-                    `/${lang}`,
-                    ...ROLE_SEGMENTS.map((role) => `/${lang}/${role}`),
-                    `/${lang}/manifest.webmanifest`,
-                    // Страница резюме: из неё после сборки печатается PDF
-                    `/resume/${lang}`,
-                ]),
+                // Тип возврата — для checkJs: иначе шаблонные строки выводятся как string
+                ...LOCALES.flatMap(
+                    /** @returns {`/${string}`[]} */
+                    (lang) => [
+                        `/${lang}`,
+                        ...ROLE_SEGMENTS.map((role) => /** @type {const} */ (`/${lang}/${role}`)),
+                        `/${lang}/manifest.webmanifest`,
+                        // Страница резюме: из неё после сборки печатается PDF
+                        `/resume/${lang}`,
+                    ],
+                ),
             ],
             handleHttpError: ({ path, message }) => {
                 // Иконки из бакета в проде отдаёт прокси nginx, при сборке их нет

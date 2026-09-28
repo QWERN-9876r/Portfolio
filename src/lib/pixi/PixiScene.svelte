@@ -62,6 +62,8 @@
 
         const currentPreset = preset
         let cancelled = false
+        // Только дозапущенное приложение: destroy посреди init или после неудачного init
+        // (нет WebGL) падает внутри Pixi
         let instance: Application | null = null
         let created: Scene | null = null
 
@@ -73,8 +75,8 @@
             if (cancelled) return
             systemTicker = Ticker.system
 
-            instance = new Application()
-            await instance.init({
+            const starting = new Application()
+            await starting.init({
                 width: container.clientWidth,
                 height: container.clientHeight,
                 backgroundAlpha: 0,
@@ -84,7 +86,14 @@
                 powerPreference: 'high-performance',
                 hello: false,
             })
-            if (cancelled) return
+            // Секция ушла, пока Pixi запускался: убираем сразу, иначе WebGL-контекст останется жить.
+            // init запустил Ticker.system — гасим его, если других сцен нет
+            if (cancelled) {
+                starting.destroy(DESTROY_OPTIONS)
+                syncSystemTicker()
+                return
+            }
+            instance = starting
 
             // Мышь сцены обрабатываем через DOM. Система событий Pixi держит глобальный
             // Ticker.system и будит rAF каждый кадр, даже когда тикер сцены остановлен.
@@ -101,7 +110,10 @@
             scene = created
         }
 
-        init().catch((err) => console.warn('Pixi init error:', err))
+        init().catch((err) => {
+            console.warn('Pixi init error:', err)
+            syncSystemTicker()
+        })
 
         return () => {
             cancelled = true

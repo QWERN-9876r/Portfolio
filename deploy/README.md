@@ -1,19 +1,33 @@
 # Выкладка
 
-Push в `main` запускает GitHub Actions:
+Push в `main` запускает GitHub Actions. Оба workflow сначала прогоняют тесты (`test.yml`), выкладка — только если они прошли:
 
-| Что изменилось | Workflow | Что делает |
+| Что изменилось | Workflow | Что выкладывает |
 | --- | --- | --- |
-| всё, кроме `deploy/` | `deploy-site.yml` | `npm run check`, сборка с PDF-резюме, rsync `dist/` в `/var/www/portfolio/dist` |
-| `deploy/rum/` | `deploy-rum.yml` | `go vet`, `go test`, сборка под Linux, замена бинарника в `/opt/portfolio-rum`, перезапуск |
+| всё, кроме `deploy/` | `deploy-site.yml` | сборку с PDF-резюме, на которой прошли e2e, — rsync в `/var/www/portfolio/dist` |
+| `deploy/rum/` | `deploy-rum.yml` | бинарник под Linux в `/opt/portfolio-rum`, перезапуск сервиса |
 
-Оба можно запустить вручную: Actions → workflow → Run workflow. Сайт стоит пересобрать так
+Push в другие ветки запускает только тесты.
+
+Выкладки можно запустить вручную: Actions → workflow → Run workflow. Сайт стоит пересобрать так
 после правок контента в бакете — HTML пререндерится из него при сборке.
 
 Выкладка сайта не ломает открытые вкладки: старые чанки `_app/immutable` остаются на сервере
 ещё неделю после того, как пропали из сборки.
 
 Конфиг nginx (`nginx.example.conf`) и юнит systemd CI не трогает — их правки выкладываются вручную.
+
+## Тесты
+
+```bash
+npm test             # всё: unit, сервис метрик, e2e
+npm run test:unit    # Vitest: логика сайта и service worker (src/**/*.test.ts)
+npm run test:rum     # Go: сервис метрик, HTTP и журнал на диске (deploy/rum/*_test.go)
+npm run test:e2e     # Playwright: собранный сайт + настоящий сервис метрик (tests/e2e)
+```
+
+E2e нужны установленные Chrome и Go; локально сайт собирается перед тестами сам. Сервис метрик
+для них — свой, на порту 8091 с временным журналом, рабочий на 8090 не трогается.
 
 ## Разовая настройка
 

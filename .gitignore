@@ -4,6 +4,10 @@ dist
 
 .svelte-kit
 
+test-results
+
+playwright-report
+
 *.json
 
 .DS_Store

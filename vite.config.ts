@@ -1,5 +1,6 @@
 import { sveltekit } from '@sveltejs/kit/vite'
-import { defineConfig, type Connect, type Plugin } from 'vite'
+import type { Connect, Plugin } from 'vite'
+import { defineConfig } from 'vitest/config'
 
 // В @threlte/core нет "sideEffects": false, поэтому прокси <T> (import * as THREE)
 // попадает в бандл даже без использования и тянет весь three: +~58 КБ gzip
@@ -23,8 +24,9 @@ const storageProxy = {
 
 // Метрики посетителей локально (dev и preview): /api/rum → сервис deploy/rum на 8090,
 // в проде это делает nginx. Сервис не запущен — пустой 204: без ошибок в консоли
-// браузера, сводка в «Почему я» просто не показывается; в терминале — одна подсказка
-const RUM_SERVICE = 'http://127.0.0.1:8090'
+// браузера, сводка в «Почему я» просто не показывается; в терминале — одна подсказка.
+// RUM_SERVICE — другой адрес: e2e поднимают свой сервис с чистым журналом
+const RUM_SERVICE = process.env.RUM_SERVICE ?? 'http://127.0.0.1:8090'
 const rumLocal = (): Plugin => {
     let warned = false
     const forward: Connect.NextHandleFunction = async (req, res) => {
@@ -74,4 +76,8 @@ export default defineConfig({
     },
     server: { proxy: storageProxy },
     preview: { proxy: storageProxy },
+    // Unit-тесты лежат рядом с кодом; e2e — в tests/e2e, их запускает Playwright
+    test: {
+        include: ['src/**/*.test.ts'],
+    },
 })

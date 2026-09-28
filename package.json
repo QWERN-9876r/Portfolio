@@ -8,6 +8,10 @@
     "build": "vite build && node scripts/resume-pdf.mjs",
     "preview": "vite preview",
     "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
+    "test": "vitest run && npm run test:rum && playwright test",
+    "test:unit": "vitest run",
+    "test:rum": "cd deploy/rum && go test -race ./...",
+    "test:e2e": "playwright test",
     "prepare": "svelte-kit sync || echo ''"
   },
   "dependencies": {
@@ -16,15 +20,18 @@
     "three": "^0.186.0"
   },
   "devDependencies": {
+    "@playwright/test": "^1.63.0",
     "@sveltejs/adapter-static": "^3.0.10",
     "@sveltejs/kit": "^2.70.3",
     "@sveltejs/vite-plugin-svelte": "^7.3.0",
     "@types/node": "^22.20.4",
     "@types/three": "^0.186.0",
+    "happy-dom": "^20.14.5",
     "playwright-core": "^1.63.0",
     "svelte": "^5.57.1",
     "svelte-check": "^4.7.6",
     "typescript": "^5.9.3",
-    "vite": "^8.3.0"
+    "vite": "^8.3.0",
+    "vitest": "^5.0.2"
   }
 }

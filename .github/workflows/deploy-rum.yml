@@ -1,4 +1,5 @@
-# Сервис метрик посетителей (deploy/rum): тесты, сборка под Linux и перезапуск на сервере.
+# Сервис метрик посетителей (deploy/rum): тесты (test.yml), сборка под Linux и перезапуск на сервере.
+# В тестах и e2e сайта — они проверяют, что страница и сервис по-прежнему понимают друг друга.
 # Юнит systemd CI не трогает — его правки выкладываются вручную (deploy/README.md)
 name: Deploy RUM service
 
@@ -13,7 +14,11 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  test:
+    uses: ./.github/workflows/test.yml
+
   deploy:
+    needs: test
     runs-on: ubuntu-latest
     environment: production
     defaults:
@@ -22,16 +27,12 @@ jobs:
     env:
       RUM_DIR: /opt/portfolio-rum
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
 
-      # Зависимостей нет (только stdlib, go.sum нет) — кэшировать нечего
-      - uses: actions/setup-go@v6
+      - uses: actions/setup-go@v7
         with:
           go-version-file: deploy/rum/go.mod
           cache: false
-
-      - run: go vet ./...
-      - run: go test ./...
 
       # Статический бинарник под сервер; архитектуру можно задать переменной SERVER_ARCH
       - run: go build -trimpath -ldflags='-s -w' -o portfolio-rum .

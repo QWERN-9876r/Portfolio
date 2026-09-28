@@ -1,0 +1,69 @@
+# Тесты сайта и сервиса метрик. На ветках — на каждый push; в main их вызывают
+# deploy-site.yml и deploy-rum.yml перед выкладкой, и сайт уходит на сервер той же сборкой,
+# что прошла e2e (артефакт site-dist)
+name: Tests
+
+on:
+  push:
+    branches-ignore: [main]
+  workflow_call:
+
+jobs:
+  rum:
+    name: Сервис метрик (Go)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: deploy/rum
+    steps:
+      - uses: actions/checkout@v7
+
+      # Зависимостей нет (только stdlib, go.sum нет) — кэшировать нечего
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: deploy/rum/go.mod
+          cache: false
+
+      - run: go vet ./...
+      - run: go test -race ./...
+
+  site:
+    name: Сайт (типы, unit, e2e)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+
+      # e2e поднимают настоящий сервис метрик рядом с сайтом
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: deploy/rum/go.mod
+          cache: false
+
+      - run: npm ci
+      - run: npm run check
+      - run: npm run test:unit
+
+      # vite build и печать PDF-резюме в Chrome — он на раннерах GitHub уже установлен
+      - run: npm run build
+      - run: npm run test:e2e
+
+      - name: Отчёт Playwright
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: playwright-report
+          path: |
+            playwright-report
+            test-results
+          retention-days: 7
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: site-dist
+          path: dist
+          retention-days: 3

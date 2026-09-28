@@ -1,4 +1,4 @@
-# Сайт: проверка типов, сборка (HTML + PDF-резюме) и rsync на сервер.
+# Сайт: тесты (test.yml) и rsync проверенной сборки на сервер.
 # Контент живёт в бакете — после его правок запусти вручную (Actions → Run workflow),
 # чтобы пересобрать HTML. Настройка секретов и сервера — deploy/README.md
 name: Deploy site
@@ -16,25 +16,22 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  test:
+    uses: ./.github/workflows/test.yml
+
   deploy:
+    needs: test
     runs-on: ubuntu-latest
     environment: production
     env:
       SITE_URL: https://qwern9876r.ru
       WEB_ROOT: /var/www/portfolio/dist
     steps:
-      - uses: actions/checkout@v5
-
-      - uses: actions/setup-node@v5
+      # Та самая сборка, на которой прошли e2e
+      - uses: actions/download-artifact@v8
         with:
-          node-version: 24
-          cache: npm
-
-      - run: npm ci
-      - run: npm run check
-
-      # vite build и печать PDF-резюме в Chrome — он на раннерах GitHub уже установлен
-      - run: npm run build
+          name: site-dist
+          path: dist
 
       - name: SSH-ключ и отпечаток сервера
         env:

@@ -182,18 +182,21 @@ func (s *store) summary() []byte {
 }
 
 // Грубое ограничение частоты на весь сервис: защита журнала от заливки мусором
+const limitRate, limitBurst = 20.0, 40.0
+
 type limiter struct {
 	mu     sync.Mutex
 	tokens float64
 	last   time.Time
 }
 
+func newLimiter() *limiter { return &limiter{tokens: limitBurst, last: time.Now()} }
+
 func (l *limiter) allow() bool {
-	const rate, burst = 20.0, 40.0
 	l.mu.Lock()
 	defer l.mu.Unlock()
 	now := time.Now()
-	l.tokens = math.Min(burst, l.tokens+now.Sub(l.last).Seconds()*rate)
+	l.tokens = math.Min(limitBurst, l.tokens+now.Sub(l.last).Seconds()*limitRate)
 	l.last = now
 	if l.tokens < 1 {
 		return false
@@ -202,21 +205,21 @@ func (l *limiter) allow() bool {
 	return true
 }
 
-func serve(addr, path string, days int) error {
+// События за окно — в память, журнал — на дозапись
+func openStore(path string, days int) (*store, error) {
 	window := time.Duration(days) * 24 * time.Hour
 	events, err := readEvents(path, time.Now().Add(-window))
 	if err != nil {
-		return err
+		return nil, err
 	}
 	file, err := os.OpenFile(path, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0o644)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	defer file.Close()
+	return &store{file: file, events: events, window: window}, nil
+}
 
-	s := &store{file: file, events: events, window: window}
-	limit := &limiter{tokens: 40, last: time.Now()}
-
+func newHandler(s *store, limit *limiter) http.Handler {
 	mux := http.NewServeMux()
 	mux.HandleFunc("POST /api/rum", func(w http.ResponseWriter, r *http.Request) {
 		if !limit.allow() {
@@ -242,20 +245,29 @@ func serve(addr, path string, days int) error {
 		w.Header().Set("Cache-Control", "public, max-age=300")
 		w.Write(s.summary())
 	})
+	return mux
+}
 
-	log.Printf("rum: %s, журнал %s, окно %d дн., загружено %d событий", addr, path, days, len(events))
-	server := &http.Server{Addr: addr, Handler: mux, ReadHeaderTimeout: 5 * time.Second}
+func serve(addr, path string, days int) error {
+	s, err := openStore(path, days)
+	if err != nil {
+		return err
+	}
+	defer s.file.Close()
+
+	log.Printf("rum: %s, журнал %s, окно %d дн., загружено %d событий", addr, path, days, len(s.events))
+	server := &http.Server{Addr: addr, Handler: newHandler(s, newLimiter()), ReadHeaderTimeout: 5 * time.Second}
 	return server.ListenAndServe()
 }
 
 // Отчёт для владельца: сколько визитов, какие секции досматривают, по каким контактам кликают
-func report(path string, days int) error {
+func report(w io.Writer, path string, days int) error {
 	events, err := readEvents(path, time.Now().Add(-time.Duration(days)*24*time.Hour))
 	if err != nil {
 		return err
 	}
 	n := len(events)
-	fmt.Printf("Визитов за %d дн.: %d\n", days, n)
+	fmt.Fprintf(w, "Визитов за %d дн.: %d\n", days, n)
 	if n == 0 {
 		return nil
 	}
@@ -281,8 +293,8 @@ func report(path string, days int) error {
 	one := func(v string) []string { return []string{v} }
 
 	sum := summarize(events, days)
-	fmt.Printf("LCP: медиана %.0f мс, p75 %.0f мс (%d замеров)\n", sum.LCP.P50, sum.LCP.P75, sum.LCP.Count)
-	fmt.Printf("JS при загрузке: медиана %.0f КБ\n", sum.JS.P50/1024)
+	fmt.Fprintf(w, "LCP: медиана %.0f мс, p75 %.0f мс (%d замеров)\n", sum.LCP.P50, sum.LCP.P75, sum.LCP.Count)
+	fmt.Fprintf(w, "JS при загрузке: медиана %.0f КБ\n", sum.JS.P50/1024)
 	for _, block := range []struct {
 		title string
 		key   func(Event) []string
@@ -293,7 +305,7 @@ func report(path string, days int) error {
 		{"Досмотрели до секции (доля визитов)", func(e Event) []string { return e.Sections }},
 		{"Клики по контактам", func(e Event) []string { return e.CTA }},
 	} {
-		fmt.Printf("\n%s:\n%s\n", block.title, strings.Join(count(block.key), "\n"))
+		fmt.Fprintf(w, "\n%s:\n%s\n", block.title, strings.Join(count(block.key), "\n"))
 	}
 	return nil
 }
@@ -316,7 +328,7 @@ func main() {
 	case "serve":
 		err = serve(*addr, *data, *days)
 	case "report":
-		err = report(*data, *days)
+		err = report(os.Stdout, *data, *days)
 	default:
 		err = fmt.Errorf("неизвестная команда %q: serve или report", command)
 	}
