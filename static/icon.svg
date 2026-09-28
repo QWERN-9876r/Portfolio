@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Призма со страницы: куб в ракурсе сцены (PrismScene: TILT 0.42, TURN 0.6), луч сверху, на выходе спектр -->
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="54%" r="55%">
+      <stop offset="0" stop-color="#0D1435"/>
+      <stop offset="1" stop-color="#050816"/>
+    </radialGradient>
+    <radialGradient id="core" cx="256" cy="276" r="120" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#EBF5FF" stop-opacity=".9"/>
+      <stop offset=".18" stop-color="#448AFF" stop-opacity=".55"/>
+      <stop offset="1" stop-color="#2979FF" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="topFace" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#8B5CF6" stop-opacity=".45"/>
+      <stop offset="1" stop-color="#2979FF" stop-opacity=".25"/>
+    </linearGradient>
+    <filter id="glow" filterUnits="userSpaceOnUse" x="0" y="0" width="512" height="512">
+      <feGaussianBlur stdDeviation="7"/>
+    </filter>
+    <filter id="soft" filterUnits="userSpaceOnUse" x="0" y="0" width="512" height="512">
+      <feGaussianBlur stdDeviation="2.5"/>
+    </filter>
+  </defs>
+
+  <rect width="512" height="512" fill="url(#bg)"/>
+
+  <!-- Лучи за кубом: ореол, края спектра, ядро -->
+  <g fill="none" stroke-linecap="round">
+    <g filter="url(#glow)" stroke="#2979FF" stroke-width="16" opacity=".8">
+      <path d="M256 -8V276"/>
+      <path d="M256 276L-8.0 276.0"/>
+      <path d="M256 276L520.0 520.0"/>
+    </g>
+    <g stroke-width="5" opacity=".95">
+      <path d="M256 276L-8.0 267.0" stroke="#8B5CF6"/>
+      <path d="M256 276L-8.0 285.0" stroke="#22D3EE"/>
+      <path d="M256 276L513.9 526.6" stroke="#22D3EE"/>
+      <path d="M256 276L526.1 513.4" stroke="#8B5CF6"/>
+    </g>
+    <g stroke="#EBF5FF" stroke-width="5">
+      <path d="M256 -8V276"/>
+      <path d="M256 276L-8.0 276.0"/>
+      <path d="M256 276L520.0 520.0"/>
+    </g>
+  </g>
+
+  <!-- Стекло: грани приглушают лучи за ними, внутри — свет удара -->
+  <path d="M151.8 199.5L236.4 250.0L236.4 387.0L151.8 336.5Z" fill="#0A1030" fill-opacity=".72"/>
+  <path d="M236.4 250.0L360.2 215.5L360.2 352.5L236.4 387.0Z" fill="#0D1640" fill-opacity=".62"/>
+  <path d="M151.8 199.5L275.6 165.0L360.2 215.5L236.4 250.0Z" fill="url(#topFace)"/>
+  <circle cx="256" cy="276" r="120" fill="url(#core)"/>
+
+  <!-- Рёбра: задние тусклые, передние — белое ядро с синим ореолом -->
+  <g fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M151.8 336.5L275.6 302.0M275.6 302.0L360.2 352.5M275.6 302.0L275.6 165.0" stroke="#448AFF" stroke-width="2.5" opacity=".35"/>
+    <path d="M151.8 336.5L236.4 387.0M151.8 336.5L151.8 199.5M236.4 387.0L236.4 250.0M236.4 387.0L360.2 352.5M151.8 199.5L236.4 250.0M151.8 199.5L275.6 165.0M236.4 250.0L360.2 215.5M360.2 352.5L360.2 215.5M275.6 165.0L360.2 215.5" stroke="#2979FF" stroke-width="14" filter="url(#glow)"/>
+    <path d="M151.8 336.5L236.4 387.0M151.8 336.5L151.8 199.5M236.4 387.0L236.4 250.0M236.4 387.0L360.2 352.5M151.8 199.5L236.4 250.0M151.8 199.5L275.6 165.0M236.4 250.0L360.2 215.5M360.2 352.5L360.2 215.5M275.6 165.0L360.2 215.5" stroke="#448AFF" stroke-width="7" filter="url(#soft)"/>
+    <path d="M151.8 336.5L236.4 387.0M151.8 336.5L151.8 199.5M236.4 387.0L236.4 250.0M236.4 387.0L360.2 352.5M151.8 199.5L236.4 250.0M151.8 199.5L275.6 165.0M236.4 250.0L360.2 215.5M360.2 352.5L360.2 215.5M275.6 165.0L360.2 215.5" stroke="#EBF5FF" stroke-width="3.5"/>
+  </g>
+</svg>

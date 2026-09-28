@@ -1,48 +1,161 @@
 [
-  {
-    "id": "case-1",
-    "index": 12,
-    "title": "Сделал лучше чем кто либо предпологал",
-    "company": "Яндекс",
-    "period": "05.2024 - 06.2024",
-    "problem": "Была задач добавить небольшую анцимацию на главную страницу и никаких макетов. ",
-    "solution": "Я сильно улучшил анимацию, добавил интерактив и оптимизировал при помощи линивой загрузки анмации и оптимизации самой анимации. Анимация идеально работала даже на самых старых телефонах, а также мной было придумано за интерактив в этой анимации получать символический приз. Не смотря на то что продукт не был никак связан с анимациями и развлечениями моя мини-игра привлекла большое количество ежедневных пользователей, а также вовлекла их в продукт. Менеджмент вместе с маркетологами уципились за этот неожиданный успех и в течение всего лета была активная маркетинговая компания по этой мини-игре, в которой учавствовали многие блогеры, а люди в своих телеграмм каналах обсуждали свою игру в это и думали какой-же приз будет дальше. Так я превратил мини анимацию в киллер фичу лета и миллионы вовлеченных пользователей.",
-    "results": [
-      {
-        "label": "DAU",
-        "value": "+53%"
-      },
-      {
-        "label": "E-REACH",
-        "value": "+31%"
-      },
-      {
-        "label": "Profit",
-        "value": "+32.5%"
-      }
-    ],
-    "tags": ["Анимации", "Инициативность"],
-    "hideRightSlot": true
-  },
-  {
-    "id": "case-2",
-    "index": 13,
-    "title": "Один против огромного проекта",
-    "company": "Яндекс",
-    "period": "04.2025 - 05.2025",
-    "problem": "Из 3 фронтенд разработчиков 1 ушел делать проект для друой команды, а второй ушел в долгий отпуск.Менеджеры принесли огромный проект, который нужно сделать в кратчайшие сроки.",
-    "solution": "Проект состоял в создании новой страницы с игровой механикой, призами и пр. Я решил впервые в нашем проекте использовать серверные компоненты и REST API (мы раньше использовали GraphQL и решли от него уйти). Кроме того интерактив решили делать на rive, а он никогда не использовался у нас на проекте и я впервые узнал о том, что это. По итогу я тогда еще работая на полставки засиживаясь до поздна разобрался в rive и прочем и к дедлайну сделал все необходимое в одиночку. Кроме того пример использования rive и как следствие мой универсальный компонент для него стал базой для всех будущих использований rive-а в нашей команде и по всему Яндекс Плюсу.",
-    "results": [
-      {
-        "label": "MAU",
-        "value": "+38%"
-      },
-      {
-        "label": "E-REACH",
-        "value": "+15%"
-      }
-    ],
-    "tags": ["TypeScript", "Rive", "React", "Nexr js", "Server Components"],
-    "hideRightSlot": true
-  }
+    {
+        "id": "case-1",
+        "index": 12,
+        "title": "Better than anyone expected",
+        "company": "Yandex",
+        "period": "05.2024 - 06.2024",
+        "problem": "The task was to add a small animation to the home page without any designs.",
+        "solution": "I significantly improved the animation, added interaction, and optimized it with lazy loading and animation-level performance work. It ran smoothly even on older phones. I also introduced a symbolic reward for interacting with it. Although the product was not related to entertainment, the mini-game attracted many daily users and increased product engagement. Management and marketing built a summer campaign around this unexpected success, with many bloggers taking part. I turned a small animation into the summer's killer feature with millions of engaged users.",
+        "results": [
+            {
+                "label": "DAU",
+                "value": "+53%"
+            },
+            {
+                "label": "E-REACH",
+                "value": "+31%"
+            },
+            {
+                "label": "Profit",
+                "value": "+32.5%"
+            }
+        ],
+        "context": "Summer 2024 campaign · a product with millions of users",
+        "facts": [
+            "The task: a small home page animation, no designs",
+            "The reward mechanic was my idea"
+        ],
+        "steps": [
+            {
+                "title": "Turned the animation into a mini-game",
+                "text": "Significantly improved the animation and added interaction"
+            },
+            {
+                "title": "Optimized it",
+                "text": "Lazy loading and animation-level performance work: it ran smoothly even on older phones"
+            },
+            {
+                "title": "Came up with a reward mechanic",
+                "text": "Interacting with the animation earned a symbolic reward"
+            },
+            {
+                "title": "Marketing picked it up",
+                "text": "The mini-game attracted many daily users, and a summer campaign with bloggers was built around it"
+            }
+        ],
+        "tags": [
+            "Animations",
+            "Initiative"
+        ]
+    },
+    {
+        "id": "case-2",
+        "index": 13,
+        "title": "One person against a huge project",
+        "company": "Yandex",
+        "period": "04.2025 - 05.2025",
+        "problem": "One of three frontend developers moved to another team and another went on extended leave. The managers brought in a large project with a very tight deadline.",
+        "solution": "I built a new page with game mechanics and rewards, introduced Server Components and REST API, and used Rive for the interactive layer. I learned the unfamiliar tools while working part-time and delivered the project alone by the deadline. The resulting Rive example and reusable component became the foundation for future Rive integrations across the team and Yandex Plus.",
+        "results": [
+            {
+                "label": "MAU",
+                "value": "+38%"
+            },
+            {
+                "label": "E-REACH",
+                "value": "+15%"
+            }
+        ],
+        "context": "A new game page built solo by the deadline",
+        "facts": [
+            "1 frontend developer instead of 3",
+            "Part-time",
+            "First time with Rive and Server Components"
+        ],
+        "steps": [
+            {
+                "title": "A new page with game mechanics",
+                "text": "Game mechanics and rewards"
+            },
+            {
+                "title": "A new stack for the project",
+                "text": "Server Components and REST API instead of GraphQL"
+            },
+            {
+                "title": "Learned Rive from scratch",
+                "text": "An interactive layer on Rive, never used in the project before"
+            },
+            {
+                "title": "Delivered solo on time",
+                "text": "My Rive component became the foundation for the team and Yandex Plus"
+            }
+        ],
+        "team": {
+            "before": 3,
+            "after": 1
+        },
+        "tags": [
+            "TypeScript",
+            "Rive",
+            "React",
+            "Next.js",
+            "Server Components"
+        ]
+    },
+    {
+        "id": "case-3",
+        "title": "This website",
+        "company": "Personal project",
+        "period": "09.2026",
+        "problem": "A portfolio of a developer whose main argument is performance. The site itself has to be the proof: 3D, animations, and interactivity — while still flying on any phone.",
+        "solution": "The site was rewritten from React to SvelteKit with prerendering: every page is ready-made HTML, and the first screen ships only the JS it needs. The Threlte prism and Pixi scenes load after the page and render frames only while animating, then fall asleep at rest. The metrics in “Why me” are live measurements in the visitor's browser via the Performance API. A service worker makes the site a PWA and caches only what the visitor has already downloaded.",
+        "results": [
+            {
+                "label": "JS on the first screen",
+                "value": "62 KB"
+            },
+            {
+                "label": "frames at rest",
+                "value": "0"
+            },
+            {
+                "label": "3D, after the page loads",
+                "value": "139 KB"
+            }
+        ],
+        "context": "Build measurements: gzip, as served by nginx",
+        "facts": [
+            "Personal project",
+            "Speed is the main requirement",
+            "Own server: nginx and Let's Encrypt"
+        ],
+        "steps": [
+            {
+                "title": "SvelteKit with prerendering",
+                "text": "Every page is ready-made HTML; the first screen ships only the JS it needs"
+            },
+            {
+                "title": "3D with no weight at start",
+                "text": "The Threlte prism and Pixi scenes load after the page and render frames only while animating"
+            },
+            {
+                "title": "The site measures itself",
+                "text": "Live metrics in the visitor's browser via the Performance API, no libraries"
+            },
+            {
+                "title": "A PWA with no extra traffic",
+                "text": "The service worker caches only what the visitor has already downloaded"
+            }
+        ],
+        "tags": [
+            "SvelteKit",
+            "Svelte 5",
+            "Threlte",
+            "Three.js",
+            "Pixi.js",
+            "WebGL",
+            "PWA"
+        ]
+    }
 ]

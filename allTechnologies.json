@@ -36,6 +36,24 @@
     "priority": 1
   },
   {
+    "name": "Vue",
+    "url": "https://vuejs.org",
+    "icon": "/api/storage/vue.svg",
+    "priority": 1
+  },
+  {
+    "name": "Svelte",
+    "url": "https://svelte.dev",
+    "icon": "/api/storage/svelte-icon.svg",
+    "priority": 1
+  },
+  {
+    "name": "Threlte",
+    "url": "https://threlte.xyz",
+    "icon": "/api/storage/threlte-icon.webp",
+    "priority": 1
+  },
+  {
     "name": "Next.js",
     "url": "https://nextjs.org",
     "icon": "/icons/nextjs.svg",
@@ -63,6 +81,12 @@
     "name": "Pixi.js",
     "url": "https://pixijs.com/",
     "icon": "/api/storage/pixi.png",
+    "priority": 2
+  },
+  {
+    "name": "Three.js",
+    "url": "https://threejs.org",
+    "icon": "/api/storage/three.svg",
     "priority": 2
   },
   {

@@ -1,0 +1,185 @@
+import type { Role } from '$lib/role'
+
+// Тип одной технологии внутри группы
+export interface TechGroupItem {
+    name: string
+    icon: string // путь к картинке в static/icons/ или /api/storage/*
+    note?: string // строгая подпись "что делаю"
+}
+
+export type Preset =
+    | 'particles'
+    | 'fluid'
+    | 'neural'
+    | 'constellation'
+    | 'matrix'
+
+// Тип группы технологий (один экран)
+export interface TechGroup {
+    id: string
+    index?: number // устарело: номер секции считается по порядку на странице
+    title: string
+    subtitle?: string
+    pixiPreset: Preset
+    items: TechGroupItem[]
+    roles?: Role[]
+}
+
+export const DEFAULT_TECH_GROUPS: TechGroup[] = [
+    {
+        id: 'stack-1',
+        index: 3,
+        title: 'Основа фронтенда',
+        subtitle: 'TypeScript · HTML5 · CSS3 · SCSS',
+        pixiPreset: 'particles',
+        roles: ['frontend', 'fullstack'],
+        items: [
+            {
+                name: 'TypeScript',
+                icon: '/icons/typescript.svg',
+                note: 'Строгая типизация, generics, utility types, декораторы',
+            },
+            {
+                name: 'HTML5',
+                icon: '/icons/html5.svg',
+                note: 'Семантическая разметка, доступность, SEO',
+            },
+            {
+                name: 'CSS3',
+                icon: '/icons/css3.svg',
+                note: 'Анимации, grid, custom properties, оптимизация',
+            },
+            {
+                name: 'SCSS',
+                icon: '/icons/scss.svg',
+                note: 'Миксины, переменные, архитектура стилей',
+            },
+        ],
+    },
+    {
+        id: 'stack-2',
+        index: 4,
+        title: 'React экосистема',
+        subtitle: 'React 19 · Next.js 16',
+        pixiPreset: 'fluid',
+        roles: ['frontend', 'fullstack'],
+        items: [
+            {
+                name: 'React 19',
+                icon: '/icons/react.svg',
+                note: 'Hooks, Suspense, Server Components, оптимизация рендера',
+            },
+            {
+                name: 'Next.js 16',
+                icon: '/icons/nextjs.svg',
+                note: 'App Router, SSR, SSG, ISR, middleware',
+            },
+        ],
+    },
+    {
+        id: 'stack-3',
+        index: 5,
+        title: 'Графика',
+        subtitle: 'Pixi · Rive · Lottie',
+        roles: ['frontend', 'fullstack'],
+        pixiPreset: 'neural',
+        items: [
+            {
+                name: 'Pixi',
+                icon: '/api/storage/pixi.png',
+                note: 'WebGL, WebGPU, сложные графические интерфейсы',
+            },
+            {
+                name: 'Rive',
+                icon: '/icons/rive.svg',
+                note: 'Интерактивные анимации, wasm',
+            },
+            {
+                name: 'Lottie',
+                icon: '/api/storage/lottie.ico',
+                note: 'Графика, сложные анимации',
+            },
+        ],
+    },
+    {
+        id: 'stack-4',
+        index: 6,
+        title: 'Web Components',
+        subtitle: 'Lit · Custom Elements',
+        roles: ['frontend', 'fullstack'],
+        pixiPreset: 'constellation',
+        items: [
+            {
+                name: 'Lit',
+                icon: '/icons/lit.svg',
+                note: 'Разработка переиспользуемых веб-компонентов',
+            },
+        ],
+    },
+
+    {
+        id: 'stack-5',
+        index: 7,
+        title: 'Качество и тестирование',
+        subtitle: 'Storybook · Jest · Playwright',
+        roles: ['frontend', 'fullstack'],
+        pixiPreset: 'matrix',
+        items: [
+            {
+                name: 'Storybook',
+                icon: '/icons/storybook.svg',
+                note: 'UI-документация, изолированная разработка компонентов',
+            },
+            {
+                name: 'Jest',
+                icon: '/icons/jest.svg',
+                note: 'Unit и интеграционное тестирование',
+            },
+            {
+                name: 'Playwright',
+                icon: '/icons/playwright.svg',
+                note: 'E2E тестирование, кроссбраузерность',
+            },
+        ],
+    },
+    {
+        id: 'stack-6',
+        index: 8,
+        title: 'Backend',
+        subtitle: 'Go 1.25',
+        roles: ['backend', 'fullstack'],
+        pixiPreset: 'fluid',
+        items: [
+            {
+                name: 'Go 1.25',
+                icon: '/icons/go.svg',
+                note: 'Конкурентность, производительность, REST API',
+            },
+            {
+                name: 'Echo 4',
+                icon: '/icons/echo.svg',
+                note: 'Роутинг, middleware, валидация, обработка ошибок',
+            },
+        ],
+    },
+    {
+        id: 'stack-7',
+        index: 9,
+        title: 'Базы данных',
+        subtitle: 'MongoDB · PostgreSQL',
+        roles: ['backend', 'fullstack'],
+        pixiPreset: 'particles',
+        items: [
+            {
+                name: 'MongoDB',
+                icon: '/icons/mongodb.svg',
+                note: 'Документо-ориентированные данные, агрегации',
+            },
+            {
+                name: 'PostgreSQL',
+                icon: '/icons/postgresql.svg',
+                note: 'Реляционные данные, индексы, сложные запросы',
+            },
+        ],
+    },
+]

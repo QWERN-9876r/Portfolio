@@ -1,0 +1,74 @@
+# Сервис метрик посетителей (deploy/rum): тесты, сборка под Linux и перезапуск на сервере.
+# Юнит systemd CI не трогает — его правки выкладываются вручную (deploy/README.md)
+name: Deploy RUM service
+
+on:
+  push:
+    branches: [main]
+    paths: ['deploy/rum/**', '!deploy/rum/**.md', '.github/workflows/deploy-rum.yml']
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-rum
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: production
+    defaults:
+      run:
+        working-directory: deploy/rum
+    env:
+      RUM_DIR: /opt/portfolio-rum
+    steps:
+      - uses: actions/checkout@v5
+
+      # Зависимостей нет (только stdlib, go.sum нет) — кэшировать нечего
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: deploy/rum/go.mod
+          cache: false
+
+      - run: go vet ./...
+      - run: go test ./...
+
+      # Статический бинарник под сервер; архитектуру можно задать переменной SERVER_ARCH
+      - run: go build -trimpath -ldflags='-s -w' -o portfolio-rum .
+        env:
+          CGO_ENABLED: '0'
+          GOOS: linux
+          GOARCH: ${{ vars.SERVER_ARCH || 'amd64' }}
+
+      - name: SSH-ключ и отпечаток сервера
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          SSH_KNOWN_HOSTS: ${{ secrets.SSH_KNOWN_HOSTS }}
+        run: |
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          printf '%s\n' "$SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
+
+      # Новый бинарник кладём рядом и подменяем через mv — работающий процесс не ломается.
+      # sudo разрешён deploy-пользователю только для перезапуска этого сервиса
+      - name: Выкладка и перезапуск
+        env:
+          TARGET: ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}
+        run: |
+          scp -i ~/.ssh/deploy_key portfolio-rum "$TARGET:$RUM_DIR/portfolio-rum.new"
+          ssh -i ~/.ssh/deploy_key "$TARGET" "
+            set -e
+            chmod 755 $RUM_DIR/portfolio-rum.new
+            mv $RUM_DIR/portfolio-rum.new $RUM_DIR/portfolio-rum
+            sudo -n systemctl restart portfolio-rum
+          "
+
+      # Сервис слушает только 127.0.0.1 — проверяем через nginx, как его видит сайт
+      - name: Сервис отвечает
+        run: |
+          for attempt in 1 2 3 4 5; do
+            curl -fsS -o /dev/null https://qwern9876r.ru/api/rum/summary && exit 0
+            sleep 2
+          done
+          exit 1

@@ -1,1 +1,0 @@
-export { SellingPointsSection } from "./SellingPointsSection";
