@@ -22,6 +22,11 @@ export default defineConfig({
         // Без GPU (раннеры CI) WebGL есть только в программном SwiftShader. Включаем его
         // и локально, чтобы сцены везде рисовались одинаково
         launchOptions: { args: ['--enable-unsafe-swiftshader', '--use-angle=swiftshader'] },
+        // Функциональным тестам интро призмы не нужно, а в SwiftShader на раннере с 2 ядрами
+        // кадр рисуется до секунды: пока идёт интро, клики и переходы растягиваются на десятки
+        // секунд. С reduced motion сразу финальный кадр — это и настоящий режим посетителей.
+        // Анимации проверяют тесты с test.use({ reducedMotion: 'no-preference' })
+        reducedMotion: 'reduce',
         trace: 'retain-on-failure',
     },
     webServer: [

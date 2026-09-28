@@ -102,21 +102,26 @@ test('вход с первого экрана — «Статистика» в в
 })
 
 // Призма живёт в общем макете, а #scroll-root у каждой страницы свой: после перехода
-// на статистику и обратно она должна следить за прокруткой новой главной
-test('призма следит за прокруткой и после возврата со статистики', async ({ page }) => {
-    const { prism } = translations.ru
-    await page.goto('/ru')
-    // Сцена грузится лениво: куб «Наверх» после прокрутки — значит, она подписана на скролл
-    await page.locator('#experience').scrollIntoViewIfNeeded()
-    await expect(page.getByRole('button', { name: prism.backToTop })).toBeVisible()
+// на статистику и обратно она должна следить за прокруткой новой главной.
+// С анимациями: при reduced motion куб в hero неактивен и не виден как кнопка
+test.describe('с анимациями', () => {
+    test.use({ reducedMotion: 'no-preference' })
 
-    await page.getByRole('link', { name: translations.ru.statsNav, exact: true }).click()
-    await expect(page).toHaveURL('/ru/stats')
-    await page.getByRole('link', { name: ru.back }).click()
-    await expect(page).toHaveURL('/ru')
+    test('призма следит за прокруткой и после возврата со статистики', async ({ page }) => {
+        const { prism } = translations.ru
+        await page.goto('/ru')
+        // Сцена грузится лениво: куб «Наверх» после прокрутки — значит, она подписана на скролл
+        await page.locator('#experience').scrollIntoViewIfNeeded()
+        await expect(page.getByRole('button', { name: prism.backToTop })).toBeVisible()
 
-    // Новая главная открылась сверху — куб снова бьёт лучом, а ниже hero — ведёт наверх
-    await expect(page.getByRole('button', { name: prism.strike })).toBeVisible()
-    await page.locator('#experience').scrollIntoViewIfNeeded()
-    await expect(page.getByRole('button', { name: prism.backToTop })).toBeVisible()
+        await page.getByRole('link', { name: translations.ru.statsNav, exact: true }).click()
+        await expect(page).toHaveURL('/ru/stats')
+        await page.getByRole('link', { name: ru.back }).click()
+        await expect(page).toHaveURL('/ru')
+
+        // Новая главная открылась сверху — куб снова бьёт лучом, а ниже hero — ведёт наверх
+        await expect(page.getByRole('button', { name: prism.strike })).toBeVisible()
+        await page.locator('#experience').scrollIntoViewIfNeeded()
+        await expect(page.getByRole('button', { name: prism.backToTop })).toBeVisible()
+    })
 })
