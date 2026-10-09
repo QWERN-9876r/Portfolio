@@ -30,6 +30,9 @@ export interface Translation {
         roles: Record<Role, string>
         // Статус поиска работы над ником: что ищу и в каком формате
         status: { label: string; detail: string }
+        // Плашка под кнопками: ведёт в кейс про MangoScript
+        // detail — продолжение text, на телефоне не помещается и скрыто
+        openSource: { badge: string; text: string; detail: string }
     }
     sections: {
         about: string
@@ -85,6 +88,8 @@ export interface Translation {
         before: string
         after: string
         team: string
+        // Пример кода в кейсе про MangoScript
+        demo: { label: string; note: string }
     }
     allTech: {
         openSite: string
@@ -122,7 +127,7 @@ export const translations: Record<Locale, Translation> = {
             ogLocale: 'en_US',
             ogImageAlt: 'Dmitry Sotnikov in the Yandex office under the Yandex Go neon sign',
             keywords:
-                'Dmitry Sotnikov, Qwern_9876r, frontend developer, fullstack, backend, React, TypeScript, Go, portfolio',
+                'Dmitry Sotnikov, Qwern_9876r, frontend developer, fullstack, backend, React, TypeScript, Go, MangoScript, portfolio',
             name: 'Dmitry Sotnikov',
             jobTitle: 'Frontend / Fullstack / Backend developer',
         },
@@ -141,6 +146,7 @@ export const translations: Record<Locale, Translation> = {
                 backend: 'Backend',
             },
             status: { label: 'Open to offers', detail: 'Middle+ Frontend / Fullstack · Moscow or remote' },
+            openSource: { badge: 'Open source', text: 'My language MangoScript', detail: ', compiles to JS' },
         },
         sections: {
             about: 'About me',
@@ -183,13 +189,14 @@ export const translations: Record<Locale, Translation> = {
         },
         about: {
             bio: 'BIO',
-            text: 'I am a fullstack developer with experience at Yandex, where I handled complex technical challenges — from optimizing interface performance to designing large-scale projects. I write high-performance, maintainable code and always look beyond the immediate task: I think about how a solution affects the product and the business as a whole. I take initiative, see work through to completion, and do not wait to be told what to do.',
+            text: 'I am a fullstack developer with experience at Yandex, where I handled complex technical challenges — from optimizing interface performance to designing large-scale projects. I write high-performance, maintainable code and always look beyond the immediate task: I think about how a solution affects the product and the business as a whole. I take initiative, see work through to completion, and do not wait to be told what to do. In my spare time I build MangoScript, my own programming language that compiles to JavaScript.',
             highlights: [
                 'Yandex',
                 'performance',
                 'high-performance',
                 'business',
                 'I take initiative',
+                'MangoScript',
             ],
             companies: 'companies',
             companyNames: { yandex: 'Yandex', mts: 'MTS' },
@@ -219,6 +226,10 @@ export const translations: Record<Locale, Translation> = {
             before: 'before',
             after: 'after',
             team: 'Frontend team',
+            demo: {
+                label: 'Example',
+                note: 'The whole component: after count++ the compiler updates the button text by itself — no virtual DOM, no library.',
+            },
         },
         allTech: {
             openSite: 'Open the website of',
@@ -254,7 +265,7 @@ export const translations: Record<Locale, Translation> = {
             ogLocale: 'ru_RU',
             ogImageAlt: 'Дмитрий Сотников в офисе Яндекса под неоновой вывеской Яндекс Go',
             keywords:
-                'Сотников Дмитрий, Qwern_9876r, frontend разработчик, fullstack, backend, React, TypeScript, Go, портфолио',
+                'Сотников Дмитрий, Qwern_9876r, frontend разработчик, fullstack, backend, React, TypeScript, Go, MangoScript, портфолио',
             name: 'Сотников Дмитрий',
             jobTitle: 'Frontend / Fullstack / Backend разработчик',
         },
@@ -273,6 +284,7 @@ export const translations: Record<Locale, Translation> = {
                 backend: 'Backend',
             },
             status: { label: 'Открыт к предложениям', detail: 'Middle+ Frontend / Fullstack · Москва или удалёнка' },
+            openSource: { badge: 'Open source', text: 'Мой язык MangoScript', detail: ' — компилируется в JS' },
         },
         sections: {
             about: 'О себе',
@@ -316,13 +328,14 @@ export const translations: Record<Locale, Translation> = {
         },
         about: {
             bio: 'BIO',
-            text: 'Я fullstack-разработчик с опытом в Яндексе, где закрывал сложные технические задачи — от оптимизации производительности интерфейсов до проектирования огромных проектов. Пишу высокопроизводительный, поддерживаемый код и всегда смотрю шире задачи: думаю о том, как решение влияет на продукт и бизнес в целом. Инициативен, довожу начатое до результата и не жду, когда скажут что делать.',
+            text: 'Я fullstack-разработчик с опытом в Яндексе, где закрывал сложные технические задачи — от оптимизации производительности интерфейсов до проектирования огромных проектов. Пишу высокопроизводительный, поддерживаемый код и всегда смотрю шире задачи: думаю о том, как решение влияет на продукт и бизнес в целом. Инициативен, довожу начатое до результата и не жду, когда скажут что делать. В свободное время развиваю MangoScript — свой язык программирования, который компилируется в JavaScript.',
             highlights: [
                 'Яндексе',
                 'производительности',
                 'высокопроизводительный',
                 'бизнес',
                 'Инициативен',
+                'MangoScript',
             ],
             companies: 'компании',
             companyNames: { yandex: 'Яндекс', mts: 'МТС' },
@@ -352,6 +365,10 @@ export const translations: Record<Locale, Translation> = {
             before: 'до',
             after: 'после',
             team: 'Фронтенд в команде',
+            demo: {
+                label: 'Пример',
+                note: 'Это весь компонент: после count++ компилятор сам обновит текст кнопки — без виртуального DOM и библиотеки.',
+            },
         },
         allTech: {
             openSite: 'Открыть сайт',

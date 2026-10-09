@@ -1,0 +1,6 @@
+comp Counter(start number) {
+    state count = start
+    return <button onClick={count++}>Clicked {count} times</button>
+}
+
+document.body.append(<Counter start={0} />)

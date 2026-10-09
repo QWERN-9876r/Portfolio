@@ -85,6 +85,12 @@
                 {#if caseItem.context}
                     <p class="muted">{caseItem.context}</p>
                 {/if}
+                {#if caseItem.links?.length}
+                    <p class="muted">
+                        {#each caseItem.links as link, index (link.url)}{#if index > 0}{' · '}{/if}{link.label}:
+                            <a href={link.url}>{shortUrl(link.url)}</a>{/each}
+                    </p>
+                {/if}
             </article>
         {/each}
     </section>

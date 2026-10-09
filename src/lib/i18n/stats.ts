@@ -74,7 +74,7 @@ export interface StatsTranslation {
         deepest: string
         hero: string
         allTech: string
-        cta: Record<'telegram' | 'resume' | 'email' | 'github' | 'hh', string>
+        cta: Record<'telegram' | 'resume' | 'email' | 'github' | 'hh' | 'mangoscript', string>
         privacy: string
     }
 
@@ -146,7 +146,14 @@ export const statsTranslations: Record<Locale, StatsTranslation> = {
             deepest: 'scrolled to',
             hero: 'First screen',
             allTech: 'All technologies',
-            cta: { telegram: 'Telegram', resume: 'PDF resume', email: 'Email', github: 'GitHub', hh: 'hh.ru' },
+            cta: {
+                telegram: 'Telegram',
+                resume: 'PDF resume',
+                email: 'Email',
+                github: 'GitHub',
+                hh: 'hh.ru',
+                mangoscript: 'MangoScript',
+            },
             privacy: 'No cookies, IPs or identifiers: only measurements, language, role and sections seen.',
         },
     },
@@ -215,7 +222,14 @@ export const statsTranslations: Record<Locale, StatsTranslation> = {
             deepest: 'досмотрено до',
             hero: 'Первый экран',
             allTech: 'Все технологии',
-            cta: { telegram: 'Telegram', resume: 'PDF-резюме', email: 'Почта', github: 'GitHub', hh: 'hh.ru' },
+            cta: {
+                telegram: 'Telegram',
+                resume: 'PDF-резюме',
+                email: 'Почта',
+                github: 'GitHub',
+                hh: 'hh.ru',
+                mangoscript: 'MangoScript',
+            },
             privacy: 'Без cookie, IP и идентификаторов: только замеры, язык, роль и увиденные секции.',
         },
     },

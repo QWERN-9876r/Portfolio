@@ -1,12 +1,19 @@
 <script lang="ts">
     import Icon from '$lib/components/Icon.svelte'
+    import type { CaseItem } from '$lib/content'
     import type { Locale, Translation } from '$lib/i18n/translations'
     import type { Role } from '$lib/role'
     import { NICKNAME, resumePdf, TG_URL } from '$lib/site'
     import HeroPhoto from './HeroPhoto.svelte'
     import HeroRole from './HeroRole.svelte'
 
-    let { t, lang, role }: { t: Translation; lang: Locale; role: Role } = $props()
+    // openSource — кейс про MangoScript: плашка ведёт в него и пропадает, если кейса нет в контенте
+    let {
+        t,
+        lang,
+        role,
+        openSource,
+    }: { t: Translation; lang: Locale; role: Role; openSource?: CaseItem } = $props()
 
     // Появление с первой отрисовки — CSS, без ожидания гидрации
     const delay = (index: number) => `${0.1 + index * 0.12}s`
@@ -55,6 +62,16 @@
                         {t.resume.download}
                     </a>
                 </div>
+
+                {#if openSource}
+                    <div class="item" style:--delay={delay(7)}>
+                        <a class="open-source" href="#{openSource.id}">
+                            <span class="caption os-badge">{t.hero.openSource.badge}</span>
+                            <span>{t.hero.openSource.text}<span class="os-detail">{t.hero.openSource.detail}</span></span>
+                            <span class="os-arrow" aria-hidden="true">→</span>
+                        </a>
+                    </div>
+                {/if}
             </div>
 
             <div class="photo">
@@ -190,6 +207,60 @@
         margin: 0 8px 0 -4px;
     }
 
+    /* Тише кнопок: ссылка внутрь страницы, а не действие */
+    .open-source {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        max-width: 100%;
+        padding: 6px 14px 6px 6px;
+        border: 1px solid rgb(var(--c-neon) / 0.2);
+        border-radius: 999px;
+        color: rgb(var(--c-text-secondary));
+        font-size: 0.8rem;
+        line-height: 1.4;
+        text-align: left;
+        text-decoration: none;
+        transition:
+            border-color 0.25s ease,
+            color 0.25s ease;
+    }
+
+    .open-source:hover {
+        border-color: rgb(var(--c-neon) / 0.6);
+        color: rgb(var(--c-text-primary));
+    }
+
+    .open-source:focus-visible {
+        outline: 2px solid rgb(var(--c-neon-soft));
+        outline-offset: 2px;
+    }
+
+    .os-badge {
+        flex-shrink: 0;
+        padding: 3px 10px;
+        border-radius: 999px;
+        background: rgb(var(--c-neon) / 0.15);
+        color: rgb(var(--c-neon-soft));
+        font-size: 0.6rem;
+        letter-spacing: 0.06em;
+        white-space: nowrap;
+    }
+
+    .os-detail {
+        display: none;
+    }
+
+    .os-arrow {
+        flex-shrink: 0;
+        color: rgb(var(--c-neon-soft));
+        transition: transform 0.2s ease;
+    }
+
+    .open-source:hover .os-arrow {
+        transform: translateX(3px);
+    }
+
     .photo {
         display: flex;
         flex-shrink: 0;
@@ -235,6 +306,19 @@
     @media (min-width: 600px) {
         .nickname {
             font-size: 1.65rem;
+        }
+
+        .open-source {
+            font-size: 0.85rem;
+        }
+
+        .os-badge {
+            font-size: 0.65rem;
+            letter-spacing: 0.08em;
+        }
+
+        .os-detail {
+            display: inline;
         }
     }
 

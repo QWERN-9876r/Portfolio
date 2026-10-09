@@ -46,7 +46,7 @@ var (
 	roles    = []string{"frontend", "fullstack", "backend"}
 	devices  = []string{"mobile", "desktop"}
 	paints   = []string{"", "lcp", "fcp"}
-	ctas     = []string{"telegram", "resume", "email", "github", "hh"}
+	ctas     = []string{"telegram", "resume", "email", "github", "hh", "mangoscript"}
 	idFormat = regexp.MustCompile(`^[a-z0-9-]{1,40}$`)
 )
 

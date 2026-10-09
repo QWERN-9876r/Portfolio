@@ -8,6 +8,11 @@ export interface CaseStep {
     text?: string
 }
 
+export interface CaseLink {
+    label: string
+    url: string
+}
+
 export interface CaseItem {
     id: string
     index?: number // устарело: номер секции считается по порядку на странице
@@ -26,6 +31,10 @@ export interface CaseItem {
     steps?: CaseStep[]
     // Сколько было фронтендеров в команде и сколько осталось — схема рядом с цифрами
     team?: { before: number; after: number }
+    // Ссылки под заголовком: документация, репозиторий
+    links?: CaseLink[]
+    // Живой пример вместо визуализации цифр
+    demo?: 'mangoscript'
     tags?: string[]
 }
 
@@ -130,6 +139,51 @@ export const DEFAULT_CASES: CaseItem[] = [
             },
         ],
         tags: ['SvelteKit', 'Svelte 5', 'Threlte', 'Three.js', 'Pixi.js', 'WebGL', 'PWA'],
+    },
+    {
+        id: 'case-4',
+        title: 'Свой язык программирования',
+        company: 'Open source',
+        period: '10.2026',
+        problem:
+            'Хотелось писать интерфейсы с лаконичным синтаксисом в духе Go и строгими типами — и чтобы за это удобство не платил пользователь: без виртуального DOM и рантайм-фреймворка в бандле.',
+        solution:
+            'Я написал MangoScript — язык с семантикой JavaScript, синтаксисом в духе Go и статической типизацией, который компилируется в читаемый JavaScript. ' +
+            'Компилятор написан на TypeScript: лексер, парсер и проверка типов с дженериками, union-типами и сужением. ' +
+            'Типы npm-пакетов, DOM и стандартной библиотеки он берёт из .d.ts-файлов TypeScript, а для модулей на MangoScript сам пишет .d.ts — поэтому язык работает с любой библиотекой из npm в обе стороны. ' +
+            'Компоненты существуют только во время компиляции: компилятор видит, какие узлы зависят от состояния, и генерирует код, который обновляет ровно их. ' +
+            'Вокруг языка — плагин для Vite, CLI, расширение для VS Code и документация, которая сама написана на MangoScript: компилятор работает прямо в браузере, у каждого примера есть вкладка с получившимся JavaScript, а внизу — песочница.',
+        results: [
+            { label: 'рантайм-фреймворка', value: '0 КБ' },
+            { label: 'тестов', value: '270' },
+            { label: 'строк на TypeScript', value: '15 тыс.' },
+        ],
+        context: 'Цифры — из репозитория: тесты Vitest и исходники компилятора',
+        facts: ['Open source', 'Язык, компилятор и инструменты — с нуля', 'Документация написана на самом MangoScript'],
+        steps: [
+            {
+                title: 'Компилятор с проверкой типов',
+                text: 'Лексер, парсер и типы: дженерики, union-типы, сужение через typeof и instanceof',
+            },
+            {
+                title: 'Совместимость с TypeScript',
+                text: 'Типы пакетов и DOM — из .d.ts, а для своих модулей компилятор сам пишет .d.ts',
+            },
+            {
+                title: 'Компоненты без рантайма',
+                text: 'state, bind:, if и for в разметке, веб-компоненты — реактивность вычисляет компилятор',
+            },
+            {
+                title: 'Инструменты вокруг языка',
+                text: 'Плагин для Vite, CLI, расширение для VS Code и документация с песочницей, написанная на самом MangoScript',
+            },
+        ],
+        links: [
+            { label: 'Документация', url: 'https://qwern-9876r.github.io/MangoScript/ru/' },
+            { label: 'GitHub', url: 'https://github.com/QWERN-9876r/MangoScript' },
+        ],
+        demo: 'mangoscript',
+        tags: ['TypeScript', 'Компиляторы', 'Vite', 'Web Components', 'VS Code'],
     },
 ]
 

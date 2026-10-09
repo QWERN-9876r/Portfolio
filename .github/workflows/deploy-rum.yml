@@ -71,11 +71,24 @@ jobs:
             sudo -n systemctl restart portfolio-rum
           "
 
-      # Сервис слушает только 127.0.0.1 — проверяем через nginx, как его видит сайт
+      # Сервис слушает только 127.0.0.1 — проверяем через nginx, как его видит сайт:
+      # приём визитов, сводку и живую ленту для /stats. Поток не кончается — берём первые 3 с
       - name: Сервис отвечает
         run: |
+          # Пустой визит сервис отклоняет (400) и не записывает — так видно, что POST до него
+          # доходит. 301 — в nginx нет точного location = /api/rum, и браузеры теряют визиты
+          code=$(curl -s -o /dev/null -w '%{http_code}' -X POST --data '{}' https://qwern9876r.ru/api/rum)
+          if [ "$code" != 400 ]; then
+            echo "::error::POST /api/rum: $code вместо 400 — визиты не доходят до сервиса. В nginx нужен location = /api/rum из deploy/nginx.example.conf"
+            exit 1
+          fi
           for attempt in 1 2 3 4 5; do
-            curl -fsS -o /dev/null https://qwern9876r.ru/api/rum/summary && exit 0
+            curl -fsS -o /dev/null https://qwern9876r.ru/api/rum/summary && break
+            [ "$attempt" = 5 ] && exit 1
             sleep 2
           done
-          exit 1
+          live=$(curl -sN --max-time 3 https://qwern9876r.ru/api/rum/live || true)
+          if ! grep -q '^event: snapshot' <<< "$live"; then
+            echo "::error::/api/rum/live не отдаёт поток: в nginx нужен блок location ^~ /api/rum/ из deploy/nginx.example.conf"
+            exit 1
+          fi

@@ -4,6 +4,7 @@
     import CaseVisual from '$lib/components/CaseVisual.svelte'
     import Chip from '$lib/components/Chip.svelte'
     import CountUp from '$lib/components/CountUp.svelte'
+    import MangoDemo from '$lib/components/MangoDemo.svelte'
     import SectionIndex from '$lib/components/SectionIndex.svelte'
     import { overlaps, parsePeriod, roleAnchor, splitRole, type CaseItem, type ExperienceData } from '$lib/content'
     import type { Translation } from '$lib/i18n/translations'
@@ -65,10 +66,22 @@
             {#if role}
                 <a class="body2 role-link" href="#{role.anchor}" {@attach scrollToAnchor}>{t.cases.during}: {role.title} ↗</a>
             {/if}
+            {#if caseItem.links?.length}
+                <ul class="links">
+                    {#each caseItem.links as link (link.url)}
+                        <li>
+                            <a class="body2 link" href={link.url} target="_blank" rel="noopener">
+                                {link.label}<span class="link-arrow" aria-hidden="true">↗</span>
+                            </a>
+                        </li>
+                    {/each}
+                </ul>
+            {/if}
         </div>
 
-        <!-- Результат первым: по цифрам решают, читать ли дальше -->
-        <div class="hero">
+        <!-- Результат первым: по цифрам решают, читать ли дальше.
+             Пример кода шире колонки справа — встаёт под цифрами -->
+        <div class="hero" class:stacked={caseItem.demo}>
             <div class="reveal outcome" style:--delay={delay(1)}>
                 <div class="results" style:--chars={Math.max(1, ...caseItem.results.map((r) => r.value.length))}>
                     {#each caseItem.results as result, index (result.label)}
@@ -91,7 +104,11 @@
             </div>
 
             <div class="reveal visual-wrap" style:--delay={delay(2)}>
-                <CaseVisual {t} {caseItem} colors={COLORS} />
+                {#if caseItem.demo === 'mangoscript'}
+                    <MangoDemo {t} />
+                {:else}
+                    <CaseVisual {t} {caseItem} colors={COLORS} />
+                {/if}
             </div>
         </div>
 
@@ -230,6 +247,46 @@
 
     .role-link:hover {
         text-decoration: underline;
+    }
+
+    .links {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin: 0;
+        padding: 0;
+        list-style: none;
+    }
+
+    .link {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 14px;
+        border: 1px solid rgb(var(--c-neon) / 0.5);
+        border-radius: 10px;
+        background: rgb(var(--c-neon) / 0.08);
+        color: rgb(var(--c-text-primary));
+        font-size: 0.85rem;
+        font-weight: 600;
+        text-decoration: none;
+        transition:
+            border-color 0.25s ease,
+            background 0.25s ease;
+    }
+
+    .link:hover {
+        border-color: rgb(var(--c-neon));
+        background: rgb(var(--c-neon) / 0.16);
+    }
+
+    .link-arrow {
+        color: rgb(var(--c-neon-soft));
+        transition: transform 0.2s ease;
+    }
+
+    .link:hover .link-arrow {
+        transform: translate(2px, -2px);
     }
 
     /* ── Результат: цифры и визуализация ── */
@@ -514,7 +571,8 @@
     }
 
     .nav-link:focus-visible,
-    .role-link:focus-visible {
+    .role-link:focus-visible,
+    .link:focus-visible {
         border-radius: 4px;
         outline: 2px solid rgb(var(--c-neon-soft));
         outline-offset: 2px;
@@ -539,6 +597,14 @@
         .visual-wrap {
             flex-shrink: 0;
             width: 340px;
+        }
+
+        .hero.stacked {
+            flex-direction: column;
+        }
+
+        .stacked .visual-wrap {
+            width: auto;
         }
 
         .panel {

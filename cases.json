@@ -44,10 +44,7 @@
                 "text": "The mini-game attracted many daily users, and a summer campaign with bloggers was built around it"
             }
         ],
-        "tags": [
-            "Animations",
-            "Initiative"
-        ]
+        "tags": ["Animations", "Initiative"]
     },
     {
         "id": "case-2",
@@ -95,13 +92,7 @@
             "before": 3,
             "after": 1
         },
-        "tags": [
-            "TypeScript",
-            "Rive",
-            "React",
-            "Next.js",
-            "Server Components"
-        ]
+        "tags": ["TypeScript", "Rive", "React", "Next.js", "Server Components"]
     },
     {
         "id": "case-3",
@@ -157,5 +148,63 @@
             "WebGL",
             "PWA"
         ]
+    },
+    {
+        "id": "case-4",
+        "title": "My own programming language",
+        "company": "Open source",
+        "period": "10.2026",
+        "problem": "I wanted to write interfaces with concise Go-style syntax and strict types — without users paying for that convenience: no virtual DOM and no runtime framework in the bundle.",
+        "solution": "I built MangoScript, a language with JavaScript semantics, Go-style syntax and static types that compiles to readable JavaScript. The compiler is written in TypeScript: a lexer, a parser and a type checker with generics, union types and narrowing. It reads the types of npm packages, the DOM and the standard library from TypeScript .d.ts files and writes .d.ts files for MangoScript modules, so the language works with any npm library in both directions. Components exist only at compile time: the compiler sees which nodes depend on which state and generates code that updates exactly those nodes. Around the language there is a Vite plugin, a CLI, a VS Code extension and documentation written in MangoScript itself: the compiler runs right in the browser, every example has a tab with the resulting JavaScript, and there is a sandbox at the bottom.",
+        "results": [
+            {
+                "label": "framework runtime",
+                "value": "0 KB"
+            },
+            {
+                "label": "tests",
+                "value": "270"
+            },
+            {
+                "label": "lines of TypeScript",
+                "value": "15K"
+            }
+        ],
+        "context": "Numbers from the repository: Vitest tests and the compiler sources",
+        "facts": [
+            "Open source",
+            "Language, compiler and tooling from scratch",
+            "The docs are written in MangoScript itself"
+        ],
+        "steps": [
+            {
+                "title": "A compiler with a type checker",
+                "text": "Lexer, parser and types: generics, union types, narrowing with typeof and instanceof"
+            },
+            {
+                "title": "TypeScript interop",
+                "text": "Types of packages and the DOM come from .d.ts files, and the compiler writes .d.ts for its own modules"
+            },
+            {
+                "title": "Components without a runtime",
+                "text": "state, bind:, if and for in markup, web components — the compiler works out reactivity"
+            },
+            {
+                "title": "Tooling around the language",
+                "text": "A Vite plugin, a CLI, a VS Code extension and docs with a sandbox, written in MangoScript itself"
+            }
+        ],
+        "links": [
+            {
+                "label": "Documentation",
+                "url": "https://qwern-9876r.github.io/MangoScript/"
+            },
+            {
+                "label": "GitHub",
+                "url": "https://github.com/QWERN-9876r/MangoScript"
+            }
+        ],
+        "demo": "mangoscript",
+        "tags": ["TypeScript", "Compilers", "Vite", "Web Components", "VS Code"]
     }
 ]

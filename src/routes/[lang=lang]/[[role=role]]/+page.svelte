@@ -84,7 +84,12 @@
 </script>
 
 <main id="scroll-root">
-    <HeroSection {t} lang={data.lang} {role} />
+    <HeroSection
+        {t}
+        lang={data.lang}
+        {role}
+        openSource={content.cases.find((item) => item.demo === 'mangoscript')}
+    />
     <AboutSection {t} cases={content.cases} />
     <SellingPointsSection {t} lang={data.lang} cases={content.cases} />
 
