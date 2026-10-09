@@ -9,13 +9,14 @@
     // Повторяет результат из плиток, поэтому скрыт от скринридеров
     let { t, caseItem, colors }: { t: Translation; caseItem: CaseItem; colors: readonly Rgb[] } = $props()
 
-    // «+53%» → «после» выше «до» на 53%; результаты без процентов не рисуем
-    const PERCENT = /([+-]?\d+(?:[.,]\d+)?)\s*%/
+    // «+53%» → «после» выше «до» на 53%, «−87%» — ниже; результаты без процентов не рисуем
+    const PERCENT = /([+\-−]?\d+(?:[.,]\d+)?)\s*%/
     const bars = $derived.by(() => {
         const items = caseItem.results.flatMap((result, index) => {
             const match = PERCENT.exec(result.value)
             if (!match) return []
-            return [{ result, color: colors[index % colors.length], after: 100 + Number(match[1].replace(',', '.')) }]
+            const percent = Number(match[1].replace(',', '.').replace('−', '-'))
+            return [{ result, color: colors[index % colors.length], after: 100 + percent }]
         })
         const max = Math.max(100, ...items.map((item) => item.after))
         return items.map((item) => ({ ...item, before: 100 / max, after: item.after / max }))

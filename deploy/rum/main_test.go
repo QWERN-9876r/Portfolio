@@ -28,7 +28,7 @@ func TestValidate(t *testing.T) {
 		{"FCP", func(e *Event) { e.Paint = "fcp" }, true},
 		{"граница времени", func(e *Event) { e.PaintMs, e.LoadMs = ptr(60_000), ptr(60_000) }, true},
 		{"секция из 40 символов", func(e *Event) { e.Sections = []string{strings.Repeat("a", 40)} }, true},
-		{"клик по MangoScript", func(e *Event) { e.CTA = []string{"mangoscript"} }, true},
+		{"клики по проектам", func(e *Event) { e.CTA = []string{"mangoscript", "mushrooms"} }, true},
 		{"чужой язык", func(e *Event) { e.Lang = "de" }, false},
 		{"чужая роль", func(e *Event) { e.Role = "designer" }, false},
 		{"чужое устройство", func(e *Event) { e.Device = "tv" }, false},

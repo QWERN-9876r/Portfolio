@@ -95,6 +95,75 @@
         "tags": ["TypeScript", "Rive", "React", "Next.js", "Server Components"]
     },
     {
+        "id": "case-5",
+        "title": "Tested a new stack with a game",
+        "company": "MTS",
+        "period": "05.2026",
+        "problem": "For new projects at MTS we had to decide whether Svelte + Threlte + Pixi.js was the right stack: could it handle 3D, 2D effects and UI in one app, and how fast could we build with it.",
+        "solution": "To test the stack on a real task rather than a demo, I built Alchemy Terrarium in 4 days: a browser 3D game where you gather mushrooms in a forest and brew potions from them in a cauldron in a greenhouse. The 3D scenes run on Threlte (three.js), particle effects on Pixi.js on top of the 3D, the UI and game state on Svelte 5 — all in TypeScript and SvelteKit with a static build. The stack proved itself and was adopted for new projects. Later I compressed the game's 3D models with gltf-transform and meshopt: it now loads 9.7 MB on start instead of 76.4 MB.",
+        "results": [
+            {
+                "label": "days to build",
+                "value": "4"
+            },
+            {
+                "label": "3D model weight",
+                "value": "−87%"
+            },
+            {
+                "label": "loaded on start",
+                "value": "9.7 MB"
+            }
+        ],
+        "context": "May 2026, my first month at MTS. Model weight after compression in October 2026, gzip",
+        "facts": [
+            "Solo",
+            "Learned the stack on the go",
+            "Outcome: the stack was adopted for new projects"
+        ],
+        "steps": [
+            {
+                "title": "The task: choose a stack",
+                "text": "Would Svelte + Threlte + Pixi.js work for new MTS projects: 3D, 2D effects and UI in one app"
+            },
+            {
+                "title": "A game instead of a demo",
+                "text": "A browser 3D game in 4 days: a forest with mushrooms, a greenhouse with a cauldron, potions"
+            },
+            {
+                "title": "Three layers in one frame",
+                "text": "3D scenes on Threlte, Pixi.js particles on top, UI and state on Svelte 5"
+            },
+            {
+                "title": "The stack was adopted",
+                "text": "After the test, the stack was chosen for new projects"
+            },
+            {
+                "title": "Models 8× lighter",
+                "text": "gltf-transform and meshopt: 9.7 MB on start instead of 76.4"
+            }
+        ],
+        "links": [
+            {
+                "label": "Play (desktop)",
+                "url": "https://qwern-9876r.github.io/Mushrooms/"
+            },
+            {
+                "label": "GitHub",
+                "url": "https://github.com/QWERN-9876r/Mushrooms"
+            }
+        ],
+        "tags": [
+            "Svelte 5",
+            "SvelteKit",
+            "Threlte",
+            "Three.js",
+            "Pixi.js",
+            "TypeScript",
+            "GSAP"
+        ]
+    },
+    {
         "id": "case-3",
         "title": "This website",
         "company": "Personal project",

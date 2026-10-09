@@ -74,7 +74,7 @@ export interface StatsTranslation {
         deepest: string
         hero: string
         allTech: string
-        cta: Record<'telegram' | 'resume' | 'email' | 'github' | 'hh' | 'mangoscript', string>
+        cta: Record<'telegram' | 'resume' | 'email' | 'github' | 'hh' | 'mangoscript' | 'mushrooms', string>
         privacy: string
     }
 
@@ -153,6 +153,7 @@ export const statsTranslations: Record<Locale, StatsTranslation> = {
                 github: 'GitHub',
                 hh: 'hh.ru',
                 mangoscript: 'MangoScript',
+                mushrooms: 'Mushrooms',
             },
             privacy: 'No cookies, IPs or identifiers: only measurements, language, role and sections seen.',
         },
@@ -229,6 +230,7 @@ export const statsTranslations: Record<Locale, StatsTranslation> = {
                 github: 'GitHub',
                 hh: 'hh.ru',
                 mangoscript: 'MangoScript',
+                mushrooms: 'Mushrooms',
             },
             privacy: 'Без cookie, IP и идентификаторов: только замеры, язык, роль и увиденные секции.',
         },

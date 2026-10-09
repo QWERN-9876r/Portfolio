@@ -45,6 +45,7 @@ beforeEach(() => {
         <a id="gh" href="https://github.com/QWERN-9876r">GitHub</a>
         <a id="mango-docs" href="https://qwern-9876r.github.io/MangoScript/ru/">Документация</a>
         <a id="mango-repo" href="https://github.com/QWERN-9876r/MangoScript">MangoScript</a>
+        <a id="game" href="https://qwern-9876r.github.io/Mushrooms/">Играть</a>
         <a id="hh" href="https://hh.ru/resume/123">hh</a>
         <a id="other" href="https://example.com">Другой сайт</a>
         <a id="case" href="#case-1">Кейс</a>`
@@ -86,11 +87,11 @@ describe('startRum', () => {
 
     it('контакты распознаются по ссылке, повторы и чужие ссылки не считаются', async () => {
         stop = startRum(() => ({ lang: 'en', role: 'frontend' }))
-        for (const id of ['tg span', 'pdf', 'mail', 'gh', 'hh', 'tg', 'other', 'case', 'mango-docs', 'mango-repo'])
+        for (const id of ['tg span', 'pdf', 'mail', 'gh', 'hh', 'tg', 'other', 'case', 'mango-docs', 'mango-repo', 'game'])
             click(`#${id}`)
         leave()
 
-        expect(beacons()[0].event.cta).toEqual(['telegram', 'resume', 'email', 'github', 'hh', 'mangoscript'])
+        expect(beacons()[0].event.cta).toEqual(['telegram', 'resume', 'email', 'github', 'hh', 'mangoscript', 'mushrooms'])
     })
 
     it('отправляется один раз: и свёрнутая вкладка, и уход', async () => {
