@@ -77,7 +77,11 @@ jobs:
         run: |
           # Пустой визит сервис отклоняет (400) и не записывает — так видно, что POST до него
           # доходит. 301 — в nginx нет точного location = /api/rum, и браузеры теряют визиты
-          code=$(curl -s -o /dev/null -w '%{http_code}' -X POST --data '{}' https://qwern9876r.ru/api/rum)
+          # Без соединения curl падает раньше проверки кода — говорим, что сайт не отвечает вовсе
+          code=$(curl -sS -o /dev/null -w '%{http_code}' -X POST --data '{}' https://qwern9876r.ru/api/rum) || {
+            echo "::error::https://qwern9876r.ru не отвечает (curl $?): nginx на сервере не запущен или порт 443 закрыт"
+            exit 1
+          }
           if [ "$code" != 400 ]; then
             echo "::error::POST /api/rum: $code вместо 400 — визиты не доходят до сервиса. В nginx нужен location = /api/rum из deploy/nginx.example.conf"
             exit 1
