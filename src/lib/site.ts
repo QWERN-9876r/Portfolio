@@ -5,7 +5,7 @@ export const SITE_URL = 'https://qwern9876r.ru'
 
 // Фото в hero: {PHOTO}-{300,400,600}.{avif,webp} и {PHOTO}-600.jpg. Хеш исходника в имени —
 // после замены фото браузеры не покажут старое из кэша (nginx кэширует картинки на 30 дней)
-export const PHOTO = '/img/photo-3c2880ff'
+export const PHOTO = '/img/photo-948a13ea'
 
 // JS до события load, КБ gzip: держит e2e-тест, показывают «Почему я» и /stats
 export const JS_BUDGET_KB = 70
