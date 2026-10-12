@@ -1,13 +1,16 @@
 import { browser } from '$app/environment'
 import { currentPaint, measurePage, type PageMetrics } from '$lib/pageMetrics'
+import { rumUrl } from '$lib/site'
 
 // Метрики настоящих посетителей (сервис — deploy/rum). При уходе со страницы один beacon:
 // замеры, какие секции посетитель увидел и по каким контактам кликнул. Уход — это и закрытие
 // вкладки, и переход на другую страницу сайта (статистику): тогда визит виден в её ленте сразу.
 // Без cookie, идентификаторов и IP; автотесты и боты (navigator.webdriver) не считаются.
-// Локально (dev и preview) запросы уходят в локальный сервис через прокси Vite, не в прод
+// Сервис — на своём сервере (rumUrl), сайт — на GitHub Pages; лежит сервис — сайт работает как
+// работал, теряются только метрики. Локально (dev и preview) — локальный сервис через прокси Vite
 
-const ENDPOINT = '/api/rum'
+// Ждать сводку дольше незачем: «Почему я» показывает замеры этой страницы и без неё
+const SUMMARY_TIMEOUT_MS = 5000
 // Меньше замеров — медиана случайна, в «Почему я» её не показываем
 export const RUM_MIN_VISITORS = 10
 
@@ -69,7 +72,8 @@ export const startRum = (context: () => { lang: string; role: string }) => {
             sections,
             cta: [...cta],
         }
-        if (navigator.sendBeacon(ENDPOINT, JSON.stringify(beacon))) lastBeacon = beacon
+        // Строка уходит как text/plain: на другой домен без предварительного запроса CORS
+        if (navigator.sendBeacon(rumUrl(), JSON.stringify(beacon))) lastBeacon = beacon
     }
     const onVisibility = () => {
         if (document.visibilityState === 'hidden') send()
@@ -104,7 +108,7 @@ export interface RumSummary {
 // Медианы за последние дни; нет сервиса или мало замеров — null
 export const fetchRumSummary = async (): Promise<RumSummary | null> => {
     try {
-        const response = await fetch(`${ENDPOINT}/summary`)
+        const response = await fetch(rumUrl('/summary'), { signal: AbortSignal.timeout(SUMMARY_TIMEOUT_MS) })
         if (!response.ok) return null
         const summary = (await response.json()) as RumSummary
         return summary.visitors >= RUM_MIN_VISITORS ? summary : null

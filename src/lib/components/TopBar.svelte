@@ -2,13 +2,14 @@
     import { page } from '$app/state'
     import LanguageToggle from '$lib/components/LanguageToggle.svelte'
     import { translations, type Locale } from '$lib/i18n/translations'
+    import { withBase } from '$lib/site'
 
     // Верхняя панель поверх всех секций: вход в живую статистику и переключатель языка.
     // Точка статистики не пульсирует — бесконечная анимация спорила бы с «0 кадров в покое»
     let { lang, hrefs }: { lang: Locale; hrefs: Record<Locale, string> } = $props()
 
     const t = $derived(translations[lang])
-    const statsHref = $derived(`/${lang}/stats`)
+    const statsHref = $derived(withBase(`/${lang}/stats/`))
     const onStats = $derived(page.url.pathname === statsHref)
 </script>
 

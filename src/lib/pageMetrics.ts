@@ -63,7 +63,7 @@ const JS = /\.m?js(?:$|\?)/
 
 // Через service worker Resource Timing отдаёт уже распакованный размер: кэш хранит тело
 // без сжатия. Сжатый остаётся в Content-Length сохранённого ответа, если сервер его прислал
-// (nginx с gzip_static присылает). Нет заголовка — распакованный: честно, только больше
+// (GitHub Pages и nginx с gzip_static присылают). Нет заголовка — распакованный: честно, только больше
 const jsSize = async (entry: PerformanceResourceTiming) => {
     if (entry.workerStart > 0 && 'caches' in window) {
         const length = Number((await caches.match(entry.name))?.headers.get('content-length'))

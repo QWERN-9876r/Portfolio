@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest'
 import config from '../../svelte.config.js'
 import { LOCALES, translations } from '$lib/i18n/translations'
 import { ROLES, rolePath } from '$lib/role'
-import { SITE_URL } from '$lib/site'
+import { BASE_PATH, SITE_URL } from '$lib/site'
 import { GET as manifest } from './[lang=lang]/manifest.webmanifest/+server'
 import { GET as robots } from './robots.txt/+server'
 import { GET as sitemap } from './sitemap.xml/+server'
@@ -13,6 +13,13 @@ const manifestFor = (lang: string) => manifest({ params: { lang } } as unknown a
 
 // svelte.config.js перечисляет страницы для пререндера сам — без импорта из src
 const prerendered = new Set(config.kit?.prerender?.entries)
+
+describe('адрес сайта', () => {
+    it('base в svelte.config.js и BASE_PATH в коде — одна папка на GitHub Pages', () => {
+        expect(config.kit?.paths?.base).toBe(BASE_PATH)
+        expect(SITE_URL).toBe(`https://qwern-9876r.github.io${BASE_PATH}`)
+    })
+})
 
 describe('sitemap.xml', async () => {
     const response = sitemap()
@@ -35,9 +42,10 @@ describe('sitemap.xml', async () => {
             )
             expect(Object.keys(alternates).sort()).toEqual([...LOCALES, 'x-default'].sort())
             expect(alternates['x-default']).toBe(alternates.en)
-            // Версия на своём языке — сама страница
+            // Версия на своём языке — сама страница: /Portfolio/{lang}/...
             const loc = /<loc>(.*?)<\/loc>/.exec(url)![1]
-            expect(alternates[new URL(loc).pathname.split('/')[1]]).toBe(loc)
+            const lang = new URL(loc).pathname.slice(BASE_PATH.length).split('/')[1]
+            expect(alternates[lang]).toBe(loc)
         }
     })
 
@@ -66,7 +74,8 @@ describe('manifest.webmanifest', () => {
             lang,
             name: translations[lang].seo.title,
             description: translations[lang].seo.description,
-            start_url: `/${lang}`,
+            start_url: `${BASE_PATH}/${lang}/`,
+            scope: `${BASE_PATH}/`,
             display: 'standalone',
         })
         expect(prerendered).toContain(`/${lang}/manifest.webmanifest`)
@@ -74,7 +83,7 @@ describe('manifest.webmanifest', () => {
 
     it('id общий: приложение одно, с какого языка его ни установи', async () => {
         const ids = await Promise.all(LOCALES.map(async (lang) => (await (await manifestFor(lang)).json()).id))
-        expect(new Set(ids)).toEqual(new Set(['/']))
+        expect(new Set(ids)).toEqual(new Set([`${BASE_PATH}/`]))
     })
 
     it('иконки 192 и 512, одна из них — maskable', async () => {
@@ -83,6 +92,7 @@ describe('manifest.webmanifest', () => {
             expect.arrayContaining(['192x192', '512x512']),
         )
         expect(icons.some((icon: { purpose?: string }) => icon.purpose === 'maskable')).toBe(true)
+        for (const icon of icons) expect(icon.src).toMatch(new RegExp(`^${BASE_PATH}/icon-\\d+\\.png$`))
     })
 
     it('неизвестный язык — 404', () => {

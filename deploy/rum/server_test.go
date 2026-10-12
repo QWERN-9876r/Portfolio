@@ -11,6 +11,7 @@ import (
 	"net/http/httptest"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 	"testing"
 	"time"
@@ -315,5 +316,33 @@ func TestLiveClientsLimit(t *testing.T) {
 	res.Body.Close()
 	if res.StatusCode != http.StatusServiceUnavailable {
 		t.Fatalf("сверх лимита: %d, ожидался 503", res.StatusCode)
+	}
+}
+
+func TestCORS(t *testing.T) {
+	server, _ := startServer(t, filepath.Join(t.TempDir(), "rum.jsonl"))
+
+	for _, c := range []struct {
+		origin, allowed string
+	}{
+		{"https://qwern-9876r.github.io", "https://qwern-9876r.github.io"},
+		{"https://evil.example", ""},
+		{"", ""},
+	} {
+		req, _ := http.NewRequest(http.MethodGet, server.URL+"/api/rum/summary", nil)
+		if c.origin != "" {
+			req.Header.Set("Origin", c.origin)
+		}
+		res, err := http.DefaultClient.Do(req)
+		if err != nil {
+			t.Fatal(err)
+		}
+		res.Body.Close()
+		if got := res.Header.Get("Access-Control-Allow-Origin"); got != c.allowed {
+			t.Errorf("Origin %q: Access-Control-Allow-Origin = %q, ожидалось %q", c.origin, got, c.allowed)
+		}
+		if !slices.Contains(res.Header.Values("Vary"), "Origin") {
+			t.Errorf("Origin %q: нет Vary: Origin", c.origin)
+		}
 	}
 }

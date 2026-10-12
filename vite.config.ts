@@ -13,18 +13,10 @@ const treeShakeThrelteT = (): Plugin => ({
     },
 })
 
-// В проде то же самое делает nginx
-const storageProxy = {
-    '/api/storage': {
-        target: 'https://storage.yandexcloud.net',
-        changeOrigin: true,
-        rewrite: (path: string) => path.replace(/^\/api\/storage/, '/qwern-9876r'),
-    },
-}
-
 // Метрики посетителей локально (dev и preview): /api/rum → сервис deploy/rum на 8090,
-// в проде это делает nginx. Сервис не запущен — пустой 204: без ошибок в консоли
-// браузера, сводка в «Почему я» просто не показывается; в терминале — одна подсказка.
+// в проде страница ходит прямо в сервис на qwern9876r.ru (rumUrl в src/lib/site.ts).
+// Сервис не запущен — пустой 204: без ошибок в консоли браузера, сводка в «Почему я»
+// просто не показывается; в терминале — одна подсказка.
 // RUM_SERVICE — другой адрес: e2e поднимают свой сервис с чистым журналом
 const RUM_SERVICE = process.env.RUM_SERVICE ?? 'http://127.0.0.1:8090'
 const rumLocal = (): Plugin => {
@@ -87,21 +79,19 @@ export default defineConfig({
             output: {
                 // Рантайм Svelte — одним чанком. Иначе модули, общие для страницы и ленивого
                 // чанка Threlte, выносятся в отдельный файл: лишний запрос на первом экране.
-                // Туда же — свои модули, общие для главной и /stats (замеры, RUM, роли, оценки):
+                // Туда же — свои модули, общие для главной и /stats (замеры, RUM, адреса, роли, оценки):
                 // иначе у главной лишние маленькие запросы
                 codeSplitting: {
                     groups: [
                         {
                             name: 'svelte',
-                            test: /node_modules[\\/]svelte[\\/]|src[\\/]lib[\\/](pageMetrics|rum|role|stats[\\/]vitals)\.ts$/,
+                            test: /node_modules[\\/]svelte[\\/]|src[\\/]lib[\\/](pageMetrics|rum|role|site|stats[\\/]vitals)\.ts$/,
                         },
                     ],
                 },
             },
         },
     },
-    server: { proxy: storageProxy },
-    preview: { proxy: storageProxy },
     // Unit-тесты лежат рядом с кодом; e2e — в tests/e2e, их запускает Playwright
     test: {
         include: ['src/**/*.test.ts'],

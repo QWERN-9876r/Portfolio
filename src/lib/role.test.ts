@@ -8,10 +8,10 @@ describe('роли', () => {
         for (const value of ['designer', 'Frontend', '', null, undefined]) expect(isRole(value)).toBe(false)
     })
 
-    it('роль по умолчанию — без сегмента в пути', () => {
-        expect(rolePath('en', DEFAULT_ROLE)).toBe('/en')
-        expect(rolePath('ru', 'backend')).toBe('/ru/backend')
-        expect(rolePath('en', 'fullstack')).toBe('/en/fullstack')
+    it('роль по умолчанию — без сегмента в пути, страница — со слэшем на конце', () => {
+        expect(rolePath('en', DEFAULT_ROLE)).toBe('/en/')
+        expect(rolePath('ru', 'backend')).toBe('/ru/backend/')
+        expect(rolePath('en', 'fullstack')).toBe('/en/fullstack/')
     })
 
     it('в маршруте /[lang]/[[role]] нет дубля /en/frontend', () => {

@@ -9,10 +9,10 @@
     import HeroSection from '$lib/components/hero/HeroSection.svelte'
     import SellingPointsSection from '$lib/components/SellingPointsSection.svelte'
     import StackGroupSection from '$lib/components/stack/StackGroupSection.svelte'
-    import { refreshContent, type Content } from '$lib/content'
-    import { translations, type Locale } from '$lib/i18n/translations'
+    import { translations } from '$lib/i18n/translations'
     import { DEFAULT_ROLE, isRole, rolePath } from '$lib/role'
     import { startRum } from '$lib/rum'
+    import { withBase } from '$lib/site'
     import { onMount } from 'svelte'
 
     let { data } = $props()
@@ -20,11 +20,8 @@
     const t = $derived(translations[data.lang])
     const role = $derived(isRole(page.params.role) ? page.params.role : DEFAULT_ROLE)
 
-    // HTML собран с данными на момент сборки; свежие правки из бакета подменяют их после загрузки
-    let fresh = $state.raw<{ lang: Locale; patch: Partial<Content> } | null>(null)
-    const content = $derived<Content>(
-        fresh?.lang === data.lang ? { ...data.content, ...fresh.patch } : data.content,
-    )
+    // Контент из бакета — на момент сборки: после заливки в бакет сайт пересобирается
+    const content = $derived(data.content)
     const groups = $derived(
         content.techGroups.filter((group) => !group.roles || group.roles.includes(role)),
     )
@@ -39,31 +36,6 @@
         return { stack, allTech, experience, cases: content.cases.map(() => next++) }
     })
 
-    $effect(() => {
-        const lang = data.lang
-        const built = data.content
-        let cancelled = false
-
-        const refresh = () =>
-            refreshContent(lang, built).then((patch) => {
-                if (!cancelled && Object.keys(patch).length > 0) fresh = { lang, patch }
-            })
-
-        // Не конкурируем с загрузкой первого экрана
-        if ('requestIdleCallback' in window) {
-            const id = requestIdleCallback(refresh, { timeout: 3000 })
-            return () => {
-                cancelled = true
-                cancelIdleCallback(id)
-            }
-        }
-        const id = setTimeout(refresh, 1500)
-        return () => {
-            cancelled = true
-            clearTimeout(id)
-        }
-    })
-
     // Метрики и путь посетителя уходят на deploy/rum одним beacon при уходе со страницы.
     // Переход на другую страницу сайта (статистику) — тоже уход: отправляем до смены страницы,
     // пока её секции на месте, — после DOM уже убран и увиденные секции не найти
@@ -73,13 +45,13 @@
         if (to && to.route.id !== page.route.id) leaveRum()
     })
 
-    // Старые ссылки вида /en?role=backend (в проде их перенаправляет nginx)
+    // Старые ссылки вида /en/?role=backend: статический хостинг их не перенаправит
     onMount(() => {
         const legacyRole = new URLSearchParams(location.search).get('role')
         if (legacyRole === null) return
 
         const target = isRole(legacyRole) ? legacyRole : role
-        goto(rolePath(data.lang, target) + location.hash, { replaceState: true, noScroll: true })
+        goto(withBase(rolePath(data.lang, target)) + location.hash, { replaceState: true, noScroll: true })
     })
 </script>
 

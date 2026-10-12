@@ -4,16 +4,21 @@ Push в `main` запускает GitHub Actions. Оба workflow сначала
 
 | Что изменилось | Workflow | Что выкладывает |
 | --- | --- | --- |
-| всё, кроме `deploy/` | `deploy-site.yml` | сборку с PDF-резюме, на которой прошли e2e, — rsync в `/var/www/portfolio/dist` |
-| `deploy/rum/` | `deploy-rum.yml` | бинарник под Linux в `/opt/portfolio-rum`, перезапуск сервиса |
+| всё, кроме `deploy/` | `deploy-site.yml` | сборку с PDF-резюме, на которой прошли e2e, — на GitHub Pages: https://qwern-9876r.github.io/Portfolio/ |
+| `deploy/rum/` | `deploy-rum.yml` | бинарник сервиса метрик под Linux в `/opt/portfolio-rum` на сервере, перезапуск |
 
 Push в другие ветки запускает только тесты.
 
 Выкладки можно запустить вручную: Actions → workflow → Run workflow. Сайт стоит пересобрать так
 после правок контента в бакете — HTML пререндерится из него при сборке.
 
-Выкладка сайта не ломает открытые вкладки: старые чанки `_app/immutable` остаются на сервере
-ещё неделю после того, как пропали из сборки.
+Сайт от сервера не зависит. Сервер `qwern9876r.ru` держит только сервис метрик (страница ходит
+в него с GitHub Pages, CORS ставит сам сервис) и переадресует старые ссылки на Pages. Лежит
+сервер — сайт работает, в «Почему я» нет медианы посетителей, а /stats пишет «Сервис метрик недоступен».
+
+GitHub Pages при выкладке заменяет все файлы: чанк, который открытая до выкладки вкладка ещё не
+догрузила (3D, Pixi), пропадёт. Страница от этого не падает, а у посетителей с service worker
+он обычно уже в кэше.
 
 Конфиг nginx (`nginx.example.conf`) и юнит systemd CI не трогает — их правки выкладываются вручную.
 
@@ -31,8 +36,24 @@ E2e нужны установленные Chrome и Go; локально сай�
 
 ## Разовая настройка
 
-Ниже `portfolio` — хост из `~/.ssh/config`, `$USER` на сервере — тот, под кем уже делается rsync
-и кому принадлежит `/var/www/portfolio/dist`.
+### GitHub Pages
+
+Pages бесплатно работает только у публичного репозитория. Перед тем как открыть его, смени
+ключ CI (шаг 1 ниже): старый когда-то попал в историю ветки `sveltekit`, а GitHub ещё какое-то
+время отдаёт коммиты удалённых веток по хешу.
+
+```bash
+gh repo edit QWERN-9876r/Portfolio --visibility public --accept-visibility-change-consequences
+# Pages из GitHub Actions (Settings → Pages → Source: GitHub Actions)
+gh api -X POST repos/QWERN-9876r/Portfolio/pages -f build_type=workflow
+```
+
+Окружение `github-pages` Actions создадут сами при первой выкладке.
+
+### Сервер для сервиса метрик
+
+Ниже `portfolio` — хост из `~/.ssh/config`, `$USER` на сервере — deploy-пользователь,
+под которым CI выкладывает сервис.
 
 ### 1. Ключ для CI
 
@@ -40,7 +61,7 @@ E2e нужны установленные Chrome и Go; локально сай�
 
 ```bash
 ssh-keygen -t ed25519 -N '' -C github-actions -f ~/.ssh/portfolio_ci
-# restrict — без pty и пробросов: для rsync, scp и команд по ssh они не нужны
+# restrict — без pty и пробросов: для scp и команд по ssh они не нужны
 ssh portfolio "echo 'restrict $(cat ~/.ssh/portfolio_ci.pub)' >> ~/.ssh/authorized_keys"
 ```
 
@@ -63,9 +84,9 @@ ssh portfolio
 Запустит сервис первая выкладка из CI. Если раньше бинарник ставился в `/usr/local/bin`,
 его можно удалить.
 
-В конфиг nginx на сервере — блоки `/api/rum` из `nginx.example.conf`: точный для приёма визитов
-и префиксный `^~ /api/rum/` для сводки и живой ленты (SSE, без буфера). Затем
-`sudo nginx -t && sudo systemctl reload nginx`.
+Конфиг nginx на сервере — по `nginx.example.conf`: точный `/api/rum` для приёма визитов,
+префиксный `^~ /api/rum/` для сводки и живой ленты (SSE, без буфера), всё остальное — 301 на
+GitHub Pages. Затем `sudo nginx -t && sudo systemctl reload nginx`.
 
 ### 3. Секреты GitHub
 
@@ -90,11 +111,10 @@ ssh ищет ключ сервера по тому имени, к котором
 
 ## Вручную
 
-Если CI недоступен — то же самое с Mac:
+Сайт — только через Actions (Deploy site → Run workflow): Pages принимает выкладку из workflow.
+Сервис метрик, если CI недоступен, — с Mac:
 
 ```bash
-npm run build && rsync -az --delete dist/ portfolio:/var/www/portfolio/dist/
-
 cd deploy/rum && GOOS=linux GOARCH=amd64 go build -o portfolio-rum . \
   && scp portfolio-rum portfolio:/opt/portfolio-rum/portfolio-rum.new \
   && ssh portfolio 'mv /opt/portfolio-rum/portfolio-rum.new /opt/portfolio-rum/portfolio-rum && sudo systemctl restart portfolio-rum'

@@ -8,7 +8,7 @@
 
     const t = $derived(translations[data.lang])
     const content = $derived(data.content)
-    const site = $derived(`${SITE_URL}/${data.lang}`)
+    const site = $derived(`${SITE_URL}/${data.lang}/`)
 
     const CONTACTS = [
         { label: 'Telegram', href: TG_URL },

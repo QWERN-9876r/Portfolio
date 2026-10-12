@@ -1,15 +1,15 @@
 import { statSync } from 'node:fs'
-import { JS_BUDGET_KB } from '../../src/lib/site'
+import { BASE_PATH, JS_BUDGET_KB } from '../../src/lib/site'
 import { expect, framesInSecond, test, trackFrames, waitForQuiet } from './fixtures'
 
 // Кадры и сон сцен — с анимациями, как у большинства посетителей
 test.use({ reducedMotion: 'no-preference' })
 
-// JS до события load в сжатом виде — как его отдаёт nginx (gzip_static, .gz из сборки).
+// JS до события load в сжатом виде — по .gz из сборки (GitHub Pages сжимает так же, gzip).
 // Держит цифру «JS на первом экране» в кейсе «Этот сайт»: three и Pixi (~140 КБ) грузятся после load
 
 test(`JS до load — не больше ${JS_BUDGET_KB} КБ gzip`, async ({ page }) => {
-    await page.goto('/en')
+    await page.goto('en/')
     // loadEventEnd заполняется после обработчиков load
     await page.waitForFunction(() => performance.getEntriesByType('navigation')[0]?.toJSON().loadEventEnd > 0)
 
@@ -20,7 +20,8 @@ test(`JS до load — не больше ${JS_BUDGET_KB} КБ gzip`, async ({ pa
             .filter((entry) => entry.startTime < loadEventEnd && /\.js$/.test(new URL(entry.name).pathname))
             .map((entry) => new URL(entry.name).pathname)
     })
-    const sizes = scripts.map((path) => ({ path, kb: statSync(`dist${path}.gz`).size / 1024 }))
+    // Адрес — с base (/Portfolio/_app/…), файл в dist — без него
+    const sizes = scripts.map((path) => ({ path, kb: statSync(`dist${path.slice(BASE_PATH.length)}.gz`).size / 1024 }))
     const total = sizes.reduce((sum, { kb }) => sum + kb, 0)
 
     expect(scripts.length).toBeGreaterThan(0)
@@ -32,7 +33,7 @@ test(`JS до load — не больше ${JS_BUDGET_KB} КБ gzip`, async ({ pa
 test('в покое страница не рисует ни одного кадра', async ({ page }) => {
     test.slow()
     await trackFrames(page)
-    await page.goto('/en')
+    await page.goto('en/')
 
     // Сначала интро: удар луча по призме и подсказка пальцем в hero, потом — ни кадра
     await waitForQuiet(page)
@@ -42,7 +43,7 @@ test('сцена Pixi рисует, пока на неё смотрят, и за
     // Дважды ждём тишины: после интро и после сцены
     test.setTimeout(150_000)
     await trackFrames(page)
-    await page.goto('/en')
+    await page.goto('en/')
     await waitForQuiet(page)
 
     await page.locator('#stack-1').scrollIntoViewIfNeeded()

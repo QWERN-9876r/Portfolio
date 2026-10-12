@@ -11,6 +11,7 @@
     import type { Locale, Translation } from '$lib/i18n/translations'
     import { centerIn, runOnboarding, wait } from '$lib/onboarding'
     import { ROLE_DESCRIPTIONS, ROLES, rolePath, type Role } from '$lib/role'
+    import { withBase } from '$lib/site'
 
     let { lang, role, labels }: { lang: Locale; role: Role; labels: Translation['hero']['roles'] } = $props()
 
@@ -96,7 +97,7 @@
         <div class="pill" aria-hidden="true"></div>
         {#each ROLES as r (r)}
             <a
-                href={rolePath(lang, r)}
+                href={withBase(rolePath(lang, r))}
                 class="body2"
                 class:active={r === role}
                 class:pressed={pressed === r}

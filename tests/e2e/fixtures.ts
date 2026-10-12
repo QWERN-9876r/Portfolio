@@ -8,12 +8,6 @@ declare global {
     }
 }
 
-// Бакет с контентом и частью иконок — внешний сервис за прокси /api/storage. С раннеров GitHub
-// он бывает недоступен (ETIMEDOUT, прокси отвечает 502): это не ошибка сайта — контент уже
-// в HTML, обновление из бакета тихо пропускается. 404 из бакета по-прежнему ошибка
-const isStorageDown = (url: string, text: string) =>
-    new URL(url, 'http://localhost').pathname.startsWith('/api/storage/') && /status of 50[234]\b/.test(text)
-
 // Любой тест падает на необработанном исключении или console.error страницы.
 // Ожидаемые ошибки тест убирает сам через ignoreErrors
 export const test = base.extend<{ pageErrors: string[] }>({
@@ -22,8 +16,7 @@ export const test = base.extend<{ pageErrors: string[] }>({
             const errors: string[] = []
             page.on('pageerror', (error) => errors.push(`${error.name}: ${error.message}`))
             page.on('console', (message) => {
-                if (message.type() !== 'error' || isStorageDown(message.location().url, message.text())) return
-                errors.push(message.text())
+                if (message.type() === 'error') errors.push(message.text())
             })
             await use(errors)
             expect(errors, 'ошибки на странице').toEqual([])

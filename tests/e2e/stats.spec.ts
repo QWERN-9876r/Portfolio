@@ -1,5 +1,6 @@
 import { statsTranslations } from '../../src/lib/i18n/stats'
 import { translations } from '../../src/lib/i18n/translations'
+import { SITE_URL } from '../../src/lib/site'
 import { expect, test } from './fixtures'
 import { SEEDED } from './rum-journal.mjs'
 
@@ -10,7 +11,7 @@ const ru = statsTranslations.ru
 const en = statsTranslations.en
 
 test('в эфире: визиты из журнала сервиса', async ({ page }) => {
-    await page.goto('/ru/stats')
+    await page.goto('ru/stats/')
 
     await expect(page.getByRole('status')).toHaveText(ru.status.live)
     await expect(page.locator('.visit').filter({ hasText: `LCP ${SEEDED.lcpMs} мс` })).not.toHaveCount(0)
@@ -18,7 +19,7 @@ test('в эфире: визиты из журнала сервиса', async ({ 
 })
 
 test('новый визит появляется сверху без перезагрузки', async ({ page, request }) => {
-    await page.goto('/en/stats')
+    await page.goto('en/stats/')
     await expect(page.getByRole('status')).toHaveText(en.status.live)
 
     const response = await request.post('/api/rum', {
@@ -42,10 +43,10 @@ test('свой визит с главной помечен «это вы»', asy
     // Автоматизированный браузер сайт не считает — здесь посетитель
     await context.addInitScript(() => Object.defineProperty(Navigator.prototype, 'webdriver', { get: () => false }))
 
-    await page.goto('/en/fullstack')
+    await page.goto('en/fullstack/')
     await page.locator('#selling-points').scrollIntoViewIfNeeded()
     await page.locator('#selling-points').getByRole('link', { name: translations.en.whyMe.statsLink }).click()
-    await expect(page).toHaveURL('/en/stats')
+    await expect(page).toHaveURL('en/stats/')
 
     const own = page.locator('.visit.own')
     await expect(own).toHaveCount(1)
@@ -58,7 +59,7 @@ test('свой визит с главной помечен «это вы»', asy
 
 test('замеры вкладки идут вживую', async ({ page }) => {
     test.slow()
-    await page.goto('/ru/stats')
+    await page.goto('ru/stats/')
 
     const uptime = page.locator('.tile').filter({ hasText: ru.tab.uptime }).locator('.value')
     await expect(uptime).toHaveText(/^\d+:\d\d$/)
@@ -73,7 +74,8 @@ test('замеры вкладки идут вживую', async ({ page }) => {
     const inp = page.locator('.tile').filter({ hasText: ru.tab.inp }).locator('.value')
     await expect(inp).toHaveText('—')
     await page.locator('h1').click()
-    await expect(inp).toHaveText(/^\d+ мс/)
+    // Под нагрузкой параллельных тестов отклик бывает дольше секунды: «1,6 с»
+    await expect(inp).toHaveText(/^\d+(,\d+)? м?с/)
 
     // После интро призмы и без действий — ноль кадров в покое, зелёным
     const idle = page.locator('.big').filter({ hasText: ru.tab.idle })
@@ -83,21 +85,21 @@ test('замеры вкладки идут вживую', async ({ page }) => {
 })
 
 test('переключение языка остаётся на статистике', async ({ page }) => {
-    await page.goto('/en/stats')
+    await page.goto('en/stats/')
     await page.getByRole('link', { name: `${translations.en.languageToggle.switchTo} RU` }).click()
 
-    await expect(page).toHaveURL('/ru/stats')
+    await expect(page).toHaveURL('ru/stats/')
     await expect(page.locator('h1')).toHaveText(ru.title)
-    await expect(page.locator('link[rel="canonical"]')).toHaveAttribute('href', 'https://qwern9876r.ru/ru/stats')
+    await expect(page.locator('link[rel="canonical"]')).toHaveAttribute('href', `${SITE_URL}/ru/stats/`)
 })
 
 test('вход с первого экрана — «Статистика» в верхней панели', async ({ page }) => {
-    await page.goto('/ru')
+    await page.goto('ru/')
     const entry = page.getByRole('link', { name: translations.ru.statsNav, exact: true })
     await expect(entry).toBeInViewport()
 
     await entry.click()
-    await expect(page).toHaveURL('/ru/stats')
+    await expect(page).toHaveURL('ru/stats/')
     await expect(entry).toHaveAttribute('aria-current', 'page')
 })
 
@@ -109,15 +111,15 @@ test.describe('с анимациями', () => {
 
     test('призма следит за прокруткой и после возврата со статистики', async ({ page }) => {
         const { prism } = translations.ru
-        await page.goto('/ru')
+        await page.goto('ru/')
         // Сцена грузится лениво: куб «Наверх» после прокрутки — значит, она подписана на скролл
         await page.locator('#experience').scrollIntoViewIfNeeded()
         await expect(page.getByRole('button', { name: prism.backToTop })).toBeVisible()
 
         await page.getByRole('link', { name: translations.ru.statsNav, exact: true }).click()
-        await expect(page).toHaveURL('/ru/stats')
+        await expect(page).toHaveURL('ru/stats/')
         await page.getByRole('link', { name: ru.back }).click()
-        await expect(page).toHaveURL('/ru')
+        await expect(page).toHaveURL('ru/')
 
         // Новая главная открылась сверху — куб снова бьёт лучом, а ниже hero — ведёт наверх
         await expect(page.getByRole('button', { name: prism.strike })).toBeVisible()

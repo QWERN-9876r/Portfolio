@@ -4,7 +4,7 @@
     import type { Locale, Translation } from '$lib/i18n/translations'
     import { measurePage, watchIdleFps, type PageMetrics } from '$lib/pageMetrics'
     import { fetchRumSummary, type RumSummary } from '$lib/rum'
-    import { JS_BUDGET_KB } from '$lib/site'
+    import { JS_BUDGET_KB, withBase } from '$lib/site'
     import { rate, rateBudget, rateIdleFrames, type Rating } from '$lib/stats/vitals'
 
     let { t, lang }: { t: Translation; lang: Locale } = $props()
@@ -102,7 +102,7 @@
             <span class="visitors-values">{visitorsLine.values}</span>
         </p>
     {/if}
-    <a class="body2 stats-link" href="/{lang}/stats">
+    <a class="body2 stats-link" href={withBase(`/${lang}/stats/`)}>
         {t.whyMe.statsLink}<span class="arrow" aria-hidden="true">→</span>
     </a>
 </div>

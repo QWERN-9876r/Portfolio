@@ -17,7 +17,7 @@ test('визит записан в журнал: замеры, увиденны�
     await context.route(`${TG_URL}**`, (route) => route.fulfill({ body: 'Telegram' }))
     const since = Math.floor(Date.now() / 1000)
 
-    await page.goto('/ru/backend')
+    await page.goto('ru/backend/')
     // Сайт отбрасывает LCP после первого ввода (прокрутка тоже ввод), а посетитель не крутит
     // страницу в ту же миллисекунду, что закончилась загрузка
     await page.evaluate(
@@ -55,7 +55,7 @@ test('автотесты и боты в метрики не попадают', a
         if (new URL(request.url()).pathname === '/api/rum') beacons.push(request.url())
     })
 
-    await page.goto('/en/fullstack')
+    await page.goto('en/fullstack/')
     await page.goto('about:blank')
     await page.waitForTimeout(1000)
 
@@ -63,7 +63,7 @@ test('автотесты и боты в метрики не попадают', a
 })
 
 test('«Почему я» показывает медиану посетителей из сервиса', async ({ page }) => {
-    await page.goto('/ru')
+    await page.goto('ru/')
     await page.locator('#selling-points').scrollIntoViewIfNeeded()
 
     const visitors = page.locator('#selling-points .visitors')

@@ -1,4 +1,4 @@
-// PDF-резюме после сборки: /resume/{lang} из dist печатается в установленном Chrome.
+// PDF-резюме после сборки: /resume/{lang}/ из dist печатается в установленном Chrome.
 // Данные те же, что на сайте, поэтому PDF всегда совпадает с ним.
 // SKIP_RESUME_PDF=1 — пропустить (например, где нет Chrome)
 import { createServer } from 'node:http'
@@ -8,6 +8,8 @@ import { fileURLToPath } from 'node:url'
 import { chromium } from 'playwright-core'
 
 const LOCALES = ['en', 'ru']
+// Как kit.paths.base в svelte.config.js: сайт живёт в папке репозитория на GitHub Pages
+const BASE = '/Portfolio'
 const DIST = fileURLToPath(new URL('../dist/', import.meta.url))
 const TYPES = {
     '.html': 'text/html; charset=utf-8',
@@ -23,11 +25,12 @@ if (process.env.SKIP_RESUME_PDF) {
     process.exit(0)
 }
 
-// Как try_files в nginx: /resume/en → resume/en.html
+// Как статический хостинг: /Portfolio/resume/en/ → dist/resume/en/index.html
 const isFile = (path) => existsSync(path) && statSync(path).isFile()
 const server = createServer((req, res) => {
-    const path = decodeURIComponent(new URL(req.url, 'http://localhost').pathname)
-    const file = [path, `${path}.html`, `${path}/index.html`].map((p) => join(DIST, p)).find(isFile)
+    const pathname = decodeURIComponent(new URL(req.url, 'http://localhost').pathname)
+    const path = pathname.startsWith(`${BASE}/`) ? pathname.slice(BASE.length) : null
+    const file = path && [path, `${path}.html`, `${path}/index.html`].map((p) => join(DIST, p)).find(isFile)
     if (!file) {
         res.writeHead(404).end()
         return
@@ -47,7 +50,7 @@ const browser = await chromium.launch({ channel: 'chrome' }).catch((error) => {
 try {
     for (const lang of LOCALES) {
         const page = await browser.newPage()
-        await page.goto(`${origin}/resume/${lang}`, { waitUntil: 'networkidle' })
+        await page.goto(`${origin}${BASE}/resume/${lang}/`, { waitUntil: 'networkidle' })
         await page.evaluate(() => document.fonts.ready)
         const path = join(DIST, `resume/dmitry-sotnikov-${lang}.pdf`)
         await page.pdf({ path, format: 'A4', printBackground: true, preferCSSPageSize: true })

@@ -8,6 +8,7 @@
     import CountUp from '$lib/components/CountUp.svelte'
     import SectionIndex from '$lib/components/SectionIndex.svelte'
     import { findResult, type CaseItem } from '$lib/content'
+    import { withBase } from '$lib/site'
     import type { Translation } from '$lib/i18n/translations'
     import { runOnboarding, wait } from '$lib/onboarding'
     import { glowPrism, lightUp } from '$lib/three/prismGlow.svelte'
@@ -17,8 +18,8 @@
     // Результаты из кейсов вместо стажа — по подписям из cases.json
     const STATS = ['DAU', 'MAU', 'Profit']
     const COMPANIES = [
-        { id: 'yandex', logo: '/icons/yandex.svg' },
-        { id: 'mts', logo: '/icons/mts.svg' },
+        { id: 'yandex', logo: withBase('/icons/yandex.svg') },
+        { id: 'mts', logo: withBase('/icons/mts.svg') },
     ] as const
 
     const stats = $derived(STATS.flatMap((label) => findResult(cases, label) ?? []))

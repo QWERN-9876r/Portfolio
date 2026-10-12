@@ -1,7 +1,7 @@
 import type { Rgb } from './prism'
 
 // Фирменный цвет технологии берётся прямо из её иконки: без ручной карты цветов.
-// Иконки same-origin (/icons и /api/storage через прокси), canvas не «загрязняется»
+// Иконки same-origin (/icons и копии из бакета в /storage), canvas не «загрязняется»
 const SIZE = 32
 const MIN_SATURATION = 0.35
 const MIN_VALUE = 0.3

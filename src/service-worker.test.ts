@@ -1,13 +1,16 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
+// Как в проде: сайт на GitHub Pages в /Portfolio, страницы — со слэшем на конце
 vi.mock('$service-worker', () => ({
+    base: '/Portfolio',
     version: '2',
-    build: ['/_app/immutable/entry/start.js', '/_app/immutable/nodes/1.js'],
-    files: ['/icons/react.svg'],
-    prerendered: ['/', '/en', '/ru'],
+    build: ['/Portfolio/_app/immutable/entry/start.js', '/Portfolio/_app/immutable/nodes/1.js'],
+    files: ['/Portfolio/icons/react.svg'],
+    prerendered: ['/Portfolio/', '/Portfolio/en/', '/Portfolio/ru/'],
 }))
 
-const ORIGIN = 'https://qwern9876r.ru'
+const ORIGIN = 'https://qwern-9876r.github.io'
+const B = '/Portfolio'
 const CACHE = 'cache-2'
 
 // Браузер вокруг воркера: HTTP-кэш, сеть и Cache Storage
@@ -58,9 +61,9 @@ const request = async (path: string, init: RequestInit & { mode?: RequestMode } 
 beforeEach(async () => {
     httpCache = new Map()
     network = new Map([
-        ['/en', 'en v2'],
-        ['/ru', 'ru v2'],
-        ['/_app/immutable/entry/start.js', 'start'],
+        [`${B}/en/`, 'en v2'],
+        [`${B}/ru/`, 'ru v2'],
+        [`${B}/_app/immutable/entry/start.js`, 'start'],
     ])
     storage = new Map([['cache-1', new Map()]])
     listeners = new Map()
@@ -101,30 +104,30 @@ afterEach(() => {
 
 describe('установка и активация', () => {
     it('в кэш — только то, что браузер уже скачал, без запросов в сеть', async () => {
-        httpCache.set('/en', 'en v2').set('/_app/immutable/entry/start.js', 'start')
+        httpCache.set(`${B}/en/`, 'en v2').set(`${B}/_app/immutable/entry/start.js`, 'start')
         await lifecycle('install')
 
-        expect(await cached('/en')).toBe('en v2')
-        expect(await cached('/_app/immutable/entry/start.js')).toBe('start')
-        expect(await cached('/ru')).toBeNull()
+        expect(await cached(`${B}/en/`)).toBe('en v2')
+        expect(await cached(`${B}/_app/immutable/entry/start.js`)).toBe('start')
+        expect(await cached(`${B}/ru/`)).toBeNull()
         expect(fakeFetch.mock.calls.every(([, init]) => init?.cache === 'only-if-cached')).toBe(true)
     })
 
     it('корень — редирект, его не кэшируем', async () => {
-        httpCache.set('/', 'redirect')
+        httpCache.set(`${B}/`, 'redirect')
         await lifecycle('install')
-        expect(await cached('/')).toBeNull()
+        expect(await cached(`${B}/`)).toBeNull()
     })
 
     it('скачанное, пока воркер устанавливался, попадает в кэш при активации', async () => {
-        httpCache.set('/en', 'en v2')
+        httpCache.set(`${B}/en/`, 'en v2')
         await lifecycle('install')
         // Страница догружает модули и иконки, а воркер ещё не управляет ею
-        httpCache.set('/_app/immutable/nodes/1.js', 'error page').set('/icons/react.svg', '<svg/>')
+        httpCache.set(`${B}/_app/immutable/nodes/1.js`, 'error page').set(`${B}/icons/react.svg`, '<svg/>')
         await lifecycle('activate')
 
-        expect(await cached('/_app/immutable/nodes/1.js')).toBe('error page')
-        expect(await cached('/icons/react.svg')).toBe('<svg/>')
+        expect(await cached(`${B}/_app/immutable/nodes/1.js`)).toBe('error page')
+        expect(await cached(`${B}/icons/react.svg`)).toBe('<svg/>')
     })
 
     it('при активации — кэш прошлой сборки удалён, открытая страница под воркером', async () => {
@@ -140,50 +143,51 @@ describe('запросы', () => {
     beforeEach(() => lifecycle('install'))
 
     it('страница — из сети, свежая после выкладки; копия остаётся в кэше', async () => {
-        storage.get(CACHE)!.set('/en', new Response('en v1'))
+        storage.get(CACHE)!.set(`${B}/en/`, new Response('en v1'))
 
-        expect(await (await request('/en', { mode: 'navigate' }))!.text()).toBe('en v2')
-        expect(await cached('/en')).toBe('en v2')
+        expect(await (await request(`${B}/en/`, { mode: 'navigate' }))!.text()).toBe('en v2')
+        expect(await cached(`${B}/en/`)).toBe('en v2')
     })
 
     it('без сети страница — из кэша', async () => {
-        storage.get(CACHE)!.set('/ru', new Response('ru v1'))
+        storage.get(CACHE)!.set(`${B}/ru/`, new Response('ru v1'))
         network = null
 
-        expect(await (await request('/ru', { mode: 'navigate' }))!.text()).toBe('ru v1')
+        expect(await (await request(`${B}/ru/`, { mode: 'navigate' }))!.text()).toBe('ru v1')
     })
 
     it('без сети корень ведёт на язык из кэша, английский первым', async () => {
-        storage.get(CACHE)!.set('/ru', new Response('ru')).set('/en', new Response('en'))
+        storage.get(CACHE)!.set(`${B}/ru/`, new Response('ru')).set(`${B}/en/`, new Response('en'))
         network = null
 
-        const response = await request('/', { mode: 'navigate' })
+        const response = await request(`${B}/`, { mode: 'navigate' })
         expect(response!.status).toBe(302)
-        expect(response!.headers.get('location')).toBe(`${ORIGIN}/en`)
+        expect(response!.headers.get('location')).toBe(`${ORIGIN}${B}/en/`)
     })
 
     it('без сети и без копии — ошибка сети, как без воркера', async () => {
         network = null
-        await expect(request('/ru', { mode: 'navigate' })).rejects.toThrow('Failed to fetch')
+        await expect(request(`${B}/ru/`, { mode: 'navigate' })).rejects.toThrow('Failed to fetch')
     })
 
     it('файлы с хешем — из кэша без сети, промах сохраняется', async () => {
-        const first = await request('/_app/immutable/entry/start.js')
+        const first = await request(`${B}/_app/immutable/entry/start.js`)
         expect(await first!.text()).toBe('start')
         network = null
 
-        expect(await (await request('/_app/immutable/entry/start.js'))!.text()).toBe('start')
+        expect(await (await request(`${B}/_app/immutable/entry/start.js`))!.text()).toBe('start')
     })
 
     it('ошибки сервера не кэшируются', async () => {
-        expect((await request('/_app/immutable/nodes/404.js'))!.status).toBe(404)
-        expect(await cached('/_app/immutable/nodes/404.js')).toBeNull()
+        expect((await request(`${B}/_app/immutable/nodes/404.js`))!.status).toBe(404)
+        expect(await cached(`${B}/_app/immutable/nodes/404.js`)).toBeNull()
     })
 
     it.each([
         ['метрики посетителей', '/api/rum/summary', {}],
         ['beacon', '/api/rum', { method: 'POST' }],
-        ['не GET', '/en', { method: 'POST' }],
+        ['не GET', `${B}/en/`, { method: 'POST' }],
+        ['сервис метрик на своём сервере', 'https://qwern9876r.ru/api/rum/summary', {}],
         ['чужой сайт', 'https://t.me/Qwern_9876r', {}],
     ])('%s — мимо воркера', async (_, path, init) => {
         expect(await request(path, init)).toBeUndefined()
@@ -191,6 +195,6 @@ describe('запросы', () => {
 
     it('в dev ничего не кэшируется', async () => {
         vi.stubEnv('DEV', true)
-        expect(await request('/_app/immutable/entry/start.js')).toBeUndefined()
+        expect(await request(`${B}/_app/immutable/entry/start.js`)).toBeUndefined()
     })
 })

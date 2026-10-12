@@ -18,8 +18,10 @@ beforeEach(() => {
 })
 
 afterEach(() => {
+    vi.useRealTimers()
     vi.restoreAllMocks()
     vi.unstubAllGlobals()
+    vi.unstubAllEnvs()
 })
 
 describe('loadContent', () => {
@@ -39,6 +41,7 @@ describe('loadContent', () => {
     })
 
     it('недоступный файл заменяется данными по умолчанию, остальные — из бакета', async () => {
+        vi.useFakeTimers()
         const { loadContent } = await load()
         const techGroups = [{ title: 'из бакета' }]
         const fetchFn = vi.fn(async (url: string | URL | Request) => {
@@ -49,7 +52,9 @@ describe('loadContent', () => {
             return new Response('{битый json')
         })
 
-        const content = await loadContent(fetchFn as typeof fetch, 'en')
+        const pending = loadContent(fetchFn as typeof fetch, 'en')
+        await vi.runAllTimersAsync()
+        const content = await pending
 
         expect(content.cases).toEqual(DEFAULT_CASES)
         expect(content.experience).toEqual(DEFAULT_EXPERIENCE)
@@ -84,26 +89,50 @@ describe('loadContent', () => {
     })
 })
 
-describe('refreshContent', () => {
-    it('только изменившиеся файлы, через прокси и мимо HTTP-кэша', async () => {
-        const { refreshContent } = await load()
-        const current = {
-            techGroups: [],
-            cases: DEFAULT_CASES,
-            experience: DEFAULT_EXPERIENCE,
-            allTechnologies: [],
-        }
-        const newCases = [{ ...DEFAULT_CASES[0], title: 'Новый заголовок' }]
-        const fetchMock = vi.fn(async (url: string | URL | Request, _init?: RequestInit) => {
-            const path = String(url)
-            if (path.endsWith('/cases.json')) return json(newCases)
-            if (path.endsWith('/experience.json')) return json(DEFAULT_EXPERIENCE)
-            if (path.endsWith('/techGroups.json')) return new Response(null, { status: 502 })
-            throw new TypeError('offline')
+describe('бакет не ответил', () => {
+    it('сетевую ошибку и 5xx пробует ещё раз, 404 — нет', async () => {
+        vi.useFakeTimers()
+        const { loadContent } = await load()
+        const calls: Record<string, number> = {}
+        const fetchFn = vi.fn(async (url: string | URL | Request) => {
+            const name = String(url).split('/').pop()!
+            calls[name] = (calls[name] ?? 0) + 1
+            if (name === 'cases.json') return new Response('Not Found', { status: 404 })
+            if (name === 'experience.json' && calls[name] < 3) throw new TypeError('fetch failed')
+            if (name === 'techGroups.json' && calls[name] < 2) return new Response(null, { status: 503 })
+            return json([])
         })
-        vi.stubGlobal('fetch', fetchMock)
 
-        expect(await refreshContent('ru', current)).toEqual({ cases: newCases })
-        expect(fetchMock).toHaveBeenCalledWith('/api/storage/ru/cases.json', { cache: 'no-cache' })
+        const pending = loadContent(fetchFn as typeof fetch, 'en')
+        await vi.runAllTimersAsync()
+        const content = await pending
+
+        expect(calls).toEqual({
+            'cases.json': 1,
+            'experience.json': 3,
+            'techGroups.json': 2,
+            'allTechnologies.json': 1,
+        })
+        expect(content.cases).toEqual(DEFAULT_CASES)
+        expect(content.experience).toEqual([])
+    })
+
+    it('сборка в CI падает, а не выкладывает данные по умолчанию', async () => {
+        env.building = true
+        vi.stubEnv('CI', 'true')
+        const { loadContent } = await load()
+        const fetchFn = vi.fn(async () => new Response('Not Found', { status: 404 }))
+
+        await expect(loadContent(fetchFn, 'en')).rejects.toThrow('недоступен')
+    })
+})
+
+describe('iconUrl', () => {
+    it('иконки сайта и копии из бакета — с base, внешние — как есть', async () => {
+        const { iconUrl } = await load()
+
+        expect(iconUrl('/icons/react.svg')).toBe('/Portfolio/icons/react.svg')
+        expect(iconUrl('/api/storage/pixi.png')).toBe('/Portfolio/storage/pixi.png')
+        expect(iconUrl('https://cdn.example.com/x.svg')).toBe('https://cdn.example.com/x.svg')
     })
 })

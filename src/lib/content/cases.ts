@@ -156,8 +156,8 @@ export const DEFAULT_CASES: CaseItem[] = [
             { label: 'кадров в покое', value: '0' },
             { label: '3D — после загрузки страницы', value: '139 КБ' },
         ],
-        context: 'Замеры сборки: gzip, как отдаёт nginx',
-        facts: ['Личный проект', 'Главное требование — скорость', "Свой сервер: nginx и Let's Encrypt"],
+        context: 'Замеры сборки, gzip',
+        facts: ['Личный проект', 'Главное требование — скорость', 'GitHub Pages и свой сервис метрик на Go'],
         steps: [
             {
                 title: 'SvelteKit с пререндером',

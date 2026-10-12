@@ -2,7 +2,7 @@
     import { reveal } from '$lib/attachments/reveal'
     import SectionIndex from '$lib/components/SectionIndex.svelte'
     import Tooltip from '$lib/components/Tooltip.svelte'
-    import type { Tech } from '$lib/content'
+    import { iconUrl, type Tech } from '$lib/content'
     import type { Translation } from '$lib/i18n/translations'
     import { glowPrism } from '$lib/three/prismGlow.svelte'
 
@@ -38,7 +38,7 @@
                                     <span class="fallback">{tech.name[0]}</span>
                                 {:else}
                                     <img
-                                        src={tech.icon}
+                                        src={iconUrl(tech.icon)}
                                         alt=""
                                         loading="lazy"
                                         onerror={() => (failedIcons[tech.name] = true)}

@@ -1,8 +1,11 @@
+import type { Route } from '@playwright/test'
+import { statsTranslations } from '../../src/lib/i18n/stats'
 import { translations } from '../../src/lib/i18n/translations'
+import { RUM_ORIGIN } from '../../src/lib/site'
 import { expect, ignoreErrors, test, trackFrames, waitForQuiet } from './fixtures'
 
 test('второй визит открывается без сети', async ({ page, context, pageErrors }) => {
-    await page.goto('/ru')
+    await page.goto('ru/')
     await expect.poll(() => page.evaluate(() => navigator.serviceWorker.controller?.state)).toBe('activated')
     // Визит под воркером: всё, что грузит страница, проходит через него. Что скачалось, пока
     // воркер устанавливался, проверяет unit-тест service-worker.test.ts — здесь эта гонка
@@ -19,7 +22,7 @@ test('второй визит открывается без сети', async ({ 
             .filter(
                 (entry) =>
                     entry.startTime > loadEventEnd &&
-                    /^\/_app\/immutable\/chunks\/.+\.js$/.test(new URL(entry.name).pathname),
+                    /\/_app\/immutable\/chunks\/.+\.js$/.test(new URL(entry.name).pathname),
             )
             .map((entry) => entry.name)
         return names.length > 0 && names
@@ -67,7 +70,7 @@ test('без WebGL сайт работает, только без 3D', async ({ 
     })
     const threeFailed = page.waitForEvent('console', (message) => message.text().startsWith('THREE.WebGLRenderer'))
 
-    await page.goto('/en')
+    await page.goto('en/')
     await threeFailed
     await page.locator('#stack-1').scrollIntoViewIfNeeded()
     await expect(page.locator('#stack-1')).toHaveAttribute('data-revealed')
@@ -79,6 +82,45 @@ test('без WebGL сайт работает, только без 3D', async ({ 
 
     // three сообщает, что контекст не создался; необработанных исключений быть не должно
     ignoreErrors(pageErrors, /^THREE\.WebGLRenderer: /)
+})
+
+// Сайт — на GitHub Pages, сервис метрик — на своём сервере. Лежит сервер — сайт работает:
+// в «Почему я» замеры этой страницы без медианы посетителей, /stats честно пишет, что сервиса нет
+test.describe('сервер метрик недоступен', () => {
+    // Не localhost — страница ходит в настоящий адрес сервиса (rumUrl), а его здесь «роняем».
+    // *.localhost браузер сам ведёт на 127.0.0.1, и Vite такие имена пропускает
+    test.use({ baseURL: 'http://portfolio.localhost:4174/Portfolio/' })
+
+    const cases: [string, (route: Route) => unknown][] = [
+        ['отказ соединения', (route) => route.abort('connectionrefused')],
+        // Файрвол без ответа: запрос висит, пока его не бросит сама страница
+        ['сервер молчит', () => {}],
+    ]
+    for (const [name, down] of cases) {
+        test(name, async ({ page, context, pageErrors }) => {
+            test.slow()
+            await context.route(`${RUM_ORIGIN}/**`, down)
+
+            await page.goto('en/')
+            await expect(page.locator('h1')).toContainText(translations.en.hero.lastName)
+            const whyMe = page.locator('#selling-points')
+            await whyMe.scrollIntoViewIfNeeded()
+            await expect(whyMe.locator('dd.value').first()).not.toHaveText('—')
+            // Сводку ждём не дольше 5 с — потом блок просто без неё
+            await page.waitForTimeout(6000)
+            await expect(whyMe.locator('.visitors')).toHaveCount(0)
+
+            await page.goto('ru/stats/')
+            await expect(page.locator('[role="status"]')).toHaveAttribute('data-status', 'offline', {
+                timeout: 15_000,
+            })
+            await expect(page.locator('[role="status"]')).toContainText(statsTranslations.ru.status.offline)
+
+            // Визит при уходе уходит в никуда — без исключений на странице
+            await page.goto('about:blank')
+            ignoreErrors(pageErrors, /^Failed to load resource|ERR_CONNECTION_REFUSED|ERR_FAILED/)
+        })
+    }
 })
 
 declare global {

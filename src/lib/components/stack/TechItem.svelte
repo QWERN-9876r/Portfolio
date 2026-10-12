@@ -1,5 +1,5 @@
 <script lang="ts">
-    import type { TechGroupItem } from '$lib/content'
+    import { iconUrl, type TechGroupItem } from '$lib/content'
     import { createSpring } from '$lib/motion'
     import { glowPrism } from '$lib/three/prismGlow.svelte'
 
@@ -60,7 +60,7 @@
                 {#if failed}
                     <span class="fallback">{item.name[0]}</span>
                 {:else}
-                    <img src={item.icon} alt={item.name} loading="lazy" onerror={() => (failed = true)} />
+                    <img src={iconUrl(item.icon)} alt={item.name} loading="lazy" onerror={() => (failed = true)} />
                 {/if}
             </div>
         </div>

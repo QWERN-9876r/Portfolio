@@ -13,7 +13,7 @@
         type Period,
     } from '$lib/content'
     import type { Locale, Translation } from '$lib/i18n/translations'
-    import { SITE_STACK } from '$lib/site'
+    import { SITE_STACK, withBase } from '$lib/site'
     import { glowPrism } from '$lib/three/prismGlow.svelte'
 
     let {
@@ -109,7 +109,7 @@
                 groups.push({
                     key: `${company}-${index}`,
                     company,
-                    logo: (company && LOGOS[company]) || null,
+                    logo: company && LOGOS[company] ? withBase(LOGOS[company]) : null,
                     roles: [role],
                     order: 0,
                 })

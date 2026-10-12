@@ -1,5 +1,5 @@
 # Тесты сайта и сервиса метрик. На ветках — на каждый push; в main их вызывают
-# deploy-site.yml и deploy-rum.yml перед выкладкой, и сайт уходит на сервер той же сборкой,
+# deploy-site.yml и deploy-rum.yml перед выкладкой, и сайт уходит на GitHub Pages той же сборкой,
 # что прошла e2e (артефакт site-dist)
 name: Tests
 

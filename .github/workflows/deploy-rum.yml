@@ -96,3 +96,11 @@ jobs:
             echo "::error::/api/rum/live не отдаёт поток: в nginx нужен блок location ^~ /api/rum/ из deploy/nginx.example.conf"
             exit 1
           fi
+          # Сайт на GitHub Pages читает сводку и ленту с другого домена: без CORS «Почему я»
+          # и /stats молча останутся без данных
+          origin='https://qwern-9876r.github.io'
+          if ! curl -sS -o /dev/null -D - -H "Origin: $origin" https://qwern9876r.ru/api/rum/summary |
+            grep -qi "^access-control-allow-origin: $origin"; then
+            echo "::error::/api/rum/summary без Access-Control-Allow-Origin для $origin"
+            exit 1
+          fi

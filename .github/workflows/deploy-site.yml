@@ -1,19 +1,25 @@
-# Сайт: тесты (test.yml) и rsync проверенной сборки на сервер.
-# Контент живёт в бакете — после его правок запусти вручную (Actions → Run workflow),
-# чтобы пересобрать HTML. Настройка секретов и сервера — deploy/README.md
+# Сайт: тесты (test.yml) и выкладка проверенной сборки на GitHub Pages —
+# https://qwern-9876r.github.io/Portfolio/. Свой сервер сайту не нужен: на нём только сервис
+# метрик (deploy-rum.yml), и без него сайт работает. Контент живёт в бакете и попадает в сайт
+# при сборке — после его правок запусти вручную (Actions → Run workflow). Настройка — deploy/README.md
 name: Deploy site
 
 on:
   push:
     branches: [main]
-    # Сервер и сервис метрик выкладываются отдельно (deploy-rum.yml и вручную)
+    # Сервис метрик и конфиги сервера выкладываются отдельно (deploy-rum.yml и вручную)
     paths-ignore: ['deploy/**', '.github/workflows/deploy-rum.yml']
   workflow_dispatch:
 
 # Выкладки не наслаиваются: следующая ждёт окончания предыдущей
 concurrency:
-  group: deploy-site
+  group: pages
   cancel-in-progress: false
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
 
 jobs:
   test:
@@ -22,10 +28,11 @@ jobs:
   deploy:
     needs: test
     runs-on: ubuntu-latest
-    environment: production
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     env:
-      SITE_URL: https://qwern9876r.ru
-      WEB_ROOT: /var/www/portfolio/dist
+      SITE_URL: https://qwern-9876r.github.io/Portfolio
     steps:
       # Та самая сборка, на которой прошли e2e
       - uses: actions/download-artifact@v8
@@ -33,38 +40,23 @@ jobs:
           name: site-dist
           path: dist
 
-      - name: SSH-ключ и отпечаток сервера
-        env:
-          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-          SSH_KNOWN_HOSTS: ${{ secrets.SSH_KNOWN_HOSTS }}
-          SSH_HOST: ${{ secrets.SSH_HOST }}
-        run: |
-          install -m 700 -d ~/.ssh
-          printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/deploy_key
-          chmod 600 ~/.ssh/deploy_key
-          printf '%s\n' "$SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
-          # ssh ищет ключ по тому имени, к которому подключается: запись для домена не подходит к IP
-          if ! ssh-keygen -F "$SSH_HOST" -f ~/.ssh/known_hosts > /dev/null; then
-            echo "::error::В SSH_KNOWN_HOSTS нет ключа для SSH_HOST — снимите его для того же имени: ssh-keyscan -t ed25519 <SSH_HOST> (deploy/README.md)"
-            exit 1
-          fi
+      # GitHub Pages сжимает ответы сам: .gz и .br из сборки (по ним e2e меряют JS) ему не нужны
+      - run: find dist \( -name '*.gz' -o -name '*.br' \) -delete
 
-      # 1. Новые чанки — раньше HTML, который на них ссылается.
-      # 2. Остальное с --delete, но старые чанки не трогаем: они нужны вкладкам, открытым до выкладки.
-      # 3. Чанки, которых нет в сборках больше недели, удаляем. У файлов текущей сборки
-      #    rsync только что выставил свежее mtime, поэтому под удаление они не попадают
-      - name: Выкладка dist
-        env:
-          TARGET: ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}
-        run: |
-          export RSYNC_RSH="ssh -i $HOME/.ssh/deploy_key"
-          rsync -az dist/_app/ "$TARGET:$WEB_ROOT/_app/"
-          rsync -az --delete --exclude=/_app/immutable/ dist/ "$TARGET:$WEB_ROOT/"
-          ssh -i ~/.ssh/deploy_key "$TARGET" "find $WEB_ROOT/_app/immutable -type f -mtime +7 -delete"
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+      - id: deployment
+        uses: actions/deploy-pages@v4
 
+      # CDN Pages подхватывает новую версию не мгновенно — несколько попыток
       - name: Сайт и резюме отвечают
         run: |
-          curl -fsS -o /dev/null "$SITE_URL/en"
-          curl -fsS -o /dev/null "$SITE_URL/ru"
-          curl -fsS -o /dev/null "$SITE_URL/resume/dmitry-sotnikov-en.pdf"
-          curl -fsS -o /dev/null "$SITE_URL/resume/dmitry-sotnikov-ru.pdf"
+          for path in en/ ru/ resume/dmitry-sotnikov-en.pdf resume/dmitry-sotnikov-ru.pdf; do
+            for attempt in 1 2 3 4 5; do
+              curl -fsS -o /dev/null "$SITE_URL/$path" && break
+              [ "$attempt" = 5 ] && exit 1
+              sleep 10
+            done
+          done

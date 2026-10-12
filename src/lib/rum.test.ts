@@ -27,8 +27,11 @@ const click = (selector: string) =>
 const leave = () => dispatchEvent(new Event('pagehide'))
 
 let stop = () => {}
+const happyDOM = (window as unknown as { happyDOM: { setURL(url: string): void } }).happyDOM
 
 beforeEach(() => {
+    // Клики по ссылкам в тестах уводят окно happy-dom на чужие адреса — возвращаем на локальный
+    happyDOM.setURL('http://localhost:3000/')
     setNavigator('webdriver', false)
     setNavigator('sendBeacon', sendBeacon)
     metrics.paint = { kind: 'lcp', ms: 450 }
@@ -161,11 +164,12 @@ describe('fetchRumSummary', () => {
     })
 
     it(`сводка, когда визитов не меньше ${RUM_MIN_VISITORS}`, async () => {
-        const fetchMock = vi.fn(async (_url: string) => Response.json(summary(RUM_MIN_VISITORS)))
+        const fetchMock = vi.fn(async (_url: string, _init?: RequestInit) => Response.json(summary(RUM_MIN_VISITORS)))
         vi.stubGlobal('fetch', fetchMock)
 
         expect(await fetchRumSummary()).toEqual(summary(RUM_MIN_VISITORS))
-        expect(fetchMock).toHaveBeenCalledWith('/api/rum/summary')
+        // Ждём недолго: лежащий сервер не должен держать «Почему я»
+        expect(fetchMock).toHaveBeenCalledWith('/api/rum/summary', { signal: expect.anything() })
     })
 
     it('мало визитов — медиана случайна, не показываем', async () => {
@@ -177,9 +181,24 @@ describe('fetchRumSummary', () => {
         ['сервис не выложен', async () => new Response('Not Found', { status: 404 })],
         ['nginx без сервиса', async () => new Response('Bad Gateway', { status: 502 })],
         ['нет сети', async () => Promise.reject(new TypeError('offline'))],
+        ['сервер не ответил вовремя', async () => Promise.reject(new DOMException('timeout', 'TimeoutError'))],
         ['не JSON', async () => new Response('<html>')],
     ])('%s — null без ошибки', async (_, fetchMock) => {
         vi.stubGlobal('fetch', fetchMock)
         expect(await fetchRumSummary()).toBeNull()
+    })
+})
+
+describe('адрес сервиса', () => {
+    it('на GitHub Pages — сервис на своём сервере, локально — прокси Vite на том же адресе', async () => {
+        happyDOM.setURL('https://qwern-9876r.github.io/Portfolio/en/')
+        const fetchMock = vi.fn(async (_url: string, _init?: RequestInit) => new Response(null, { status: 502 }))
+        vi.stubGlobal('fetch', fetchMock)
+        stop = startRum(() => ({ lang: 'en', role: 'frontend' }))
+        leave()
+        await fetchRumSummary()
+
+        expect(sendBeacon.mock.calls[0][0]).toBe('https://qwern9876r.ru/api/rum')
+        expect(fetchMock.mock.calls[0][0]).toBe('https://qwern9876r.ru/api/rum/summary')
     })
 })

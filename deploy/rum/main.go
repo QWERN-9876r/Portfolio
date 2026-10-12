@@ -362,7 +362,22 @@ func newHandler(s *store, limit *limiter) http.Handler {
 			flusher.Flush()
 		}
 	})
-	return mux
+	return withCORS(mux)
+}
+
+// Сайт — на GitHub Pages, сервис — на своём сервере: сводку и живую ленту страница читает
+// с другого домена. Визит CORS не нужен: sendBeacon шлёт text/plain, ответ браузер не читает
+var allowedOrigins = []string{"https://qwern-9876r.github.io"}
+
+func withCORS(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if origin := r.Header.Get("Origin"); slices.Contains(allowedOrigins, origin) {
+			w.Header().Set("Access-Control-Allow-Origin", origin)
+		}
+		// Сводку кэшируют: ответ для одного сайта не должен достаться другому
+		w.Header().Add("Vary", "Origin")
+		next.ServeHTTP(w, r)
+	})
 }
 
 func serve(addr, path string, days int) error {

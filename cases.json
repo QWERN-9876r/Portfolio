@@ -184,11 +184,11 @@
                 "value": "139 KB"
             }
         ],
-        "context": "Build measurements: gzip, as served by nginx",
+        "context": "Build measurements, gzip",
         "facts": [
             "Personal project",
             "Speed is the main requirement",
-            "Own server: nginx and Let's Encrypt"
+            "GitHub Pages and my own metrics service in Go"
         ],
         "steps": [
             {

@@ -1,5 +1,6 @@
 import { building } from '$app/environment'
 import type { Locale } from '$lib/i18n/translations'
+import { withBase } from '$lib/site'
 import { DEFAULT_ALL_TECHNOLOGIES, type Tech } from './allTechnologies'
 import { DEFAULT_CASES, type CaseItem } from './cases'
 import { DEFAULT_EXPERIENCE, type ExperienceData } from './experience'
@@ -37,15 +38,30 @@ const DEFAULTS: Content = {
 
 const KEYS = Object.keys(FILES) as ContentKey[]
 
-// При сборке — напрямую из бакета: vite-прокси на серверный fetch не действует
-const STORAGE_ORIGIN = 'https://storage.yandexcloud.net/qwern-9876r'
-// В браузере — через прокси (vite в dev, nginx в проде)
-const STORAGE_PROXY = '/api/storage'
+// Контент и часть иконок — в бакете; сайт берёт их при сборке, браузер в бакет не ходит
+export const STORAGE_ORIGIN = 'https://storage.yandexcloud.net/qwern-9876r'
 
-const fetchJson = async (fetchFn: typeof fetch, url: string, init?: RequestInit) => {
-    const res = await fetchFn(url, init)
-    if (!res.ok) throw new Error(`${res.status} ${url}`)
-    return res.json()
+// Иконка из контента → адрес на сайте. Иконки из бакета (/api/storage/*) лежат копией
+// в /storage/* (routes/storage): так их пиксели может читать canvas (three/iconColor.ts)
+export const iconUrl = (icon: string) =>
+    /^https?:\/\//.test(icon) ? icon : withBase(icon.replace(/^\/api\/storage\//, '/storage/'))
+
+// Бакет с раннеров GitHub иногда не отвечает: сетевую ошибку и 5xx пробуем ещё дважды
+const ATTEMPTS = 3
+const RETRY_MS = 1000
+
+const fetchJson = async (fetchFn: typeof fetch, url: string) => {
+    for (let attempt = 1; ; attempt++) {
+        try {
+            const res = await fetchFn(url)
+            if (res.ok) return await res.json()
+            if (res.status < 500 || attempt === ATTEMPTS) throw new Error(`${res.status} ${url}`)
+        } catch (err) {
+            const network = err instanceof TypeError
+            if (!network || attempt === ATTEMPTS) throw err
+        }
+        await new Promise((resolve) => setTimeout(resolve, RETRY_MS))
+    }
 }
 
 // При сборке один язык пререндерится трижды (по странице на роль) — качаем один раз.
@@ -70,32 +86,15 @@ const fetchContent = async (fetchFn: typeof fetch, lang: Locale): Promise<Conten
             try {
                 return [key, await fetchJson(fetchFn, url)]
             } catch (err) {
-                console.warn(
-                    `[content] ${url} недоступен, беру данные по умолчанию:`,
-                    err instanceof Error ? err.message : err,
-                )
+                const reason = err instanceof Error ? err.message : String(err)
+                // Выкладка из CI с данными по умолчанию (там кейсы только по-русски) хуже,
+                // чем упавшая: на сайте остаётся прошлая версия
+                if (building && process.env.CI) throw new Error(`[content] ${url} недоступен: ${reason}`)
+                console.warn(`[content] ${url} недоступен, беру данные по умолчанию:`, reason)
                 return [key, DEFAULTS[key]]
             }
         }),
     )
 
     return Object.fromEntries(entries) as Content
-}
-
-// Возвращает только файлы, которые изменились в бакете после сборки
-export const refreshContent = async (lang: Locale, current: Content): Promise<Partial<Content>> => {
-    const changed = await Promise.all(
-        KEYS.map(async (key) => {
-            try {
-                const fresh = await fetchJson(fetch, `${STORAGE_PROXY}/${lang}/${FILES[key]}`, {
-                    cache: 'no-cache',
-                })
-                return JSON.stringify(fresh) === JSON.stringify(current[key]) ? null : [key, fresh]
-            } catch {
-                return null
-            }
-        }),
-    )
-
-    return Object.fromEntries(changed.filter((entry) => entry !== null))
 }

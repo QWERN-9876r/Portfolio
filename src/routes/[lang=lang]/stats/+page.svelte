@@ -5,7 +5,7 @@
     import { statsTranslations } from '$lib/i18n/stats'
     import { translations } from '$lib/i18n/translations'
     import { DEFAULT_ROLE, rolePath } from '$lib/role'
-    import { NICKNAME } from '$lib/site'
+    import { NICKNAME, withBase } from '$lib/site'
     import { LiveVisits } from '$lib/stats/liveVisits.svelte'
     import { TabMetrics } from '$lib/stats/tabMetrics.svelte'
     import { onMount } from 'svelte'
@@ -43,7 +43,7 @@
 <main id="scroll-root">
     <div class="section-content page">
         <header class="header">
-            <a class="caption back" href={rolePath(data.lang, DEFAULT_ROLE)}>
+            <a class="caption back" href={withBase(rolePath(data.lang, DEFAULT_ROLE))}>
                 <span aria-hidden="true">←</span>
                 {s.back}
             </a>

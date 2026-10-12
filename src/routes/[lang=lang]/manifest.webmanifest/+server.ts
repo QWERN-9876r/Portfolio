@@ -1,5 +1,6 @@
 import { error } from '@sveltejs/kit'
 import { isLocale, translations } from '$lib/i18n/translations'
+import { withBase } from '$lib/site'
 import type { RequestHandler } from './$types'
 
 export const prerender = true
@@ -12,22 +13,22 @@ export const GET: RequestHandler = ({ params }) => {
     const t = translations[params.lang]
 
     const manifest = {
-        id: '/',
+        id: withBase('/'),
         lang: params.lang,
         dir: 'ltr',
         name: t.seo.title,
         short_name: t.seo.title,
         description: t.seo.description,
-        start_url: `/${params.lang}`,
-        scope: '/',
+        start_url: withBase(`/${params.lang}/`),
+        scope: withBase('/'),
         display: 'standalone',
         background_color: '#050816',
         theme_color: '#050816',
         icons: [
-            { src: '/icon-192.png', sizes: '192x192', type: 'image/png' },
-            { src: '/icon-512.png', sizes: '512x512', type: 'image/png' },
+            { src: withBase('/icon-192.png'), sizes: '192x192', type: 'image/png' },
+            { src: withBase('/icon-512.png'), sizes: '512x512', type: 'image/png' },
             {
-                src: '/icon-512.png',
+                src: withBase('/icon-512.png'),
                 sizes: '512x512',
                 type: 'image/png',
                 purpose: 'maskable',

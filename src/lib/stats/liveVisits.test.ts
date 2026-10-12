@@ -44,6 +44,8 @@ let feed: LiveVisits
 let stop = () => {}
 
 beforeEach(() => {
+    // Таймауты подключения и повторы — по фейковым часам, иначе остались бы висеть после теста
+    vi.useFakeTimers()
     FakeEventSource.instances = []
     vi.stubGlobal('EventSource', FakeEventSource)
     feed = new LiveVisits()
@@ -53,6 +55,7 @@ beforeEach(() => {
 afterEach(() => {
     stop()
     setHidden(false)
+    vi.useRealTimers()
     vi.unstubAllGlobals()
 })
 
@@ -92,11 +95,54 @@ describe('LiveVisits', () => {
         expect(feed.items[0].visit.role).toBe('fullstack')
     })
 
-    it('обрыв — переподключение, закрытый поток — сервис недоступен', () => {
+    it('сервер не ответил ни разу — сервис недоступен, новая попытка через 30 с', () => {
+        const first = last()
+        first.fail(FakeEventSource.CONNECTING)
+
+        expect(feed.status).toBe('offline')
+        // Браузер не долбит лежащий сервер переподключениями
+        expect(first.readyState).toBe(FakeEventSource.CLOSED)
+        vi.advanceTimersByTime(29_999)
+        expect(FakeEventSource.instances).toHaveLength(1)
+        vi.advanceTimersByTime(1)
+        expect(FakeEventSource.instances).toHaveLength(2)
+        expect(feed.status).toBe('connecting')
+    })
+
+    it('обрыв посреди эфира — браузер переподключается сам, закрытый поток — сервис недоступен', () => {
+        last().emit('snapshot', { days: 30, visitors: 1, visits: [visit('backend')] })
         last().fail(FakeEventSource.CONNECTING)
         expect(feed.status).toBe('connecting')
+        expect(FakeEventSource.instances).toHaveLength(1)
+
         last().fail(FakeEventSource.CLOSED)
         expect(feed.status).toBe('offline')
+    })
+
+    it('сервер молчит — через 10 с сервис недоступен, соединение закрыто', () => {
+        const first = last()
+        vi.advanceTimersByTime(9_999)
+        expect(feed.status).toBe('connecting')
+        vi.advanceTimersByTime(1)
+
+        expect(feed.status).toBe('offline')
+        expect(first.readyState).toBe(FakeEventSource.CLOSED)
+    })
+
+    it('снимок пришёл — таймаут подключения не срабатывает', () => {
+        last().emit('snapshot', { days: 30, visitors: 1, visits: [visit('backend')] })
+        vi.advanceTimersByTime(60_000)
+
+        expect(feed.status).toBe('live')
+        expect(FakeEventSource.instances).toHaveLength(1)
+    })
+
+    it('свёрнутая вкладка не ждёт новой попытки', () => {
+        last().fail(FakeEventSource.CONNECTING)
+        setHidden(true)
+        vi.advanceTimersByTime(60_000)
+
+        expect(FakeEventSource.instances).toHaveLength(1)
     })
 
     it('свёрнутая вкладка не держит соединение, при возврате — новое', () => {

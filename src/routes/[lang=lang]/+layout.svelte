@@ -5,14 +5,16 @@
     import PrismLayer from '$lib/three/PrismLayer.svelte'
     import { LOCALES, translations, type Locale } from '$lib/i18n/translations'
     import { DEFAULT_ROLE, isRole } from '$lib/role'
-    import { GITHUB_URL, HH_URL, NICKNAME, PHOTO, SITE_URL, TG_URL } from '$lib/site'
+    import { BASE_PATH, GITHUB_URL, HH_URL, NICKNAME, PHOTO, SITE_URL, TG_URL, withBase } from '$lib/site'
 
     let { data, children } = $props()
 
     // Шрифты заголовка и основного текста первого экрана — остальные подтянутся сами
     const FONT_PRELOADS: Record<Locale, string[]> = {
-        en: ['/fonts/rubik-mono-one-latin-400-normal.woff2', '/fonts/montserrat-latin-wght-normal.woff2'],
-        ru: ['/fonts/rubik-mono-one-cyrillic-400-normal.woff2', '/fonts/montserrat-cyrillic-wght-normal.woff2'],
+        en: ['/fonts/rubik-mono-one-latin-400-normal.woff2', '/fonts/montserrat-latin-wght-normal.woff2'].map(withBase),
+        ru: ['/fonts/rubik-mono-one-cyrillic-400-normal.woff2', '/fonts/montserrat-cyrillic-wght-normal.woff2'].map(
+            withBase,
+        ),
     }
     const OG_IMAGE = `${SITE_URL}/img/og-image.jpg`
 
@@ -23,12 +25,16 @@
     $effect(() => {
         document.documentElement.lang = data.lang
     })
-    // Та же страница на другом языке: /en/backend → /ru/backend, /en/stats → /ru/stats
-    const localePath = (locale: Locale) => page.url.pathname.replace(/^\/[^/]+/, `/${locale}`)
-    const hrefs = $derived(
+    // Та же страница на другом языке, путь внутри сайта: /en/backend/ → /ru/backend/, /en/stats/ → /ru/stats/
+    const localePath = (locale: Locale) =>
+        page.url.pathname.slice(BASE_PATH.length).replace(/^\/[^/]+/, `/${locale}`)
+    const paths = $derived(
         Object.fromEntries(LOCALES.map((locale) => [locale, localePath(locale)])) as Record<Locale, string>,
     )
-    const canonical = $derived(SITE_URL + hrefs[data.lang])
+    const hrefs = $derived(
+        Object.fromEntries(LOCALES.map((locale) => [locale, withBase(paths[locale])])) as Record<Locale, string>,
+    )
+    const canonical = $derived(SITE_URL + paths[data.lang])
 
     const jsonLd = $derived(
         JSON.stringify({
@@ -51,10 +57,10 @@
     <meta name="robots" content="index, follow" />
     <link rel="canonical" href={canonical} />
     {#each LOCALES as locale (locale)}
-        <link rel="alternate" hreflang={locale} href={SITE_URL + hrefs[locale]} />
+        <link rel="alternate" hreflang={locale} href={SITE_URL + paths[locale]} />
     {/each}
-    <link rel="alternate" hreflang="x-default" href={SITE_URL + hrefs.en} />
-    <link rel="manifest" href="/{data.lang}/manifest.webmanifest" />
+    <link rel="alternate" hreflang="x-default" href={SITE_URL + paths.en} />
+    <link rel="manifest" href={withBase(`/${data.lang}/manifest.webmanifest`)} />
 
     <!-- Превью ссылки в Telegram, соцсетях и мессенджерах. site_name Telegram показывает
          цветной строкой над заголовком; summary_large_image — крупная картинка, а не миниатюра -->
