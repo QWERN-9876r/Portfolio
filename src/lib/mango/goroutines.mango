@@ -1,0 +1,25 @@
+func isPrime(n number) bool {
+    if n < 2 {
+        return false
+    }
+    for let d = 2; d * d <= n; d++ {
+        if n % d == 0 {
+            return false
+        }
+    }
+    return true
+}
+
+func countPrimes(from, to number) number {
+    let count = 0
+    for let n = from; n < to; n++ {
+        if isPrime(n) {
+            count++
+        }
+    }
+    return count
+}
+
+const PART = 1_000_000
+const parts = Array(10).fill(0).map((_, i) => go countPrimes(i * PART, (i + 1) * PART))
+console.log((await Promise.all(parts)).reduce((a, b) => a + b, 0))

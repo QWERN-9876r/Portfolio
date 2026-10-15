@@ -89,7 +89,7 @@ export interface Translation {
         after: string
         team: string
         // Пример кода в кейсе про MangoScript
-        demo: { label: string; note: string }
+        demo: { label: string; notes: Record<'counter' | 'goroutines', string> }
     }
     allTech: {
         openSite: string
@@ -214,7 +214,11 @@ export const translations: Record<Locale, Translation> = {
             solution: 'Solution',
             result: 'Result',
             resultLabels: {},
-            resultHints: { DAU: 'daily active users', MAU: 'monthly active users' },
+            resultHints: {
+                DAU: 'daily active users',
+                MAU: 'monthly active users',
+                'faster with goroutines': 'counting primes: 10 goroutines vs one thread',
+            },
             of: 'of',
             facts: 'Role and constraints',
             details: 'Full story',
@@ -228,7 +232,12 @@ export const translations: Record<Locale, Translation> = {
             team: 'Frontend team',
             demo: {
                 label: 'Example',
-                note: 'The whole component: after count++ the compiler updates the button text by itself — no virtual DOM, no library.',
+                notes: {
+                    counter:
+                        'The whole component: after count++ the compiler updates the button text by itself — no virtual DOM, no library.',
+                    goroutines:
+                        'go runs countPrimes in a worker, a thread on a core of its own, and gives a Promise of the result; the compiler sends isPrime along by itself. Ten goroutines count the primes below 10 million 4.5 times faster than one thread.',
+                },
             },
         },
         allTech: {
@@ -353,7 +362,11 @@ export const translations: Record<Locale, Translation> = {
             solution: 'Решение',
             result: 'Результат',
             resultLabels: { Profit: 'Прибыль' },
-            resultHints: { DAU: 'ежедневная аудитория', MAU: 'ежемесячная аудитория' },
+            resultHints: {
+                DAU: 'ежедневная аудитория',
+                MAU: 'ежемесячная аудитория',
+                'быстрее с горутинами': 'счёт простых чисел: 10 горутин против одного потока',
+            },
             of: 'из',
             facts: 'Роль и условия',
             details: 'Подробнее',
@@ -367,7 +380,12 @@ export const translations: Record<Locale, Translation> = {
             team: 'Фронтенд в команде',
             demo: {
                 label: 'Пример',
-                note: 'Это весь компонент: после count++ компилятор сам обновит текст кнопки — без виртуального DOM и библиотеки.',
+                notes: {
+                    counter:
+                        'Это весь компонент: после count++ компилятор сам обновит текст кнопки — без виртуального DOM и библиотеки.',
+                    goroutines:
+                        'go запускает countPrimes в воркере — в отдельном потоке на своём ядре — и даёт Promise с результатом, а isPrime компилятор сам отправит туда же. Десять горутин считают простые числа до 10 млн в 4,5 раза быстрее одного потока.',
+                },
             },
         },
         allTech: {

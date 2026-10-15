@@ -10,13 +10,17 @@ export interface Token {
 
 const KEYWORDS = new Set([
     'comp', 'state', 'func', 'return', 'const', 'let', 'if', 'else', 'for', 'in', 'switch', 'case',
-    'default', 'defer', 'import', 'export', 'from', 'type', 'new', 'null', 'true', 'false',
+    'default', 'defer', 'import', 'export', 'type', 'new', 'null', 'true', 'false',
+    'go', 'async', 'await', 'chan', 'select',
 ])
+// «from» не ключевое слово: в примере с горутинами это имя параметра, а import в примерах нет
 const TYPES = new Set(['number', 'string', 'bool', 'error', 'any', 'void'])
 
 // Порядок групп — приоритет: комментарий и строка поглощают всё, что внутри них.
-// Атрибут — имя прямо перед «=» (onClick=, bind:value=)
-const TOKEN = /(\/\/[^\n]*)|("(?:[^"\\\n]|\\.)*")|(<\/?[A-Za-z][\w.-]*|\/?>)|([A-Za-z_][\w:-]*)(?==)|([A-Za-z_]\w*)|(\d+(?:\.\d+)?)/g
+// «>» закрывает тег, только если стоит вплотную к имени, строке или {…}: в «=>» и «a > b» это не тег.
+// Атрибут — имя прямо перед «=» (onClick=, bind:value=). В числе можно «_»: 1_000_000
+const TOKEN =
+    /(\/\/[^\n]*)|("(?:[^"\\\n]|\\.)*")|(<\/?[A-Za-z][\w.-]*|\/>|(?<=[\w"}])>)|([A-Za-z_][\w:-]*)(?==)|([A-Za-z_]\w*)|(\d[\d_]*(?:\.\d+)?)/g
 
 export const highlight = (code: string): Token[] => {
     const tokens: Token[] = []

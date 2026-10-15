@@ -224,22 +224,26 @@
         "company": "Open source",
         "period": "10.2026",
         "problem": "I wanted to write interfaces with concise Go-style syntax and strict types — without users paying for that convenience: no virtual DOM and no runtime framework in the bundle.",
-        "solution": "I built MangoScript, a language with JavaScript semantics, Go-style syntax and static types that compiles to readable JavaScript. The compiler is written in TypeScript: a lexer, a parser and a type checker with generics, union types and narrowing. It reads the types of npm packages, the DOM and the standard library from TypeScript .d.ts files and writes .d.ts files for MangoScript modules, so the language works with any npm library in both directions. Components exist only at compile time: the compiler sees which nodes depend on which state and generates code that updates exactly those nodes. Around the language there is a Vite plugin, a CLI, a VS Code extension and documentation written in MangoScript itself: the compiler runs right in the browser, every example has a tab with the resulting JavaScript, and there is a sandbox at the bottom.",
+        "solution": "I built MangoScript, a language with JavaScript semantics, Go-style syntax and static types that compiles to readable JavaScript. The compiler is written in TypeScript: a lexer, a parser and a type checker with generics, union types and narrowing. It reads the types of npm packages, the DOM and the standard library from TypeScript .d.ts files and writes .d.ts files for MangoScript modules, so the language works with any npm library in both directions. Components exist only at compile time: the compiler sees which nodes depend on which state and generates code that updates exactly those nodes. The language also has real goroutines, as in Go: go f(x) runs a function in a worker, a thread on a CPU core of its own, and channels and select pass data between goroutines. The compiler moves the function and everything it uses into the worker by itself and checks that it does not touch the module's mutable variables: in the example from the docs, ten goroutines count 4.5 times faster than one thread. Around the language there is a Vite plugin, a CLI, a VS Code extension and documentation written in MangoScript itself: the compiler runs right in the browser, every example has a tab with the resulting JavaScript, and there is a sandbox at the bottom.",
         "results": [
             {
                 "label": "framework runtime",
                 "value": "0 KB"
             },
             {
+                "label": "faster with goroutines",
+                "value": "×4.5"
+            },
+            {
                 "label": "tests",
-                "value": "270"
+                "value": "1083"
             },
             {
                 "label": "lines of TypeScript",
-                "value": "15K"
+                "value": "27K"
             }
         ],
-        "context": "Numbers from the repository: Vitest tests and the compiler sources",
+        "context": "Numbers from the repository: Vitest tests, the compiler sources and the goroutine example from the docs on an Apple M4 Pro",
         "facts": [
             "Open source",
             "Language, compiler and tooling from scratch",
@@ -259,6 +263,10 @@
                 "text": "state, bind:, if and for in markup, web components — the compiler works out reactivity"
             },
             {
+                "title": "Goroutines and channels",
+                "text": "go f(x) runs a function in a worker on another core, channels and select work as in Go; the compiler works out what goes to the worker"
+            },
+            {
                 "title": "Tooling around the language",
                 "text": "A Vite plugin, a CLI, a VS Code extension and docs with a sandbox, written in MangoScript itself"
             }
@@ -274,6 +282,6 @@
             }
         ],
         "demo": "mangoscript",
-        "tags": ["TypeScript", "Compilers", "Vite", "Web Components", "VS Code"]
+        "tags": ["TypeScript", "Compilers", "Web Workers", "Vite", "Web Components", "VS Code"]
     }
 ]
