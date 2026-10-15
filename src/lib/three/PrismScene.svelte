@@ -376,7 +376,10 @@
     let frame = 0
     let lastTime = 0
     const tick = (now: number) => {
-        const dt = Math.min((now - lastTime) / 1000, 0.05)
+        // Не меньше нуля: после длинной задачи (компиляция шейдеров) Chrome отдаёт кадру время
+        // его начала — раньше, чем kick() запомнил performance.now(). Отрицательный шаг отбросил бы
+        // волну цвета роли на секунды назад, и аниматор впустую рисовал бы кадры, пока она вернётся
+        const dt = Math.min(Math.max((now - lastTime) / 1000, 0), 0.05)
         lastTime = now
         const settled = step(dt)
         apply()
