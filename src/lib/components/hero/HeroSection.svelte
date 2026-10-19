@@ -7,7 +7,7 @@
     import HeroPhoto from './HeroPhoto.svelte'
     import HeroRole from './HeroRole.svelte'
 
-    // openSource — кейс про MangoScript: плашка ведёт в него и пропадает, если кейса нет в контенте
+    // openSource — кейс про Rook: плашка ведёт в него и пропадает, если кейса нет в контенте
     let {
         t,
         lang,

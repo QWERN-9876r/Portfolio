@@ -44,7 +44,10 @@
                 "text": "The mini-game attracted many daily users, and a summer campaign with bloggers was built around it"
             }
         ],
-        "tags": ["Animations", "Initiative"]
+        "tags": [
+            "Animations",
+            "Initiative"
+        ]
     },
     {
         "id": "case-2",
@@ -92,7 +95,13 @@
             "before": 3,
             "after": 1
         },
-        "tags": ["TypeScript", "Rive", "React", "Next.js", "Server Components"]
+        "tags": [
+            "TypeScript",
+            "Rive",
+            "React",
+            "Next.js",
+            "Server Components"
+        ]
     },
     {
         "id": "case-5",
@@ -220,68 +229,79 @@
     },
     {
         "id": "case-4",
-        "title": "My own programming language",
+        "title": "My own language: JavaScript on every core",
         "company": "Open source",
         "period": "10.2026",
-        "problem": "I wanted to write interfaces with concise Go-style syntax and strict types — without users paying for that convenience: no virtual DOM and no runtime framework in the bundle.",
-        "solution": "I built MangoScript, a language with JavaScript semantics, Go-style syntax and static types that compiles to readable JavaScript. The compiler is written in TypeScript: a lexer, a parser and a type checker with generics, union types and narrowing. It reads the types of npm packages, the DOM and the standard library from TypeScript .d.ts files and writes .d.ts files for MangoScript modules, so the language works with any npm library in both directions. Components exist only at compile time: the compiler sees which nodes depend on which state and generates code that updates exactly those nodes. The language also has real goroutines, as in Go: go f(x) runs a function in a worker, a thread on a CPU core of its own, and channels and select pass data between goroutines. The compiler moves the function and everything it uses into the worker by itself and checks that it does not touch the module's mutable variables: in the example from the docs, ten goroutines count 4.5 times faster than one thread. Around the language there is a Vite plugin, a CLI, a VS Code extension and documentation written in MangoScript itself: the compiler runs right in the browser, every example has a tab with the resulting JavaScript, and there is a sandbox at the bottom.",
+        "problem": "JavaScript runs on one thread: a heavy computation takes one core and blocks everything else, while Web Workers need separate files, postMessage and copying data by hand. I wanted to write parallel code as simply as in Go — with strict types and without paying for the convenience in the bundle.",
+        "solution": "I built Rook, a language with JavaScript semantics, Go syntax and static types, focused on speed and concurrency. go f(x) runs a function as a goroutine in a pool of Web Workers or worker threads, one thread per core, and gives a Promise of the result; channels, select, after and tick work as in Go. go for is the same loop over an array, one word longer: the array is split into parts, several per core, and each runs on the first free core. On the 14 cores of an Apple M4 Pro such a loop is 8.1 times faster than one thread. The compiler moves the function and everything it uses into the worker by itself and checks before the program runs that what goes to another thread can be copied there: a function, a class instance or a DOM element cannot be sent. The compiler is written in TypeScript: a lexer, a parser and a type checker with generics, union types, null safety and narrowing. It reads the types of npm packages and the DOM from .d.ts files and writes .d.ts files for Rook modules, so the language works with any npm library in both directions. Code compiles to readable JavaScript with a small runtime for channels and goroutines, imported by name; components compile to direct DOM calls, with no virtual DOM. Around the language there is the rooklang npm package, a CLI, a Vite plugin, a VS Code extension and documentation written in Rook itself, with a playground right in the browser.",
         "results": [
             {
-                "label": "framework runtime",
-                "value": "0 KB"
+                "label": "faster with go for",
+                "value": "×8.1"
             },
             {
                 "label": "faster with goroutines",
-                "value": "×4.5"
+                "value": "×5.4"
             },
             {
                 "label": "tests",
-                "value": "1083"
+                "value": "1291"
             },
             {
                 "label": "lines of TypeScript",
-                "value": "27K"
+                "value": "30K"
             }
         ],
-        "context": "Numbers from the repository: Vitest tests, the compiler sources and the goroutine example from the docs on an Apple M4 Pro",
+        "context": "Numbers from the repository: go for as measured on the docs home page, goroutines from the docs example in Node; both on a 14-core Apple M4 Pro",
         "facts": [
             "Open source",
             "Language, compiler and tooling from scratch",
-            "The docs are written in MangoScript itself"
+            "Published on npm"
         ],
         "steps": [
             {
-                "title": "A compiler with a type checker",
-                "text": "Lexer, parser and types: generics, union types, narrowing with typeof and instanceof"
+                "title": "Goroutines on real threads",
+                "text": "go f(x) runs a function in a pool of workers, one per core, and gives a Promise of the result"
             },
             {
-                "title": "TypeScript interop",
+                "title": "go for: a loop on every core",
+                "text": "The array is split into parts, several per core, and each runs on the first free one: ×8.1 on 14 cores"
+            },
+            {
+                "title": "Channels and select",
+                "text": "Goroutines on different threads pass values through channels, wait on several at once and time out, as in Go"
+            },
+            {
+                "title": "Types that know about threads",
+                "text": "The compiler moves the functions a worker needs by itself and checks before the run that the data can be copied to another thread"
+            },
+            {
+                "title": "TypeScript and npm interop",
                 "text": "Types of packages and the DOM come from .d.ts files, and the compiler writes .d.ts for its own modules"
             },
             {
-                "title": "Components without a runtime",
-                "text": "state, bind:, if and for in markup, web components — the compiler works out reactivity"
-            },
-            {
-                "title": "Goroutines and channels",
-                "text": "go f(x) runs a function in a worker on another core, channels and select work as in Go; the compiler works out what goes to the worker"
-            },
-            {
                 "title": "Tooling around the language",
-                "text": "A Vite plugin, a CLI, a VS Code extension and docs with a sandbox, written in MangoScript itself"
+                "text": "An npm package, a CLI, a Vite plugin, a VS Code extension and docs with a playground, written in Rook itself"
             }
         ],
         "links": [
             {
                 "label": "Documentation",
-                "url": "https://qwern-9876r.github.io/MangoScript/"
+                "url": "https://qwern-9876r.github.io/RookLang/"
             },
             {
                 "label": "GitHub",
-                "url": "https://github.com/QWERN-9876r/MangoScript"
+                "url": "https://github.com/QWERN-9876r/RookLang"
             }
         ],
-        "demo": "mangoscript",
-        "tags": ["TypeScript", "Compilers", "Web Workers", "Vite", "Web Components", "VS Code"]
+        "demo": "rook",
+        "tags": [
+            "TypeScript",
+            "Compilers",
+            "Concurrency",
+            "Web Workers",
+            "Vite",
+            "VS Code"
+        ]
     }
 ]

@@ -30,7 +30,7 @@ export interface Translation {
         roles: Record<Role, string>
         // Статус поиска работы над ником: что ищу и в каком формате
         status: { label: string; detail: string }
-        // Плашка под кнопками: ведёт в кейс про MangoScript
+        // Плашка под кнопками: ведёт в кейс про Rook
         // detail — продолжение text, на телефоне не помещается и скрыто
         openSource: { badge: string; text: string; detail: string }
     }
@@ -88,8 +88,8 @@ export interface Translation {
         before: string
         after: string
         team: string
-        // Пример кода в кейсе про MangoScript
-        demo: { label: string; notes: Record<'counter' | 'goroutines', string> }
+        // Пример кода в кейсе про Rook
+        demo: { label: string; notes: Record<'go-for' | 'goroutines' | 'counter', string> }
     }
     allTech: {
         openSite: string
@@ -127,7 +127,7 @@ export const translations: Record<Locale, Translation> = {
             ogLocale: 'en_US',
             ogImageAlt: 'Dmitry Sotnikov in the Yandex office under the Yandex Go neon sign',
             keywords:
-                'Dmitry Sotnikov, Qwern_9876r, frontend developer, fullstack, backend, React, TypeScript, Go, MangoScript, portfolio',
+                'Dmitry Sotnikov, Qwern_9876r, frontend developer, fullstack, backend, React, TypeScript, Go, Rook, portfolio',
             name: 'Dmitry Sotnikov',
             jobTitle: 'Frontend / Fullstack / Backend developer',
         },
@@ -146,7 +146,7 @@ export const translations: Record<Locale, Translation> = {
                 backend: 'Backend',
             },
             status: { label: 'Open to offers', detail: 'Middle+ Frontend / Fullstack · Moscow or remote' },
-            openSource: { badge: 'Open source', text: 'My language MangoScript', detail: ', compiles to JS' },
+            openSource: { badge: 'Open source', text: 'My language Rook', detail: ', JavaScript on every core' },
         },
         sections: {
             about: 'About me',
@@ -189,14 +189,14 @@ export const translations: Record<Locale, Translation> = {
         },
         about: {
             bio: 'BIO',
-            text: 'I am a fullstack developer with experience at Yandex, where I handled complex technical challenges — from optimizing interface performance to designing large-scale projects. I write high-performance, maintainable code and always look beyond the immediate task: I think about how a solution affects the product and the business as a whole. I take initiative, see work through to completion, and do not wait to be told what to do. In my spare time I build MangoScript, my own programming language that compiles to JavaScript.',
+            text: 'I am a fullstack developer with experience at Yandex, where I handled complex technical challenges — from optimizing interface performance to designing large-scale projects. I write high-performance, maintainable code and always look beyond the immediate task: I think about how a solution affects the product and the business as a whole. I take initiative, see work through to completion, and do not wait to be told what to do. In my spare time I build Rook, my own programming language that compiles to JavaScript and runs it on every CPU core.',
             highlights: [
                 'Yandex',
                 'performance',
                 'high-performance',
                 'business',
                 'I take initiative',
-                'MangoScript',
+                'Rook',
             ],
             companies: 'companies',
             companyNames: { yandex: 'Yandex', mts: 'MTS' },
@@ -233,10 +233,12 @@ export const translations: Record<Locale, Translation> = {
             demo: {
                 label: 'Example',
                 notes: {
+                    'go-for':
+                        'The same loop, one word longer: go for splits the array into parts, several per core, and runs them as goroutines on whichever cores are free. On the 14 cores of an Apple M4 Pro it is 8.1 times faster than one thread.',
+                    goroutines:
+                        'go runs countPrimes in a worker, a thread on a core of its own, and gives a Promise of the result; the compiler sends isPrime along by itself. Ten goroutines count the primes below 10 million 5.4 times faster than one thread.',
                     counter:
                         'The whole component: after count++ the compiler updates the button text by itself — no virtual DOM, no library.',
-                    goroutines:
-                        'go runs countPrimes in a worker, a thread on a core of its own, and gives a Promise of the result; the compiler sends isPrime along by itself. Ten goroutines count the primes below 10 million 4.5 times faster than one thread.',
                 },
             },
         },
@@ -274,7 +276,7 @@ export const translations: Record<Locale, Translation> = {
             ogLocale: 'ru_RU',
             ogImageAlt: 'Дмитрий Сотников в офисе Яндекса под неоновой вывеской Яндекс Go',
             keywords:
-                'Сотников Дмитрий, Qwern_9876r, frontend разработчик, fullstack, backend, React, TypeScript, Go, MangoScript, портфолио',
+                'Сотников Дмитрий, Qwern_9876r, frontend разработчик, fullstack, backend, React, TypeScript, Go, Rook, портфолио',
             name: 'Сотников Дмитрий',
             jobTitle: 'Frontend / Fullstack / Backend разработчик',
         },
@@ -293,7 +295,7 @@ export const translations: Record<Locale, Translation> = {
                 backend: 'Backend',
             },
             status: { label: 'Открыт к предложениям', detail: 'Middle+ Frontend / Fullstack · Москва или удалёнка' },
-            openSource: { badge: 'Open source', text: 'Мой язык MangoScript', detail: ' — компилируется в JS' },
+            openSource: { badge: 'Open source', text: 'Мой язык Rook', detail: ' — JavaScript на всех ядрах' },
         },
         sections: {
             about: 'О себе',
@@ -337,14 +339,14 @@ export const translations: Record<Locale, Translation> = {
         },
         about: {
             bio: 'BIO',
-            text: 'Я fullstack-разработчик с опытом в Яндексе, где закрывал сложные технические задачи — от оптимизации производительности интерфейсов до проектирования огромных проектов. Пишу высокопроизводительный, поддерживаемый код и всегда смотрю шире задачи: думаю о том, как решение влияет на продукт и бизнес в целом. Инициативен, довожу начатое до результата и не жду, когда скажут что делать. В свободное время развиваю MangoScript — свой язык программирования, который компилируется в JavaScript.',
+            text: 'Я fullstack-разработчик с опытом в Яндексе, где закрывал сложные технические задачи — от оптимизации производительности интерфейсов до проектирования огромных проектов. Пишу высокопроизводительный, поддерживаемый код и всегда смотрю шире задачи: думаю о том, как решение влияет на продукт и бизнес в целом. Инициативен, довожу начатое до результата и не жду, когда скажут что делать. В свободное время развиваю Rook — свой язык программирования, который компилируется в JavaScript и запускает его на всех ядрах процессора.',
             highlights: [
                 'Яндексе',
                 'производительности',
                 'высокопроизводительный',
                 'бизнес',
                 'Инициативен',
-                'MangoScript',
+                'Rook',
             ],
             companies: 'компании',
             companyNames: { yandex: 'Яндекс', mts: 'МТС' },
@@ -381,10 +383,12 @@ export const translations: Record<Locale, Translation> = {
             demo: {
                 label: 'Пример',
                 notes: {
+                    'go-for':
+                        'Тот же цикл, на одно слово длиннее: go for делит массив на части, по несколько на ядро, и выполняет их горутинами на свободных ядрах. На 14 ядрах Apple M4 Pro — в 8,1 раза быстрее одного потока.',
+                    goroutines:
+                        'go запускает countPrimes в воркере — в отдельном потоке на своём ядре — и даёт Promise с результатом, а isPrime компилятор сам отправит туда же. Десять горутин считают простые числа до 10 млн в 5,4 раза быстрее одного потока.',
                     counter:
                         'Это весь компонент: после count++ компилятор сам обновит текст кнопки — без виртуального DOM и библиотеки.',
-                    goroutines:
-                        'go запускает countPrimes в воркере — в отдельном потоке на своём ядре — и даёт Promise с результатом, а isPrime компилятор сам отправит туда же. Десять горутин считают простые числа до 10 млн в 4,5 раза быстрее одного потока.',
                 },
             },
         },

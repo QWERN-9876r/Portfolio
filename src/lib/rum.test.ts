@@ -46,8 +46,8 @@ beforeEach(() => {
         <a id="pdf" href="/resume/dmitry-sotnikov-ru.pdf">PDF</a>
         <a id="mail" href="mailto:me@example.com">Email</a>
         <a id="gh" href="https://github.com/QWERN-9876r">GitHub</a>
-        <a id="mango-docs" href="https://qwern-9876r.github.io/MangoScript/ru/">Документация</a>
-        <a id="mango-repo" href="https://github.com/QWERN-9876r/MangoScript">MangoScript</a>
+        <a id="rook-docs" href="https://qwern-9876r.github.io/RookLang/ru/">Документация</a>
+        <a id="rook-repo" href="https://github.com/QWERN-9876r/RookLang">Rook</a>
         <a id="game" href="https://qwern-9876r.github.io/Mushrooms/">Играть</a>
         <a id="hh" href="https://hh.ru/resume/123">hh</a>
         <a id="other" href="https://example.com">Другой сайт</a>
@@ -90,7 +90,7 @@ describe('startRum', () => {
 
     it('контакты распознаются по ссылке, повторы и чужие ссылки не считаются', async () => {
         stop = startRum(() => ({ lang: 'en', role: 'frontend' }))
-        for (const id of ['tg span', 'pdf', 'mail', 'gh', 'hh', 'tg', 'other', 'case', 'mango-docs', 'mango-repo', 'game'])
+        for (const id of ['tg span', 'pdf', 'mail', 'gh', 'hh', 'tg', 'other', 'case', 'rook-docs', 'rook-repo', 'game'])
             click(`#${id}`)
         leave()
 

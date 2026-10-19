@@ -1,4 +1,4 @@
-// Подсветка коротких примеров MangoScript в кейсе: хватает регулярного выражения,
+// Подсветка коротких примеров Rook в кейсе: хватает регулярного выражения,
 // компилятор с его лексером на страницу не грузим
 
 export type TokenKind = 'text' | 'comment' | 'string' | 'tag' | 'attr' | 'keyword' | 'type' | 'number'
@@ -14,7 +14,7 @@ const KEYWORDS = new Set([
     'go', 'async', 'await', 'chan', 'select',
 ])
 // «from» не ключевое слово: в примере с горутинами это имя параметра, а import в примерах нет
-const TYPES = new Set(['number', 'string', 'bool', 'error', 'any', 'void'])
+const TYPES = new Set(['number', 'string', 'bool', 'error', 'any', 'void', 'uint8'])
 
 // Порядок групп — приоритет: комментарий и строка поглощают всё, что внутри них.
 // «>» закрывает тег, только если стоит вплотную к имени, строке или {…}: в «=>» и «a > b» это не тег.

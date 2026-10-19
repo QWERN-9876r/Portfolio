@@ -1,16 +1,18 @@
 <script lang="ts">
     import type { Translation } from '$lib/i18n/translations'
-    import counter from '$lib/mango/counter.mango?raw'
-    import goroutines from '$lib/mango/goroutines.mango?raw'
-    import { highlight } from '$lib/mango/highlight'
+    import counter from '$lib/rook/counter.rk?raw'
+    import goFor from '$lib/rook/go-for.rk?raw'
+    import goroutines from '$lib/rook/goroutines.rk?raw'
+    import { highlight } from '$lib/rook/highlight'
 
-    // Примеры на MangoScript в правом слоте кейса, с подсветкой: компонент и горутины — вкладками.
-    // Код — из документации языка; у горутин без замеров времени и комментариев
+    // Примеры на Rook в правом слоте кейса, с подсветкой: go for, горутины и компонент — вкладками.
+    // Код — из документации языка, без замеров времени и комментариев
     let { t }: { t: Translation } = $props()
 
     const FILES = [
-        { name: 'counter', tokens: highlight(counter.trimEnd()) },
+        { name: 'go-for', tokens: highlight(goFor.trimEnd()) },
         { name: 'goroutines', tokens: highlight(goroutines.trimEnd()) },
+        { name: 'counter', tokens: highlight(counter.trimEnd()) },
     ] as const
     const uid = $props.id()
 
@@ -43,7 +45,7 @@
                     aria-selected={index === active}
                     tabindex={index === active ? 0 : -1}
                     onclick={() => (active = index)}
-                    onkeydown={(event) => onkeydown(event, index)}>{file.name}.mango</button
+                    onkeydown={(event) => onkeydown(event, index)}>{file.name}.rk</button
                 >
             {/each}
         </div>

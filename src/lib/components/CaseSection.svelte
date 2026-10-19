@@ -4,7 +4,7 @@
     import CaseVisual from '$lib/components/CaseVisual.svelte'
     import Chip from '$lib/components/Chip.svelte'
     import CountUp from '$lib/components/CountUp.svelte'
-    import MangoDemo from '$lib/components/MangoDemo.svelte'
+    import RookDemo from '$lib/components/RookDemo.svelte'
     import SectionIndex from '$lib/components/SectionIndex.svelte'
     import { overlaps, parsePeriod, roleAnchor, splitRole, type CaseItem, type ExperienceData } from '$lib/content'
     import type { Translation } from '$lib/i18n/translations'
@@ -104,8 +104,8 @@
             </div>
 
             <div class="reveal visual-wrap" style:--delay={delay(2)}>
-                {#if caseItem.demo === 'mangoscript'}
-                    <MangoDemo {t} />
+                {#if caseItem.demo === 'rook'}
+                    <RookDemo {t} />
                 {:else}
                     <CaseVisual {t} {caseItem} colors={COLORS} />
                 {/if}

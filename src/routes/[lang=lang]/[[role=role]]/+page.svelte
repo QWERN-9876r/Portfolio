@@ -60,7 +60,7 @@
         {t}
         lang={data.lang}
         {role}
-        openSource={content.cases.find((item) => item.demo === 'mangoscript')}
+        openSource={content.cases.find((item) => item.demo === 'rook')}
     />
     <AboutSection {t} cases={content.cases} />
     <SellingPointsSection {t} lang={data.lang} cases={content.cases} />

@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
-import counter from './counter.mango?raw'
-import goroutines from './goroutines.mango?raw'
+import counter from './counter.rk?raw'
+import goFor from './go-for.rk?raw'
+import goroutines from './goroutines.rk?raw'
 import { highlight, type TokenKind } from './highlight'
 
 const kinds = (code: string) =>
@@ -9,7 +10,7 @@ const kinds = (code: string) =>
         .map((token) => [token.kind, token.text] as [TokenKind, string])
 
 describe('highlight', () => {
-    it.each([counter, goroutines])('ничего не теряет: куски складываются в исходный код', (source) => {
+    it.each([counter, goFor, goroutines])('ничего не теряет: куски складываются в исходный код', (source) => {
         expect(
             highlight(source)
                 .map((token) => token.text)
@@ -69,6 +70,23 @@ describe('highlight', () => {
         expect(kinds('func countPrimes(from, to number)')).toEqual([
             ['keyword', 'func'],
             ['type', 'number'],
+        ])
+    })
+
+    it('go for: тип элемента массива и «>» в «n > 1» — не тег', () => {
+        expect(kinds('const primes = make([]uint8, 10)')).toEqual([
+            ['keyword', 'const'],
+            ['type', 'uint8'],
+            ['number', '10'],
+        ])
+        expect(kinds('go for i, _ in primes {')).toEqual([
+            ['keyword', 'go'],
+            ['keyword', 'for'],
+            ['keyword', 'in'],
+        ])
+        expect(kinds('return n > 1')).toEqual([
+            ['keyword', 'return'],
+            ['number', '1'],
         ])
     })
 })

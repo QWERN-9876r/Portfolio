@@ -19,7 +19,8 @@ const CTA: [RegExp, string][] = [
     [/\/resume\/[^/]+\.pdf$/, 'resume'],
     [/^mailto:/, 'email'],
     // Раньше общего GitHub: проекты считаются отдельно — и сайт проекта, и его репозиторий
-    [/^https:\/\/(qwern-9876r\.github\.io|github\.com\/QWERN-9876r)\/MangoScript\b/i, 'mangoscript'],
+    // Rook раньше назывался MangoScript: ключ остался старым, его знают сервис и накопленные визиты
+    [/^https:\/\/(qwern-9876r\.github\.io|github\.com\/QWERN-9876r)\/(RookLang|MangoScript)\b/i, 'mangoscript'],
     [/^https:\/\/(qwern-9876r\.github\.io|github\.com\/QWERN-9876r)\/Mushrooms\b/i, 'mushrooms'],
     [/^https:\/\/github\.com\//, 'github'],
     [/^https:\/\/hh\.ru\//, 'hh'],
