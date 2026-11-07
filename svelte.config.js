@@ -3,8 +3,9 @@ import { vitePreprocess } from '@sveltejs/vite-plugin-svelte'
 
 // Должно совпадать с LOCALES в src/lib/i18n/translations.ts и ROLES в src/lib/role.ts
 const LOCALES = ['en', 'ru']
-// Сайт на GitHub Pages живёт в папке репозитория — как BASE_PATH в src/lib/site.ts
-const BASE = '/Portfolio'
+// Сайт — на GitHub Pages, но за своим доменом (qwern9876r.ru), поэтому без пути репозитория —
+// как BASE_PATH в src/lib/site.ts
+const BASE = ''
 const ROLE_SEGMENTS = ['fullstack', 'backend']
 
 /** @type {import('@sveltejs/kit').Config} */

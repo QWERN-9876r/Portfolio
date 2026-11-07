@@ -1,16 +1,16 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-// Как в проде: сайт на GitHub Pages в /Portfolio, страницы — со слэшем на конце
+// Как в проде: сайт на GitHub Pages за своим доменом, в корне, страницы — со слэшем на конце
 vi.mock('$service-worker', () => ({
-    base: '/Portfolio',
+    base: '',
     version: '2',
-    build: ['/Portfolio/_app/immutable/entry/start.js', '/Portfolio/_app/immutable/nodes/1.js'],
-    files: ['/Portfolio/icons/react.svg'],
-    prerendered: ['/Portfolio/', '/Portfolio/en/', '/Portfolio/ru/'],
+    build: ['/_app/immutable/entry/start.js', '/_app/immutable/nodes/1.js'],
+    files: ['/icons/react.svg'],
+    prerendered: ['/', '/en/', '/ru/'],
 }))
 
-const ORIGIN = 'https://qwern-9876r.github.io'
-const B = '/Portfolio'
+const ORIGIN = 'https://qwern9876r.ru'
+const B = ''
 const CACHE = 'cache-2'
 
 // Браузер вокруг воркера: HTTP-кэш, сеть и Cache Storage
@@ -187,7 +187,7 @@ describe('запросы', () => {
         ['метрики посетителей', '/api/rum/summary', {}],
         ['beacon', '/api/rum', { method: 'POST' }],
         ['не GET', `${B}/en/`, { method: 'POST' }],
-        ['сервис метрик на своём сервере', 'https://qwern9876r.ru/api/rum/summary', {}],
+        ['сервис метрик на своём сервере', 'https://rum.qwern9876r.ru/api/rum/summary', {}],
         ['чужой сайт', 'https://t.me/Qwern_9876r', {}],
     ])('%s — мимо воркера', async (_, path, init) => {
         expect(await request(path, init)).toBeUndefined()

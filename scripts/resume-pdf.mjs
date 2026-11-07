@@ -8,8 +8,8 @@ import { fileURLToPath } from 'node:url'
 import { chromium } from 'playwright-core'
 
 const LOCALES = ['en', 'ru']
-// Как kit.paths.base в svelte.config.js: сайт живёт в папке репозитория на GitHub Pages
-const BASE = '/Portfolio'
+// Как kit.paths.base в svelte.config.js: сайт — в корне своего домена на GitHub Pages
+const BASE = ''
 const DIST = fileURLToPath(new URL('../dist/', import.meta.url))
 const TYPES = {
     '.html': 'text/html; charset=utf-8',
@@ -25,7 +25,7 @@ if (process.env.SKIP_RESUME_PDF) {
     process.exit(0)
 }
 
-// Как статический хостинг: /Portfolio/resume/en/ → dist/resume/en/index.html
+// Как статический хостинг: /resume/en/ → dist/resume/en/index.html
 const isFile = (path) => existsSync(path) && statSync(path).isFile()
 const server = createServer((req, res) => {
     const pathname = decodeURIComponent(new URL(req.url, 'http://localhost').pathname)

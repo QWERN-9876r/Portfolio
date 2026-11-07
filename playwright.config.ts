@@ -4,8 +4,8 @@ import { RUM_JOURNAL, RUM_PORT } from './tests/e2e/rum-journal.mjs'
 
 // E2e: собранный сайт в vite preview и настоящий сервис метрик (deploy/rum) за его прокси.
 // В CI сборка уже есть (тот же dist уходит на сервер), локально — собирается перед тестами
-// Сайт, как на GitHub Pages, — в папке /Portfolio/: в тестах пути относительные ('en/', 'ru/stats/')
-const SITE = 'http://127.0.0.1:4174/Portfolio/'
+// Сайт, как на GitHub Pages, — в корне домена: в тестах пути относительные ('en/', 'ru/stats/')
+const SITE = 'http://127.0.0.1:4174/'
 const preview = 'npx vite preview --host 127.0.0.1 --port 4174 --strictPort'
 
 export default defineConfig({

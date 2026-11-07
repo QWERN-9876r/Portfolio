@@ -325,6 +325,7 @@ func TestCORS(t *testing.T) {
 	for _, c := range []struct {
 		origin, allowed string
 	}{
+		{"https://qwern9876r.ru", "https://qwern9876r.ru"},
 		{"https://qwern-9876r.github.io", "https://qwern-9876r.github.io"},
 		{"https://evil.example", ""},
 		{"", ""},

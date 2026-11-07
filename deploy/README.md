@@ -4,7 +4,7 @@ Push в `main` запускает GitHub Actions. Оба workflow сначала
 
 | Что изменилось | Workflow | Что выкладывает |
 | --- | --- | --- |
-| всё, кроме `deploy/` | `deploy-site.yml` | сборку с PDF-резюме, на которой прошли e2e, — на GitHub Pages: https://qwern-9876r.github.io/Portfolio/ |
+| всё, кроме `deploy/` | `deploy-site.yml` | сборку с PDF-резюме, на которой прошли e2e, — на GitHub Pages за своим доменом: https://qwern9876r.ru |
 | `deploy/rum/` | `deploy-rum.yml` | бинарник сервиса метрик под Linux в `/opt/portfolio-rum` на сервере, перезапуск |
 
 Push в другие ветки запускает только тесты.
@@ -12,9 +12,10 @@ Push в другие ветки запускает только тесты.
 Выкладки можно запустить вручную: Actions → workflow → Run workflow. Сайт стоит пересобрать так
 после правок контента в бакете — HTML пререндерится из него при сборке.
 
-Сайт от сервера не зависит. Сервер `qwern9876r.ru` держит только сервис метрик (страница ходит
-в него с GitHub Pages, CORS ставит сам сервис) и переадресует старые ссылки на Pages. Лежит
-сервер — сайт работает, в «Почему я» нет медианы посетителей, а /stats пишет «Сервис метрик недоступен».
+Сайт от сервера не зависит. DNS апекса (`qwern9876r.ru`) указывает прямо на GitHub Pages — сервер
+в этом пути не участвует вообще. У сервера свой поддомен, `rum.qwern9876r.ru`, и на нём только
+сервис метрик (страница ходит в него с сайта, CORS ставит сам сервис). Лежит сервер — сайт
+работает, в «Почему я» нет медианы посетителей, а /stats пишет «Сервис метрик недоступен».
 
 GitHub Pages при выкладке заменяет все файлы: чанк, который открытая до выкладки вкладка ещё не
 догрузила (3D, Pixi), пропадёт. Страница от этого не падает, а у посетителей с service worker
@@ -50,6 +51,37 @@ gh api -X POST repos/QWERN-9876r/Portfolio/pages -f build_type=workflow
 
 Окружение `github-pages` Actions создадут сами при первой выкладке.
 
+#### Свой домен
+
+Сайт выкладывается из Actions, а не из ветки — CNAME-файл в репозитории GitHub не создаёт и
+игнорирует, даже если он есть. Домен задаётся только в самом Settings → Pages:
+
+```bash
+# Сначала здесь, потом DNS — иначе домен без владельца в GitHub может перехватить кто-то другой
+gh api -X PUT repos/QWERN-9876r/Portfolio/pages -f cname=qwern9876r.ru
+```
+
+DNS у регистратора `qwern9876r.ru` — apex нельзя CNAME, только A/AAAA на адреса Pages (или
+ALIAS/ANAME, если провайдер их поддерживает):
+
+```
+A     @     185.199.108.153
+A     @     185.199.109.153
+A     @     185.199.110.153
+A     @     185.199.111.153
+AAAA  @     2606:50c0:8000::153
+AAAA  @     2606:50c0:8001::153
+AAAA  @     2606:50c0:8002::153
+AAAA  @     2606:50c0:8003::153
+```
+
+`www.qwern9876r.ru` — опционально, туда же: `CNAME www → qwern-9876r.github.io` (без имени
+репозитория), Pages сам решит, редиректить ли его на apex или наоборот — смотря что задано в
+Settings → Pages как основной домен.
+
+До 24 часов на распространение DNS и ещё до 24 часов — на «Enforce HTTPS» в настройках Pages.
+Проверка: `dig qwern9876r.ru` — должны вернуться эти четыре A-адреса.
+
 ### Сервер для сервиса метрик
 
 Ниже `portfolio` — хост из `~/.ssh/config`, `$USER` на сервере — deploy-пользователь,
@@ -84,27 +116,29 @@ ssh portfolio
 Запустит сервис первая выкладка из CI. Если раньше бинарник ставился в `/usr/local/bin`,
 его можно удалить.
 
-Конфиг nginx на сервере — по `nginx.example.conf`: точный `/api/rum` для приёма визитов,
-префиксный `^~ /api/rum/` для сводки и живой ленты (SSE, без буфера), всё остальное — 301 на
-GitHub Pages. Затем `sudo nginx -t && sudo systemctl reload nginx`.
+Конфиг nginx на сервере — по `nginx.example.conf`, на поддомене `rum.qwern9876r.ru`: точный
+`/api/rum` для приёма визитов, префиксный `^~ /api/rum/` для сводки и живой ленты (SSE, без
+буфера). Затем `sudo nginx -t && sudo systemctl reload nginx`.
 
 ### 3. Секреты GitHub
 
 Окружение `production`, в нём четыре секрета:
 
+`SSH_HOST` — поддомен сервиса метрик, не apex: у apex DNS теперь ведёт на GitHub Pages, а не
+на этот сервер. IP ниже — адрес сервера (сверь с актуальным, если сервер меняется):
+
 ```bash
 gh api -X PUT repos/QWERN-9876r/Portfolio/environments/production
-gh secret set SSH_HOST --env production --body qwern9876r.ru
+gh secret set SSH_HOST --env production --body rum.qwern9876r.ru
 gh secret set SSH_USER --env production --body <пользователь на сервере>
 gh secret set SSH_PRIVATE_KEY --env production < ~/.ssh/portfolio_ci
-gh secret set SSH_KNOWN_HOSTS --env production --body "$(ssh-keyscan -t ed25519 111.88.240.234 qwern9876r.ru)"
+gh secret set SSH_KNOWN_HOSTS --env production --body "$(ssh-keyscan -t ed25519 <IP сервера> rum.qwern9876r.ru)"
 ```
 
-ssh ищет ключ сервера по тому имени, к которому подключается: запись для `qwern9876r.ru`
+ssh ищет ключ сервера по тому имени, к которому подключается: запись для `rum.qwern9876r.ru`
 не подходит, если в `SSH_HOST` IP (как `HostName` в `~/.ssh/config`), — `Host key verification failed`.
 Поэтому в `SSH_KNOWN_HOSTS` оба имени. Отпечаток стоит сверить с тем, что уже знает твой ssh:
-`ssh-keygen -lf <(ssh-keyscan -t ed25519 111.88.240.234)` и `ssh-keygen -lF 111.88.240.234` —
-должно совпасть (`SHA256:xISUl5QGCIut9keyrrrZjtmrsTmelUHCJMIKv93inqs`).
+`ssh-keygen -lf <(ssh-keyscan -t ed25519 <IP сервера>)` и `ssh-keygen -lF <IP сервера>` — должны совпасть.
 
 Сервер не x86-64 — переменная `SERVER_ARCH` (например, `arm64`):
 `gh variable set SERVER_ARCH --env production --body arm64`.

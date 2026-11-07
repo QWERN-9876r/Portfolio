@@ -1,7 +1,8 @@
 # Сайт: тесты (test.yml) и выкладка проверенной сборки на GitHub Pages —
-# https://qwern-9876r.github.io/Portfolio/. Свой сервер сайту не нужен: на нём только сервис
-# метрик (deploy-rum.yml), и без него сайт работает. Контент живёт в бакете и попадает в сайт
-# при сборке — после его правок запусти вручную (Actions → Run workflow). Настройка — deploy/README.md
+# https://qwern9876r.ru (custom domain). Свой сервер сайту не нужен: на нём только сервис
+# метрик, на отдельном поддомене (deploy-rum.yml), и без него сайт работает. Контент живёт
+# в бакете и попадает в сайт при сборке — после его правок запусти вручную (Actions → Run
+# workflow). Настройка — deploy/README.md
 name: Deploy site
 
 on:
@@ -32,7 +33,7 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     env:
-      SITE_URL: https://qwern-9876r.github.io/Portfolio
+      SITE_URL: https://qwern9876r.ru
     steps:
       # Та самая сборка, на которой прошли e2e
       - uses: actions/download-artifact@v8

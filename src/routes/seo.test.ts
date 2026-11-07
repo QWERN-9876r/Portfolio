@@ -15,9 +15,10 @@ const manifestFor = (lang: string) => manifest({ params: { lang } } as unknown a
 const prerendered = new Set(config.kit?.prerender?.entries)
 
 describe('адрес сайта', () => {
-    it('base в svelte.config.js и BASE_PATH в коде — одна папка на GitHub Pages', () => {
+    it('base в svelte.config.js и BASE_PATH в коде — один и тот же (пустой) путь', () => {
         expect(config.kit?.paths?.base).toBe(BASE_PATH)
-        expect(SITE_URL).toBe(`https://qwern-9876r.github.io${BASE_PATH}`)
+        expect(BASE_PATH).toBe('')
+        expect(SITE_URL).toBe('https://qwern9876r.ru')
     })
 })
 
@@ -42,7 +43,7 @@ describe('sitemap.xml', async () => {
             )
             expect(Object.keys(alternates).sort()).toEqual([...LOCALES, 'x-default'].sort())
             expect(alternates['x-default']).toBe(alternates.en)
-            // Версия на своём языке — сама страница: /Portfolio/{lang}/...
+            // Версия на своём языке — сама страница: /{lang}/...
             const loc = /<loc>(.*?)<\/loc>/.exec(url)![1]
             const lang = new URL(loc).pathname.slice(BASE_PATH.length).split('/')[1]
             expect(alternates[lang]).toBe(loc)

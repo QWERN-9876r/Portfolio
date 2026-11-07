@@ -9,7 +9,7 @@ for (const lang of LOCALES) {
 
         test(`${path}: язык, роль и SEO`, async ({ page }) => {
             const t = translations[lang]
-            // Относительно baseURL: '/en/' → http://…/Portfolio/en/
+            // Относительно baseURL: '/en/' → http://…/en/
             const response = await page.goto(path.slice(1))
 
             expect(response?.status()).toBe(200)

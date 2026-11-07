@@ -365,9 +365,10 @@ func newHandler(s *store, limit *limiter) http.Handler {
 	return withCORS(mux)
 }
 
-// Сайт — на GitHub Pages, сервис — на своём сервере: сводку и живую ленту страница читает
-// с другого домена. Визит CORS не нужен: sendBeacon шлёт text/plain, ответ браузер не читает
-var allowedOrigins = []string{"https://qwern-9876r.github.io"}
+// Сайт — на GitHub Pages за своим доменом, сервис — на отдельном поддомене своего сервера:
+// сводку и живую ленту страница читает с другого домена. Визит CORS не нужен: sendBeacon шлёт
+// text/plain, ответ браузер не читает. github.io оставлен на случай прямого захода по старому адресу
+var allowedOrigins = []string{"https://qwern9876r.ru", "https://qwern-9876r.github.io"}
 
 func withCORS(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

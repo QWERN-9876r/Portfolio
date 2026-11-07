@@ -131,8 +131,8 @@ describe('iconUrl', () => {
     it('иконки сайта и копии из бакета — с base, внешние — как есть', async () => {
         const { iconUrl } = await load()
 
-        expect(iconUrl('/icons/react.svg')).toBe('/Portfolio/icons/react.svg')
-        expect(iconUrl('/api/storage/pixi.png')).toBe('/Portfolio/storage/pixi.png')
+        expect(iconUrl('/icons/react.svg')).toBe('/icons/react.svg')
+        expect(iconUrl('/api/storage/pixi.png')).toBe('/storage/pixi.png')
         expect(iconUrl('https://cdn.example.com/x.svg')).toBe('https://cdn.example.com/x.svg')
     })
 })

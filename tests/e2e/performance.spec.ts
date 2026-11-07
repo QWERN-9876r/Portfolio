@@ -20,7 +20,8 @@ test(`JS до load — не больше ${JS_BUDGET_KB} КБ gzip`, async ({ pa
             .filter((entry) => entry.startTime < loadEventEnd && /\.js$/.test(new URL(entry.name).pathname))
             .map((entry) => new URL(entry.name).pathname)
     })
-    // Адрес — с base (/Portfolio/_app/…), файл в dist — без него
+    // Адрес — с base, файл в dist — без него; сейчас base пуст, slice(0) — заготовка на случай,
+    // если сайт снова переедет в подпапку
     const sizes = scripts.map((path) => ({ path, kb: statSync(`dist${path.slice(BASE_PATH.length)}.gz`).size / 1024 }))
     const total = sizes.reduce((sum, { kb }) => sum + kb, 0)
 

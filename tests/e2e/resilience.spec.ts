@@ -89,7 +89,7 @@ test('без WebGL сайт работает, только без 3D', async ({ 
 test.describe('сервер метрик недоступен', () => {
     // Не localhost — страница ходит в настоящий адрес сервиса (rumUrl), а его здесь «роняем».
     // *.localhost браузер сам ведёт на 127.0.0.1, и Vite такие имена пропускает
-    test.use({ baseURL: 'http://portfolio.localhost:4174/Portfolio/' })
+    test.use({ baseURL: 'http://portfolio.localhost:4174/' })
 
     const cases: [string, (route: Route) => unknown][] = [
         ['отказ соединения', (route) => route.abort('connectionrefused')],

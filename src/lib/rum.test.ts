@@ -191,14 +191,14 @@ describe('fetchRumSummary', () => {
 
 describe('адрес сервиса', () => {
     it('на GitHub Pages — сервис на своём сервере, локально — прокси Vite на том же адресе', async () => {
-        happyDOM.setURL('https://qwern-9876r.github.io/Portfolio/en/')
+        happyDOM.setURL('https://qwern9876r.ru/en/')
         const fetchMock = vi.fn(async (_url: string, _init?: RequestInit) => new Response(null, { status: 502 }))
         vi.stubGlobal('fetch', fetchMock)
         stop = startRum(() => ({ lang: 'en', role: 'frontend' }))
         leave()
         await fetchRumSummary()
 
-        expect(sendBeacon.mock.calls[0][0]).toBe('https://qwern9876r.ru/api/rum')
-        expect(fetchMock.mock.calls[0][0]).toBe('https://qwern9876r.ru/api/rum/summary')
+        expect(sendBeacon.mock.calls[0][0]).toBe('https://rum.qwern9876r.ru/api/rum')
+        expect(fetchMock.mock.calls[0][0]).toBe('https://rum.qwern9876r.ru/api/rum/summary')
     })
 })

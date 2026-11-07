@@ -1,17 +1,20 @@
 import type { Locale } from '$lib/i18n/translations'
 
-// Сайт — на GitHub Pages, в папке репозитория: https://qwern-9876r.github.io/Portfolio.
+// Сайт — на GitHub Pages, но за своим доменом: https://qwern9876r.ru (custom domain в Settings →
+// Pages; при выкладке из Actions CNAME в репозитории не нужен и игнорируется — см. deploy/README.md).
 // BASE_PATH совпадает с kit.paths.base в svelte.config.js (проверяет seo.test.ts)
-export const BASE_PATH = '/Portfolio'
+export const BASE_PATH = ''
 // Используется в canonical, hreflang, og:url, JSON-LD, robots.txt и sitemap.xml
-export const SITE_URL = `https://qwern-9876r.github.io${BASE_PATH}`
+export const SITE_URL = `https://qwern9876r.ru${BASE_PATH}`
 
-// Путь внутри сайта → адрес: '/en/' → '/Portfolio/en/'
+// Путь внутри сайта → адрес: '/en/' → '/en/' (BASE_PATH пуст — сайт живёт в корне домена)
 export const withBase = (path: string) => BASE_PATH + path
 
-// Сервис метрик посетителей (deploy/rum) живёт на своём сервере, сайт работает и без него.
-// Локально (dev, preview, e2e) — тот же путь на своём адресе: Vite проксирует его к локальному сервису
-export const RUM_ORIGIN = 'https://qwern9876r.ru'
+// Сервис метрик посетителей (deploy/rum) — на отдельном поддомене, своём сервере; сайт работает
+// и без него. Поддомен, а не сам qwern9876r.ru, — чтобы DNS апекса указывал прямо на GitHub Pages,
+// а не на этот сервер (apex-домен нельзя CNAME, только A-записи на IP Pages). Локально (dev, preview,
+// e2e) — тот же путь на своём адресе: Vite проксирует его к локальному сервису
+export const RUM_ORIGIN = 'https://rum.qwern9876r.ru'
 export const rumUrl = (path = '') => {
     const local = location.hostname === 'localhost' || location.hostname === '127.0.0.1'
     return `${local ? '' : RUM_ORIGIN}/api/rum${path}`
