@@ -23,6 +23,14 @@
     <div class="content">
         <div class="layout">
             <div class="text">
+                <div class="item" style:--delay={delay(0)}>
+                    <p class="availability" role="status">
+                        <span class="dot" aria-hidden="true"></span>
+                        <span class="avail-label">{t.hero.status.label}</span>
+                        <span class="avail-detail">{t.hero.status.detail}</span>
+                    </p>
+                </div>
+
                 <div class="item" style:--delay={delay(1)}>
                     <p class="nickname">{NICKNAME}</p>
                 </div>
@@ -126,6 +134,46 @@
         line-height: 1;
         letter-spacing: 0.02em;
         user-select: none;
+    }
+
+    /* Самый важный факт для рекрутёра — статус поиска — должен считываться первым,
+       до имени и ролей, поэтому это первый item в колонке */
+    .availability {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 5px 14px 5px 10px;
+        border: 1px solid rgb(var(--c-good) / 0.4);
+        border-radius: 999px;
+        background: rgb(var(--c-good) / 0.1);
+        font-size: 0.8rem;
+        line-height: 1.4;
+    }
+
+    .availability .dot {
+        flex-shrink: 0;
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: rgb(var(--c-good));
+        box-shadow: 0 0 8px rgb(var(--c-good));
+    }
+
+    .avail-label {
+        color: rgb(var(--c-good));
+        font-weight: 700;
+        letter-spacing: 0.02em;
+        white-space: nowrap;
+    }
+
+    .avail-detail {
+        display: none;
+        color: rgb(var(--c-text-secondary));
+        font-weight: 500;
+    }
+
+    .avail-detail::before {
+        content: '· ';
     }
 
     .name {
@@ -318,6 +366,10 @@
         }
 
         .os-detail {
+            display: inline;
+        }
+
+        .avail-detail {
             display: inline;
         }
     }
