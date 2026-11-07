@@ -189,9 +189,10 @@ export const translations: Record<Locale, Translation> = {
         },
         about: {
             bio: 'BIO',
-            text: 'I am a fullstack developer with experience at Yandex, where I handled complex technical challenges — from optimizing interface performance to designing large-scale projects. I write high-performance, maintainable code and always look beyond the immediate task: I think about how a solution affects the product and the business as a whole. I take initiative, see work through to completion, and do not wait to be told what to do. In my spare time I build Rook, my own programming language that compiles to JavaScript and runs it on every CPU core.',
+            text: 'I started programming at 14, and at 15 graduated from Yandex School of Interface Development — its youngest student in 12 years — before starting my career at Yandex as a fullstack developer at 16. I handled complex technical challenges — from optimizing interface performance to designing large-scale projects. I write high-performance, maintainable code and always look beyond the immediate task: I think about how a solution affects the product and the business as a whole. I take initiative, see work through to completion, and do not wait to be told what to do. In my spare time I build Rook, my own programming language that compiles to JavaScript and runs it on every CPU core.',
             highlights: [
                 'Yandex',
+                'School of Interface Development',
                 'performance',
                 'high-performance',
                 'business',
@@ -339,8 +340,9 @@ export const translations: Record<Locale, Translation> = {
         },
         about: {
             bio: 'BIO',
-            text: 'Я fullstack-разработчик с опытом в Яндексе, где закрывал сложные технические задачи — от оптимизации производительности интерфейсов до проектирования огромных проектов. Пишу высокопроизводительный, поддерживаемый код и всегда смотрю шире задачи: думаю о том, как решение влияет на продукт и бизнес в целом. Инициативен, довожу начатое до результата и не жду, когда скажут что делать. В свободное время развиваю Rook — свой язык программирования, который компилируется в JavaScript и запускает его на всех ядрах процессора.',
+            text: 'Программирую с 14 лет: в 15 закончил Школу Разработки Интерфейсов Яндекса — самым молодым учеником за 12 лет её существования, а в 16 начал карьеру в Яндексе fullstack-разработчиком. Закрывал сложные технические задачи — от оптимизации производительности интерфейсов до проектирования огромных проектов. Пишу высокопроизводительный, поддерживаемый код и всегда смотрю шире задачи: думаю о том, как решение влияет на продукт и бизнес в целом. Инициативен, довожу начатое до результата и не жду, когда скажут что делать. В свободное время развиваю Rook — свой язык программирования, который компилируется в JavaScript и запускает его на всех ядрах процессора.',
             highlights: [
+                'Школу Разработки Интерфейсов',
                 'Яндексе',
                 'производительности',
                 'высокопроизводительный',
